@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from src.database import init_db
-from src.routers import auth
+from src.routers import auth, competency
 
 app = FastAPI(title="AC测评工具API", version="1.0.0")
 
@@ -14,6 +14,7 @@ app.add_middleware(
 )
 
 app.include_router(auth.router)
+app.include_router(competency.router)
 
 @app.on_event("startup")
 async def startup():
