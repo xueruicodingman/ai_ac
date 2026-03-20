@@ -6,23 +6,36 @@ from src.models.user import User
 from src.routers.auth import get_current_user
 from src.models.judge_handbook import JudgeHandbook
 from src.schemas.handbook import (
-    HandbookGenerateRequest, HandbookSaveRequest, HandbookResponse
+    HandbookSaveRequest, HandbookResponse
 )
 from src.services.handbook_service import HandbookService
+from src.services.user_settings_service import get_user_llm_config
 import json
 
 router = APIRouter(prefix="/api/judge-handbooks", tags=["评委手册"])
 
 @router.post("/generate")
 async def generate_handbook(
-    request: HandbookGenerateRequest,
-    current_user: User = Depends(get_current_user)
+    competency_model: dict,
+    evaluation_matrix: dict,
+    questionnaires: list,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
 ):
-    service = HandbookService(api_key=request.api_key)
+    llm_config = await get_user_llm_config(db, current_user.id)
+    
+    if not llm_config["api_key"]:
+        raise HTTPException(status_code=400, detail="请先在设置中配置API Key")
+    
+    service = HandbookService(
+        api_key=llm_config["api_key"],
+        model=llm_config["model"],
+        api_url=llm_config["api_url"]
+    )
     content = await service.generate(
-        competency_model=request.competency_model,
-        evaluation_matrix=request.evaluation_matrix,
-        questionnaires=request.questionnaires
+        competency_model=competency_model,
+        evaluation_matrix=evaluation_matrix,
+        questionnaires=questionnaires
     )
     return {"success": True, "data": {"content": content}}
 

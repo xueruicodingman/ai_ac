@@ -6,23 +6,37 @@ from src.models.user import User
 from src.routers.auth import get_current_user
 from src.models.competency_model import CompetencyModel
 from src.schemas.competency import (
-    CompetencyModelCreate, CompetencyModelResponse, CompetencyGenerateRequest
+    CompetencyModelCreate, CompetencyModelResponse
 )
 from src.services.competency_service import CompetencyService
+from src.services.user_settings_service import get_user_llm_config
 import json
 
 router = APIRouter(prefix="/api/competency-models", tags=["胜任力模型"])
 
 @router.post("/generate")
 async def generate_competency_model(
-    request: CompetencyGenerateRequest,
-    current_user: User = Depends(get_current_user)
+    background: str = "",
+    files: list = None,
+    specified_abilities: list = None,
+    num_competencies: int = 5,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
 ):
-    service = CompetencyService(api_key=request.api_key)
+    llm_config = await get_user_llm_config(db, current_user.id)
+    
+    if not llm_config["api_key"]:
+        raise HTTPException(status_code=400, detail="请先在设置中配置API Key")
+    
+    service = CompetencyService(
+        api_key=llm_config["api_key"],
+        model=llm_config["model"],
+        api_url=llm_config["api_url"]
+    )
     result = await service.generate(
-        background=request.background,
-        specified_abilities=request.specified_abilities,
-        num_competencies=request.num_competencies
+        background=background,
+        specified_abilities=specified_abilities,
+        num_competencies=num_competencies
     )
     return {"success": True, "data": result}
 

@@ -23,8 +23,8 @@ TOOL_INFO = {
 }
 
 class QuestionnaireService(AIService):
-    def __init__(self, api_key: str, model: str = "gpt-4"):
-        super().__init__(api_key, model)
+    def __init__(self, api_key: str, model: str = None, api_url: str = None):
+        super().__init__(api_key, model, api_url)
         self.workflows = {
             tool_id: workflow(self.llm)
             for tool_id, workflow in WORKFLOW_MAP.items()

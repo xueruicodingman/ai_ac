@@ -12,6 +12,9 @@ class Settings(BaseSettings):
     UPLOAD_DIR: str = "./uploads"
     GENERATED_DIR: str = "./generated"
     
+    DEFAULT_API_URL: str = "https://api.openai.com/v1"
+    DEFAULT_MODEL: str = "gpt-4"
+    
     class Config:
         env_file = ".env"
 

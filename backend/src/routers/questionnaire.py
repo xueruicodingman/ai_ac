@@ -6,25 +6,38 @@ from src.models.user import User
 from src.routers.auth import get_current_user
 from src.models.questionnaire import Questionnaire
 from src.schemas.questionnaire import (
-    QuestionnaireGenerateRequest, QuestionnaireSaveRequest, QuestionnaireResponse
+    QuestionnaireSaveRequest, QuestionnaireResponse
 )
 from src.services.questionnaire_service import QuestionnaireService
+from src.services.user_settings_service import get_user_llm_config
 from typing import List
 
 router = APIRouter(prefix="/api/questionnaires", tags=["题本生成"])
 
 @router.post("/generate")
 async def generate_questionnaire(
-    request: QuestionnaireGenerateRequest,
-    current_user: User = Depends(get_current_user)
+    tool_id: str,
+    competency_model: dict,
+    evaluation_matrix: dict,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
 ):
-    service = QuestionnaireService(api_key=request.api_key)
-    content = await service.generate(
-        tool_id=request.tool_id,
-        competency_model=request.competency_model,
-        evaluation_matrix=request.evaluation_matrix
+    llm_config = await get_user_llm_config(db, current_user.id)
+    
+    if not llm_config["api_key"]:
+        raise HTTPException(status_code=400, detail="请先在设置中配置API Key")
+    
+    service = QuestionnaireService(
+        api_key=llm_config["api_key"],
+        model=llm_config["model"],
+        api_url=llm_config["api_url"]
     )
-    tool_info = service.get_tool_info(request.tool_id)
+    content = await service.generate(
+        tool_id=tool_id,
+        competency_model=competency_model,
+        evaluation_matrix=evaluation_matrix
+    )
+    tool_info = service.get_tool_info(tool_id)
     return {"success": True, "data": {"content": content, **tool_info}}
 
 @router.get("/tools")

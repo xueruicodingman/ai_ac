@@ -3,12 +3,19 @@ from typing import Any, Dict, Optional
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.prompts import ChatPromptTemplate
+from src.config import settings
 
 class AIService(ABC):
-    def __init__(self, api_key: str, model: str = "gpt-4"):
+    def __init__(
+        self,
+        api_key: str,
+        model: Optional[str] = None,
+        api_url: Optional[str] = None
+    ):
         self.llm = ChatOpenAI(
             api_key=api_key,
-            model=model,
+            base_url=api_url or settings.DEFAULT_API_URL,
+            model=model or settings.DEFAULT_MODEL,
             temperature=0.7
         )
     

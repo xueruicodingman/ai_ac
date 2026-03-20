@@ -10,20 +10,31 @@ from src.schemas.matrix import (
     MatrixGenerateRequest, MatrixSaveRequest, MatrixResponse, Tool
 )
 from src.services.matrix_service import MatrixService
+from src.services.user_settings_service import get_user_llm_config
 import json
 
 router = APIRouter(prefix="/api/evaluation-matrices", tags=["评估矩阵"])
 
 @router.post("/generate")
 async def generate_matrix(
-    request: MatrixGenerateRequest,
-    current_user: User = Depends(get_current_user)
+    competency_model: dict,
+    tools: list = None,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
 ):
-    service = MatrixService(api_key=request.api_key)
-    tools_data = [t.model_dump() for t in request.tools] if request.tools else None
+    llm_config = await get_user_llm_config(db, current_user.id)
+    
+    if not llm_config["api_key"]:
+        raise HTTPException(status_code=400, detail="请先在设置中配置API Key")
+    
+    service = MatrixService(
+        api_key=llm_config["api_key"],
+        model=llm_config["model"],
+        api_url=llm_config["api_url"]
+    )
     result = await service.generate(
-        competency_model=request.competency_model,
-        tools=tools_data
+        competency_model=competency_model,
+        tools=tools
     )
     return {"success": True, "data": result}
 

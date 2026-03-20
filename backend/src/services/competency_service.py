@@ -3,8 +3,8 @@ from src.services.ai_service import AIService
 from src.workflows.competency_workflow import CompetencyWorkflow
 
 class CompetencyService(AIService):
-    def __init__(self, api_key: str, model: str = "gpt-4"):
-        super().__init__(api_key, model)
+    def __init__(self, api_key: str, model: str = None, api_url: str = None):
+        super().__init__(api_key, model, api_url)
         self.workflow = CompetencyWorkflow(self.llm)
     
     async def generate(

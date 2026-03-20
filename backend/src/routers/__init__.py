@@ -5,3 +5,4 @@ from .questionnaire import router as questionnaire_router
 from .handbook import router as handbook_router
 from .report import router as report_router
 from .file import router as file_router
+from .user_settings import router as user_settings_router

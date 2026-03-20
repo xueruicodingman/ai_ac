@@ -7,10 +7,10 @@ from src.routers.auth import get_current_user
 from src.models.report import Report
 from src.models.assessment_record import AssessmentRecord
 from src.schemas.report import (
-    FeedbackReportGenerateRequest, OrgReportGenerateRequest,
-    PersonalReportGenerateRequest, ReportSaveRequest, ReportResponse
+    ReportSaveRequest, ReportResponse
 )
 from src.services.report_service import ReportService
+from src.services.user_settings_service import get_user_llm_config
 from typing import List
 import json
 
@@ -18,40 +18,79 @@ router = APIRouter(prefix="/api/reports", tags=["报告生成"])
 
 @router.post("/generate/feedback")
 async def generate_feedback_report(
-    request: FeedbackReportGenerateRequest,
-    current_user: User = Depends(get_current_user)
+    candidate_id: str,
+    candidate_name: str,
+    scores: dict,
+    behaviors: dict = None,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
 ):
-    service = ReportService(api_key=request.api_key)
+    llm_config = await get_user_llm_config(db, current_user.id)
+    
+    if not llm_config["api_key"]:
+        raise HTTPException(status_code=400, detail="请先在设置中配置API Key")
+    
+    service = ReportService(
+        api_key=llm_config["api_key"],
+        model=llm_config["model"],
+        api_url=llm_config["api_url"]
+    )
     content = await service.generate_feedback_report(
-        name=request.candidate_name,
-        scores=request.scores,
-        behaviors=request.behaviors
+        name=candidate_name,
+        scores=scores,
+        behaviors=behaviors
     )
     return {"success": True, "data": content}
 
 @router.post("/generate/org")
 async def generate_org_report(
-    request: OrgReportGenerateRequest,
-    current_user: User = Depends(get_current_user)
+    candidate_id: str,
+    candidate_name: str,
+    scores: dict,
+    feedback_content: dict,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
 ):
-    service = ReportService(api_key=request.api_key)
+    llm_config = await get_user_llm_config(db, current_user.id)
+    
+    if not llm_config["api_key"]:
+        raise HTTPException(status_code=400, detail="请先在设置中配置API Key")
+    
+    service = ReportService(
+        api_key=llm_config["api_key"],
+        model=llm_config["model"],
+        api_url=llm_config["api_url"]
+    )
     content = await service.generate_org_report(
-        name=request.candidate_name,
-        scores=request.scores,
-        feedback_content=request.feedback_content
+        name=candidate_name,
+        scores=scores,
+        feedback_content=feedback_content
     )
     return {"success": True, "data": content}
 
 @router.post("/generate/personal")
 async def generate_personal_report(
-    request: PersonalReportGenerateRequest,
-    current_user: User = Depends(get_current_user)
+    candidate_id: str,
+    candidate_name: str,
+    scores: dict,
+    org_content: dict,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
 ):
-    service = ReportService(api_key=request.api_key)
+    llm_config = await get_user_llm_config(db, current_user.id)
+    
+    if not llm_config["api_key"]:
+        raise HTTPException(status_code=400, detail="请先在设置中配置API Key")
+    
+    service = ReportService(
+        api_key=llm_config["api_key"],
+        model=llm_config["model"],
+        api_url=llm_config["api_url"]
+    )
     content = await service.generate_personal_report(
-        name=request.candidate_name,
-        scores=request.scores,
-        org_content=request.org_content
+        name=candidate_name,
+        scores=scores,
+        org_content=org_content
     )
     return {"success": True, "data": content}
 
