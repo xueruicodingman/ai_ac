@@ -1,6 +1,8 @@
+import json
+import logging
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Dict, Any
+from sqlalchemy import select
 from src.database import get_db
 from src.schemas.practice import (
     StartPracticeRequest,
@@ -12,9 +14,11 @@ from src.schemas.practice import (
 )
 from src.services.practice_service import PracticeService
 from src.models.questionnaire import Questionnaire
+from src.models.practice import PracticeSession
 from src.routers.auth import get_current_user
 from src.models.user import User
-from sqlalchemy import select
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/practice", tags=["practice"])
 
@@ -43,7 +47,6 @@ async def start_practice(
     if not questionnaire:
         raise HTTPException(status_code=404, detail="未找到对应的题本")
     
-    import json
     questionnaire_content = json.loads(questionnaire.content)
     
     result = await service.start_practice(
@@ -64,6 +67,10 @@ async def submit_answer(
     service: PracticeService = Depends(get_practice_service)
 ):
     """提交回答"""
+    session = await db.get(PracticeSession, session_id)
+    if not session or session.user_id != current_user.id:
+        raise HTTPException(status_code=404, detail="会话不存在")
+    
     try:
         result = await service.submit_answer(
             db=db,
@@ -74,6 +81,9 @@ async def submit_answer(
         return result
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Submit answer failed: {e}")
+        raise HTTPException(status_code=500, detail="服务器内部错误")
 
 @router.get("/{session_id}/status", response_model=SessionStatusResponse)
 async def get_session_status(
@@ -83,11 +93,18 @@ async def get_session_status(
     service: PracticeService = Depends(get_practice_service)
 ):
     """获取会话状态"""
+    session = await db.get(PracticeSession, session_id)
+    if not session or session.user_id != current_user.id:
+        raise HTTPException(status_code=404, detail="会话不存在")
+    
     try:
         result = await service.get_session_status(db=db, session_id=session_id)
         return result
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        logger.error(f"Get session status failed: {e}")
+        raise HTTPException(status_code=500, detail="服务器内部错误")
 
 @router.get("/{session_id}/history", response_model=SessionHistoryResponse)
 async def get_session_history(
@@ -97,8 +114,15 @@ async def get_session_history(
     service: PracticeService = Depends(get_practice_service)
 ):
     """获取对话历史"""
+    session = await db.get(PracticeSession, session_id)
+    if not session or session.user_id != current_user.id:
+        raise HTTPException(status_code=404, detail="会话不存在")
+    
     try:
         result = await service.get_session_history(db=db, session_id=session_id)
         return result
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        logger.error(f"Get session history failed: {e}")
+        raise HTTPException(status_code=500, detail="服务器内部错误")
