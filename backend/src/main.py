@@ -2,14 +2,14 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from src.database import init_db
 from src.routers import (
-    auth, competency, matrix, questionnaire, handbook, report, file, user_settings
+    auth, competency, matrix, questionnaire, handbook, report, file, user_settings, practice
 )
 
 app = FastAPI(title="AC测评工具API", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:5173", "http://localhost:5174"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -23,6 +23,7 @@ app.include_router(handbook.router)
 app.include_router(report.router)
 app.include_router(file.router)
 app.include_router(user_settings.router)
+app.include_router(practice.router)
 
 @app.on_event("startup")
 async def startup():
