@@ -1,5 +1,6 @@
 import { ArrowLeft, Upload, X, Plus, Trash2, Edit2, Check } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { generateCompetencyModel, saveCompetencyModel, getCompetencyModel } from '../api';
 
 interface CompetencyModelProps {
   onBack: () => void;
@@ -25,6 +26,36 @@ export default function CompetencyModel({ onBack }: CompetencyModelProps) {
   const [generatedModel, setGeneratedModel] = useState<Competency[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
+
+  useEffect(() => {
+    loadSavedModel();
+  }, []);
+
+  const loadSavedModel = async () => {
+    try {
+      const data = await getCompetencyModel();
+      if (data && data.dimensions && data.dimensions.length > 0) {
+        const converted: Competency[] = data.dimensions.map((dim: any) => ({
+          id: dim.id,
+          name: dim.name,
+          meaning: dim.meaning,
+          behaviors: (dim.behavior_criteria || []).map((bc: any) => ({
+            id: bc.id,
+            title: bc.title,
+            description: bc.description,
+          })),
+        }));
+        setGeneratedModel(converted);
+        setHasSubmitted(true);
+      }
+    } catch (err) {
+      // 没有保存的模型，忽略错误
+      console.log('No saved model found');
+    }
+  };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -36,63 +67,55 @@ export default function CompetencyModel({ onBack }: CompetencyModelProps) {
     setFiles(files.filter((_, i) => i !== index));
   };
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
+    // 验证参数
+    const hasBackground = abilityNames.trim().length > 0;
+    const numCount = abilityCount ? parseInt(abilityCount) : 5;
+    
+    if (!numCount || numCount < 1) {
+      setError('请填写能力数量');
+      return;
+    }
+    
+    if (!hasBackground) {
+      setError('能力名称和背景材料至少填写一个');
+      return;
+    }
+
+    setError('');
     setIsGenerating(true);
 
-    setTimeout(() => {
-      const mockData: Competency[] = [];
+    try {
+      // 解析能力名称
+      const specifiedAbilities = abilityNames 
+        ? abilityNames.split(/[,，]/).map(n => n.trim()).filter(n => n)
+        : [];
       
-      if (abilityNames) {
-        const names = abilityNames.split(/[,，]/).map(n => n.trim()).filter(n => n);
-        names.forEach((name, i) => {
-          mockData.push({
-            id: `competency-${i}`,
-            name,
-            meaning: `这是关于${name}的能力含义描述...`,
-            behaviors: [
-              { id: `b-${i}-1`, title: '自我认知', description: `${name}相关的自我认知行为...` },
-              { id: `b-${i}-2`, title: '实践应用', description: `${name}相关的实践应用行为...` },
-            ],
-          });
-        });
-      } else {
-        mockData.push(
-          {
-            id: 'competency-1',
-            name: '领导力',
-            meaning: '能够引导团队朝着共同目标前进，激发他人潜能，做出有效决策的能力。',
-            behaviors: [
-              { id: 'b-1-1', title: '自我认知', description: '准确认识自己的优势和不足，能够客观评价自己的能力' },
-              { id: 'b-1-2', title: '拥抱变化', description: '积极面对组织变革，带领团队适应新环境' },
-              { id: 'b-1-3', title: '突破创新', description: '勇于尝试新方法，推动团队突破常规思维' },
-            ],
-          },
-          {
-            id: 'competency-2',
-            name: '沟通协作',
-            meaning: '能够清晰表达观点，倾听他人意见，与团队成员有效协作的能力。',
-            behaviors: [
-              { id: 'b-2-1', title: '倾听理解', description: '认真倾听他人观点，准确理解对方意图' },
-              { id: 'b-2-2', title: '清晰表达', description: '用简洁明了的语言表达自己的想法和观点' },
-              { id: 'b-2-3', title: '团队协作', description: '主动配合团队成员，共同完成任务目标' },
-            ],
-          },
-          {
-            id: 'competency-3',
-            name: '分析思维',
-            meaning: '能够收集信息、识别问题本质、进行逻辑推理并得出结论的能力。',
-            behaviors: [
-              { id: 'b-3-1', title: '信息收集', description: '全面收集相关信息和数据' },
-              { id: 'b-3-2', title: '问题识别', description: '准确识别问题的核心和本质' },
-              { id: 'b-3-3', title: '逻辑推理', description: '运用逻辑思维分析问题，得出合理结论' },
-            ],
-          }
-        );
-      }
-      
-      setGeneratedModel(mockData);
+      const response = await generateCompetencyModel({
+        background: abilityNames, // 暂时用能力名称作为背景
+        specified_abilities: specifiedAbilities,
+        num_competencies: numCount,
+      });
+
+      // 转换API返回的数据格式
+      const dimensions = response.data?.dimensions || [];
+      const converted: Competency[] = dimensions.map((dim: any) => ({
+        id: dim.id || `competency-${Math.random()}`,
+        name: dim.name || '',
+        meaning: dim.meaning || '',
+        behaviors: (dim.behavior_criteria || []).map((bc: any) => ({
+          id: bc.id || `b-${Math.random()}`,
+          title: bc.title || '',
+          description: bc.description || '',
+        })),
+      }));
+
+      setGeneratedModel(converted);
+    } catch (err: any) {
+      setError(err.message || '生成失败');
+    } finally {
       setIsGenerating(false);
-    }, 2000);
+    }
   };
 
   const updateCompetency = (id: string, field: keyof Competency, value: string) => {
@@ -147,8 +170,35 @@ export default function CompetencyModel({ onBack }: CompetencyModelProps) {
     ]);
   };
 
-  const handleSubmit = () => {
-    alert('模型已保存！');
+  const handleSubmit = async () => {
+    if (generatedModel.length === 0) {
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const modelData = {
+        name: '胜任力模型',
+        dimensions: generatedModel.map(c => ({
+          id: c.id,
+          name: c.name,
+          meaning: c.meaning,
+          behavior_criteria: c.behaviors.map(b => ({
+            id: b.id,
+            title: b.title,
+            description: b.description,
+          })),
+        })),
+      };
+
+      await saveCompetencyModel(modelData);
+      setHasSubmitted(true);
+      alert('模型已保存！');
+    } catch (err: any) {
+      alert(err.message || '保存失败');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -245,10 +295,16 @@ export default function CompetencyModel({ onBack }: CompetencyModelProps) {
         <button
           onClick={handleGenerate}
           disabled={isGenerating}
-          className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:bg-gray-400 disabled:cursor-not-allowed mb-6"
+          className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:bg-gray-400 disabled:cursor-not-allowed mb-2"
         >
           {isGenerating ? '正在生成中...' : '生成模型'}
         </button>
+
+        {error && (
+          <div className="bg-red-50 text-red-600 px-4 py-3 rounded-lg text-sm mb-4">
+            {error}
+          </div>
+        )}
 
         {generatedModel.length > 0 && (
           <>
@@ -347,9 +403,10 @@ export default function CompetencyModel({ onBack }: CompetencyModelProps) {
 
             <button
               onClick={handleSubmit}
-              className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors font-medium"
+              disabled={submitting}
+              className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors font-medium disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
-              提交定稿（覆盖存储）
+              {submitting ? '保存中...' : '提交定稿（覆盖存储）'}
             </button>
           </>
         )}

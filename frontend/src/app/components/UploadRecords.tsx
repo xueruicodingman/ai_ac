@@ -1,4 +1,4 @@
-import { ArrowLeft, Download, Upload, FileSpreadsheet, CheckCircle, X } from 'lucide-react';
+import { ArrowLeft, Upload, FileSpreadsheet, CheckCircle, X } from 'lucide-react';
 import { useState } from 'react';
 
 interface UploadRecordsProps {
@@ -20,10 +20,6 @@ export default function UploadRecords({ onBack }: UploadRecordsProps) {
     if (e.target.files && e.target.files[0]) {
       setUploadedFile(e.target.files[0]);
     }
-  };
-
-  const handleDownloadTemplate = () => {
-    alert('正在下载模板文件...');
   };
 
   const handlePreview = () => {
@@ -65,35 +61,14 @@ export default function UploadRecords({ onBack }: UploadRecordsProps) {
 
       <main className="max-w-5xl mx-auto px-6 py-8">
         <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 flex-shrink-0">
-              <FileSpreadsheet size={24} />
-            </div>
-            <div className="flex-1">
-              <h3 className="font-medium text-gray-900 mb-2">步骤1：下载固定模板</h3>
-              <p className="text-sm text-gray-600 mb-4">
-                请先下载标准模板，包含分数统计表和行为记录表
-              </p>
-              <button
-                onClick={handleDownloadTemplate}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-              >
-                <Download size={18} />
-                下载Excel模板
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
           <div className="flex items-start gap-4 mb-6">
             <div className="w-12 h-12 rounded-lg bg-green-50 flex items-center justify-center text-green-600 flex-shrink-0">
               <Upload size={24} />
             </div>
             <div className="flex-1">
-              <h3 className="font-medium text-gray-900 mb-2">步骤2：上传填写后的文件</h3>
+              <h3 className="font-medium text-gray-900 mb-2">上传文件</h3>
               <p className="text-sm text-gray-600">
-                按照模板填写被测者数据后，上传Excel文件
+                支持上传Excel、Word或PDF文件
               </p>
             </div>
           </div>
@@ -102,10 +77,10 @@ export default function UploadRecords({ onBack }: UploadRecordsProps) {
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 transition-colors">
               <Upload className="mx-auto mb-3 text-gray-400" size={40} />
               <p className="text-sm text-gray-600 mb-2">点击或拖拽文件上传</p>
-              <p className="text-xs text-gray-400 mb-4">仅支持 .xlsx 和 .xls 格式</p>
+              <p className="text-xs text-gray-400 mb-4">支持 .xlsx, .xls, .docx, .pdf 格式</p>
               <input
                 type="file"
-                accept=".xlsx,.xls"
+                accept=".xlsx,.xls,.docx,.doc,.pdf"
                 onChange={handleFileUpload}
                 className="hidden"
                 id="file-upload"

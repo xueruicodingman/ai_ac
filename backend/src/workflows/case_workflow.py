@@ -1,29 +1,50 @@
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.messages import HumanMessage, SystemMessage
 
-CASE_SYSTEM_PROMPT = """你是一位资深人才评估专家，擅长设计案例分析题本。
-根据胜任力模型和评估矩阵，生成专业的案例分析题本。
-题本应包含：
-1. 指导语
-2. 案例背景
-3. 分析任务
-4. 思考框架提示
-5. 评分要点
+CASE_CHALLENGE_DESIGN_PROMPT = """你是一个人才评估专家，请基于考察的能力设计案例分析中的关键挑战点。
 
-输出格式为Markdown"""
+## 考察能力
+{abilities}
 
-CASE_HUMAN_PROMPT = """胜任力模型：
-{competency_model}
+## 输出要求
+1. 针对每个能力设计1-2个挑战点
+2. 挑战点应体现真实商业决策中的复杂性和不确定性"""
 
-评估矩阵（案例分析相关部分）：
-{matrix}
+CASE_ENTERPRISE_ANALYSIS_PROMPT = """你是一个企业问题诊断专家，请分析以下背景材料，提取关键的企业问题和挑战。
 
-要求：
-- 案例应具有复杂性和多维度
-- 包含足够的背景信息
-- 允许有多个合理的解决方案
-- 评分要点考察分析深度和决策质量"""
+背景材料：
+{background_material}
+
+请提取3-5条企业当前面临的核心问题"""
+
+CASE_BOOK_GENERATION_PROMPT = """你是一个命题专家，请基于以下信息生成案例分析题本。
+
+# 考察能力
+{abilities}
+
+# 企业背景
+{background_material}
+
+# 用户要求
+{requirement}
+
+# 题本要求
+
+一、 指导语
+
+二、 案例背景
+- 企业概况
+- 行业环境
+- 面临的主要问题或决策挑战
+
+三、 分析任务
+设计2-3个递进式分析任务，引导候选人深入分析问题
+
+四、 思考框架提示（可选）
+
+五、 评分要点（每个能力维度）"""
+
 
 class CaseWorkflow:
     def __init__(self, llm):
@@ -32,16 +53,26 @@ class CaseWorkflow:
     async def generate(
         self,
         competency_model: Dict[str, Any],
-        evaluation_matrix: Dict[str, Any]
+        evaluation_matrix: Dict[str, Any],
+        background_file_content: Optional[str] = None,
+        requirement: str = ""
     ) -> str:
-        prompt = ChatPromptTemplate.from_messages([
-            SystemMessage(content=CASE_SYSTEM_PROMPT),
-            HumanMessage(content=CASE_HUMAN_PROMPT.format(
-                competency_model=str(competency_model.get("dimensions", [])),
-                matrix=str(evaluation_matrix.get("matrix", {}))
-            ))
+        dimensions = competency_model.get("dimensions", [])
+        abilities = "\n".join([
+            f"- {d.get('name', '')}: {d.get('description', '')}"
+            for d in dimensions
         ])
         
-        chain = prompt | self.llm
-        response = await chain.ainvoke({})
+        background_material = background_file_content or "基于通用商业情境"
+        
+        book_prompt = ChatPromptTemplate.from_messages([
+            SystemMessage(content=CASE_BOOK_GENERATION_PROMPT.format(
+                abilities=abilities,
+                background_material=background_material,
+                requirement=requirement
+            )),
+            HumanMessage(content="请生成案例分析题本")
+        ])
+        
+        response = await (book_prompt | self.llm).ainvoke({})
         return response.content

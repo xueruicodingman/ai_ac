@@ -1,0 +1,2138 @@
+schema_version: 1.0.0
+name: aiac_roleplay_book
+id: 7621397510712459273
+description: "生成角色扮演试题"
+mode: workflow
+icon: plugin_icon/workflow.png
+nodes:
+    - id: "100001"
+      type: start
+      title: 开始
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg
+      description: "工作流的起始节点，用于设定启动工作流需要的信息"
+      position:
+        x: 180
+        y: 302.20000000000005
+      parameters:
+        node_outputs:
+            ability:
+                type: list
+                items:
+                    type: object
+                    value: null
+                value: null
+            input:
+                type: list
+                items:
+                    type: string
+                    value: null
+                value: null
+            level:
+                type: string
+                value: null
+            requirement:
+                type: string
+                value: null
+    - id: "900001"
+      type: end
+      title: 结束
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg
+      description: "工作流的最终节点，用于返回工作流运行后的结果信息"
+      position:
+        x: 5900
+        y: 420.80000000000007
+      parameters:
+        node_inputs:
+            - name: output
+              input:
+                type: string
+                value:
+                    path: output
+                    ref_node: "151313"
+        terminatePlan: returnVariables
+    - id: "112399"
+      type: batch
+      title: 批处理
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Batch-v2.jpg
+      description: "通过设定批量运行次数和逻辑，运行批处理体内的任务"
+      position:
+        x: 1200
+        y: 789.5999999999999
+      canvas_position:
+        x: 1020
+        y: 1080.7999999999997
+      parameters:
+        batchSize:
+            type: integer
+            value:
+                content: 100
+                rawMeta:
+                    type: 2
+                type: literal
+        concurrentSize:
+            type: integer
+            value:
+                content: 10
+                rawMeta:
+                    type: 2
+                type: literal
+        node_inputs:
+            - name: input
+              input:
+                value:
+                    path: input
+                    ref_node: "100001"
+        node_outputs:
+            output:
+                value:
+                    type: list
+                    items:
+                        type: string
+                        value: null
+                    value:
+                        path: output
+                        ref_node: "139732"
+      nodes:
+        - id: "139732"
+          type: llm
+          title: 大模型
+          icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg
+          description: "调用大语言模型,使用变量和提示词生成回复"
+          version: "3"
+          position:
+            x: 180
+            y: 0
+          parameters:
+            fcParamVar:
+                knowledgeFCParam: {}
+            llmParam:
+                - name: modelType
+                  input:
+                    type: integer
+                    value: "1768187121"
+                - name: modelName
+                  input:
+                    type: string
+                    value: 豆包·1.8·深度思考
+                - name: generationDiversity
+                  input:
+                    type: string
+                    value: balance
+                - name: temperature
+                  input:
+                    type: float
+                    value: "0.5"
+                - name: topP
+                  input:
+                    type: float
+                    value: "1"
+                - name: frequencyPenalty
+                  input:
+                    type: float
+                    value: "0"
+                - name: maxTokens
+                  input:
+                    type: integer
+                    value: "4096"
+                - name: spCurrentTime
+                  input:
+                    type: boolean
+                    value: false
+                - name: spAntiLeak
+                  input:
+                    type: boolean
+                    value: false
+                - name: responseFormat
+                  input:
+                    type: integer
+                    value: "2"
+                - name: parameters
+                  input:
+                    type: object
+                    properties:
+                        max_completion_tokens:
+                            type: integer
+                            value: "0"
+                    value: null
+                - name: prompt
+                  input:
+                    type: string
+                    value: 输入的链接为：{{input}}
+                - name: enableChatHistory
+                  input:
+                    type: boolean
+                    value: false
+                - name: chatHistoryRound
+                  input:
+                    type: integer
+                    value: "3"
+                - name: systemPrompt
+                  input:
+                    type: string
+                    value: |-
+                        请你通过链接访问文件，并且提取文件中的内容，提取背景材料中所反映出来企业内部在上下级之间沟通不同问题的冲突场景。请你尽可能多地罗列这样的冲突场景。输出要求如下：
+                        1. 标题和内容都要客观中立，不要有任何评价和判断对错，只描述事实；
+                        2. 要明确冲突双方的分别是谁以及其各自的职责是什么；
+                        3. 要分别阐述冲突双方在冲突中各自的诉求和对问题的理解；
+
+                        # 输出示例
+                        场景1：工作计划节奏冲突
+                        - 场景介绍：部门负责人根据企业整体进度要求、外部合作节点等，制定部门及下属的工作推进计划；业务骨干或基层员工结合自身工作量、工作环节的复杂程度，自行安排具体工作节奏，双方在计划推进的快慢、节点设置上存在分歧。
+                        - 岗位：部门负责人 → 业务骨干/员工
+                        - 上级视角：以整体进度、外部要求倒排计划，注重计划的时效性和整体性，要求下属严格按照既定节奏推进，确保整体目标按时达成。
+                        - 下级视角：以实际工作量、环节复杂度安排节奏，更关注工作质量和自身执行效率，希望根据具体工作情况灵活调整推进速度。
+                - name: stableSystemPrompt
+                  input:
+                    type: string
+                    value: ""
+                - name: canContinue
+                  input:
+                    type: boolean
+                    value: false
+                - name: loopPromptVersion
+                  input:
+                    type: string
+                    value: ""
+                - name: loopPromptName
+                  input:
+                    type: string
+                    value: ""
+                - name: loopPromptId
+                  input:
+                    type: string
+                    value: ""
+            node_inputs:
+                - name: input
+                  input:
+                    type: string
+                    value:
+                        path: input
+                        ref_node: "112399"
+            node_outputs:
+                output:
+                    type: string
+                    value: null
+                reasoning_content:
+                    type: string
+                    value: null
+            settingOnError:
+                processType: 1
+                retryTimes: 0
+                switch: false
+                timeoutMs: 180000
+      edges:
+        - source_node: "112399"
+          target_node: "139732"
+          source_port: batch-function-inline-output
+        - source_node: "139732"
+          target_node: "112399"
+          target_port: batch-function-inline-input
+    - id: "197594"
+      type: llm
+      title: 核心场景选择
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg
+      description: "调用大语言模型,使用变量和提示词生成回复"
+      version: "3"
+      position:
+        x: 1760
+        y: 394.80000000000007
+      parameters:
+        fcParamVar:
+            knowledgeFCParam: {}
+        llmParam:
+            - name: modelType
+              input:
+                type: integer
+                value: "1768187121"
+            - name: modelName
+              input:
+                type: string
+                value: 豆包·1.8·深度思考
+            - name: generationDiversity
+              input:
+                type: string
+                value: balance
+            - name: temperature
+              input:
+                type: float
+                value: "0.5"
+            - name: topP
+              input:
+                type: float
+                value: "1"
+            - name: frequencyPenalty
+              input:
+                type: float
+                value: "0"
+            - name: maxTokens
+              input:
+                type: integer
+                value: "4096"
+            - name: spCurrentTime
+              input:
+                type: boolean
+                value: false
+            - name: spAntiLeak
+              input:
+                type: boolean
+                value: false
+            - name: responseFormat
+              input:
+                type: integer
+                value: "2"
+            - name: parameters
+              input:
+                type: object
+                properties:
+                    max_completion_tokens:
+                        type: integer
+                        value: "0"
+                value: null
+            - name: prompt
+              input:
+                type: string
+                value: |-
+                    考察点和挑战点设计：{{input}}
+                    企业沟通冲突场景：{{output}}{{output2}}
+                    考生的层级和职责：{{output1}}
+            - name: enableChatHistory
+              input:
+                type: boolean
+                value: false
+            - name: chatHistoryRound
+              input:
+                type: integer
+                value: "3"
+            - name: systemPrompt
+              input:
+                type: string
+                value: |-
+                    你是一个人才评估专家，你擅长于设计贴合实际工作场景的任务来考察候选人。请你结合考生所处的层级、考察点和挑战点设计，从企业沟通冲突场景中选择3-5个适配的场景。
+
+                    # 输入
+                    考察点和挑战点设计：{{input}}
+                    企业沟通冲突场景：{{output}}{{output2}}
+                    考生的层级和职责：{{output1}}
+
+                    # 输出要求
+                    1. 结合题本的考察点和挑战点设计
+                    2. 考生的层级和职责，场景必须是考生在日常工作中最经常遇到的
+                    2. 要结合考察点和考察工具适合设计的挑战点
+                    3. 针对每一个考察点都要选择1-2个冲突场景
+
+                    # 输出内容
+                    1. 考察点
+                    要求包括考察项和所考察的考察项中的哪一条行为标准
+                    2. 冲突场景
+                    1-2个，要明确冲突双方的分别是谁以及其各自的职责是什么、要分别阐述冲突双方在冲突中各自的诉求和对问题的理解、要明确每个冲突场景所对应考察的能力的哪一条或者哪几条行为标准
+
+
+                    # 输出示例
+                    考察点：目标管理
+                    考察行为：面对工作调整或临时任务时，主动沟通影响、同步共识，在保障核心目标达成的前提下有序推进。
+                    冲突场景1：工作计划节奏冲突
+                    - 场景介绍：部门负责人根据企业整体进度要求、外部合作节点等，制定部门及下属的工作推进计划；业务骨干或基层员工结合自身工作量、工作环节的复杂程度，自行安排具体工作节奏，双方在计划推进的快慢、节点设置上存在分歧。
+                    - 岗位：部门负责人 → 业务骨干/员工
+                    - 上级视角：以整体进度、外部要求倒排计划，注重计划的时效性和整体性，要求下属严格按照既定节奏推进，确保整体目标按时达成。
+                    - 下级视角：以实际工作量、环节复杂度安排节奏，更关注工作质量和自身执行效率，希望根据具体工作情况灵活调整推进速度。
+            - name: stableSystemPrompt
+              input:
+                type: string
+                value: ""
+            - name: canContinue
+              input:
+                type: boolean
+                value: false
+            - name: loopPromptVersion
+              input:
+                type: string
+                value: ""
+            - name: loopPromptName
+              input:
+                type: string
+                value: ""
+            - name: loopPromptId
+              input:
+                type: string
+                value: ""
+        node_inputs:
+            - name: input
+              input:
+                type: string
+                value:
+                    path: output
+                    ref_node: "198460"
+            - name: output
+              input:
+                type: string
+                value:
+                    path: output
+                    ref_node: "155555"
+            - name: output1
+              input:
+                type: string
+                value:
+                    path: output
+                    ref_node: "133431"
+            - name: output2
+              input:
+                type: list
+                items:
+                    type: string
+                    value: null
+                value:
+                    path: output
+                    ref_node: "112399"
+        node_outputs:
+            output:
+                type: string
+                value: null
+            reasoning_content:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            switch: false
+            timeoutMs: 180000
+    - id: "198460"
+      type: llm
+      title: 考察工具挑战点设计
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg
+      description: "调用大语言模型,使用变量和提示词生成回复"
+      version: "3"
+      position:
+        x: 1200
+        y: 263.20000000000005
+      parameters:
+        fcParamVar:
+            knowledgeFCParam: {}
+        llmParam:
+            - name: modelType
+              input:
+                type: integer
+                value: "1768187121"
+            - name: modelName
+              input:
+                type: string
+                value: 豆包·1.8·深度思考
+            - name: generationDiversity
+              input:
+                type: string
+                value: balance
+            - name: temperature
+              input:
+                type: float
+                value: "0.5"
+            - name: topP
+              input:
+                type: float
+                value: "1"
+            - name: frequencyPenalty
+              input:
+                type: float
+                value: "0"
+            - name: maxTokens
+              input:
+                type: integer
+                value: "4096"
+            - name: spCurrentTime
+              input:
+                type: boolean
+                value: false
+            - name: spAntiLeak
+              input:
+                type: boolean
+                value: false
+            - name: responseFormat
+              input:
+                type: integer
+                value: "2"
+            - name: parameters
+              input:
+                type: object
+                properties:
+                    max_completion_tokens:
+                        type: integer
+                        value: "0"
+                value: null
+            - name: prompt
+              input:
+                type: string
+                value: 考察能力为：{{ability}}
+            - name: enableChatHistory
+              input:
+                type: boolean
+                value: false
+            - name: chatHistoryRound
+              input:
+                type: integer
+                value: "3"
+            - name: systemPrompt
+              input:
+                type: string
+                value: |
+                    你是一个人才评估专家，你能够基于需要考察的能力和考察的工具的挑战点来设计适合该工具的关键矛盾。
+                    # 输入内容
+                    ## 考察工具的挑战点
+                    1. 指令模糊
+                    布置工作时重点不清、标准不明，下级难以执行，体现不出管理清晰度。
+                    2. 沟通生硬
+                    语气强势、缺乏引导，只会压任务不做解释，容易引发对立情绪。
+                    3. 缺乏倾听
+                    只顾下达要求，不听取下级困难与建议，显得独断且不接地气。
+                    4. 问题处理简单化
+                    下级提出问题时只会批评或催促，不会分析原因、给出方法。
+                    5. 分寸失衡
+                    要么过于温和没权威，要么过于严厉不近人情，管理尺度把握不准。
+                    6. 应变不足
+                    面对下级反驳、推诿或突发状况，容易慌乱、语塞或情绪失控。
+                    7. 目标拆解不足
+                    只会提整体要求，不会把任务拆成可落地步骤，下级无从下手。
+                    8. 激励与施压失衡
+                    要么只批评不鼓励，要么只安抚不推动，无法有效调动下级积极性。
+                    9. 边界感模糊
+                    过度插手细节或放任不管，管得太死或太松，管理节奏混乱。
+                    10. 矛盾回避
+                    遇到下级推诿、意见不合时不敢直面冲突，绕开问题不解决。
+                    11. 决策犹豫
+                    面对下级请示或争议时反复不定，缺乏果断性与决断力。
+                    12. 反馈无效
+                    只说 “不行”“重做”，不指出具体问题和改进方向，指导价值低。
+                    ## 考察能力
+                    考察能力为：{{ability}}
+                    # 输出要求
+                    1. 针对每一个考察的能力设计出1-2个挑战点，每个挑战点不超过80字
+                    2. 要结合所考察能力的内涵
+                    # 输出要求
+                    能力和挑战点都需要有，包括胜任力（能力名称、能力含义、关键行为）和对应的挑战点；
+                    # 输出示例
+                    示例如下：
+                    能力名称：解决问题
+                    能力含义：指在面对工作任务中的障碍与挑战时，能够主动识别关键矛盾，运用逻辑分析与创新思维，制定有效策略并协调资源推动实施，最终消除障碍、达成目标的心理特质与行为表现。
+                    关键行为：
+                    1. 深度剖析：面对复杂工作或突发异常时，能迅速捕捉关键信息，通过数据比对、现场调研等方式深入挖掘问题背后的根本原因，避免主观臆断或仅处理表面现象。
+                    2. 科学决策：基于根因分析设计至少 2 种针对性解决方案，评估可行性与风险，协调各方资源确保方案具备落地条件，明确责任分工与时间节点。
+                    3. 结果导向：在执行过程中监控关键节点，及时纠偏应对突发状况，确保问题解决彻底，并形成标准化流程或案例沉淀防止复发。
+                    挑战点：
+                    1. 问题表层化陷阱：讨论易停留在表面症状，需主动挖掘根本原因，考察深度剖析、拒绝主观臆断的问题分析能力。
+                    2. 单一方案依赖：组员易局限一种思路，需主动提出多方案并评估风险可行性，考察科学决策与策略设计能力。
+                    3. 只议不落地偏差：讨论偏重观点争论，需明确分工、节点与落地条件并监控闭环，考察结果导向与问题根治能力。
+            - name: stableSystemPrompt
+              input:
+                type: string
+                value: ""
+            - name: canContinue
+              input:
+                type: boolean
+                value: false
+            - name: loopPromptVersion
+              input:
+                type: string
+                value: ""
+            - name: loopPromptName
+              input:
+                type: string
+                value: ""
+            - name: loopPromptId
+              input:
+                type: string
+                value: ""
+        node_inputs:
+            - name: ability
+              input:
+                value:
+                    path: ability
+                    ref_node: "100001"
+        node_outputs:
+            output:
+                type: string
+                value: null
+            reasoning_content:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            switch: false
+            timeoutMs: 180000
+    - id: "133431"
+      type: llm
+      title: 考生层级与职责
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg
+      description: "调用大语言模型,使用变量和提示词生成回复"
+      version: "3"
+      position:
+        x: 1200
+        y: 0
+      parameters:
+        fcParamVar:
+            knowledgeFCParam: {}
+        llmParam:
+            - name: modelType
+              input:
+                type: integer
+                value: "1768187121"
+            - name: modelName
+              input:
+                type: string
+                value: 豆包·1.8·深度思考
+            - name: generationDiversity
+              input:
+                type: string
+                value: balance
+            - name: temperature
+              input:
+                type: float
+                value: "0.5"
+            - name: topP
+              input:
+                type: float
+                value: "1"
+            - name: frequencyPenalty
+              input:
+                type: float
+                value: "0"
+            - name: maxTokens
+              input:
+                type: integer
+                value: "4096"
+            - name: spCurrentTime
+              input:
+                type: boolean
+                value: false
+            - name: spAntiLeak
+              input:
+                type: boolean
+                value: false
+            - name: responseFormat
+              input:
+                type: integer
+                value: "2"
+            - name: parameters
+              input:
+                type: object
+                properties:
+                    max_completion_tokens:
+                        type: integer
+                        value: "0"
+                value: null
+            - name: prompt
+              input:
+                type: string
+                value: ""
+            - name: enableChatHistory
+              input:
+                type: boolean
+                value: false
+            - name: chatHistoryRound
+              input:
+                type: integer
+                value: "3"
+            - name: systemPrompt
+              input:
+                type: string
+                value: |-
+                    你是一个岗位职责撰写专家，你现在要基于公司的某一个管理层级，来写一个该层级通用的管理职责。
+
+                    # 输入
+                    管理层级：{{input}}
+                    # 输出要求
+                    输出管理层级、管理层级对应的管理职责，每一条职责不超过30字
+                    # 输出示例
+                    管理层级：基层经理
+                    管理职责：
+                    1. 落实公司战略与部门目标，分解任务至下属，确保高效落地。
+                    2. 带领团队完成业绩指标，监督工作进度，及时纠偏补位。
+                    3. 负责下属日常管理、考勤考核，规范工作流程与行为。
+                    4. 开展下属岗前培训、技能指导，助力团队能力提升。
+                    5. 协调跨岗位 / 跨部门协作，解决团队工作中的常规问题。
+                    6. 关注下属工作状态，做好沟通激励，提升团队凝聚力。
+                    7. 上报团队工作情况、问题与建议，配合上级统筹管理。
+                    8. 把控工作质量与安全，防范基层工作中的各类风险。
+            - name: stableSystemPrompt
+              input:
+                type: string
+                value: ""
+            - name: canContinue
+              input:
+                type: boolean
+                value: false
+            - name: loopPromptVersion
+              input:
+                type: string
+                value: ""
+            - name: loopPromptName
+              input:
+                type: string
+                value: ""
+            - name: loopPromptId
+              input:
+                type: string
+                value: ""
+        node_inputs:
+            - name: input
+              input:
+                value:
+                    path: level
+                    ref_node: "100001"
+        node_outputs:
+            output:
+                type: string
+                value: null
+            reasoning_content:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            switch: false
+            timeoutMs: 180000
+    - id: "130819"
+      type: condition
+      title: 选择器
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Condition-v2.jpg
+      description: "连接多个下游分支，若设定的条件成立则仅运行对应的分支，若均不成立则只运行“否则”分支"
+      position:
+        x: 640
+        y: 658.4
+      parameters:
+        branches:
+            - condition:
+                conditions:
+                    - left:
+                        input:
+                            value:
+                                path: input
+                                ref_node: "100001"
+                      operator: 9
+                logic: 2
+    - id: "155555"
+      type: llm
+      title: 生成背景材料
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg
+      description: "调用大语言模型,使用变量和提示词生成回复"
+      version: "3"
+      position:
+        x: 1200
+        y: 526.4000000000001
+      parameters:
+        fcParamVar:
+            knowledgeFCParam: {}
+        llmParam:
+            - name: modelType
+              input:
+                type: integer
+                value: "1768187121"
+            - name: modelName
+              input:
+                type: string
+                value: 豆包·1.8·深度思考
+            - name: generationDiversity
+              input:
+                type: string
+                value: balance
+            - name: temperature
+              input:
+                type: float
+                value: "0.5"
+            - name: topP
+              input:
+                type: float
+                value: "1"
+            - name: frequencyPenalty
+              input:
+                type: float
+                value: "0"
+            - name: maxTokens
+              input:
+                type: integer
+                value: "4096"
+            - name: spCurrentTime
+              input:
+                type: boolean
+                value: false
+            - name: spAntiLeak
+              input:
+                type: boolean
+                value: false
+            - name: responseFormat
+              input:
+                type: integer
+                value: "2"
+            - name: parameters
+              input:
+                type: object
+                properties:
+                    max_completion_tokens:
+                        type: integer
+                        value: "0"
+                value: null
+            - name: prompt
+              input:
+                type: string
+                value: ""
+            - name: enableChatHistory
+              input:
+                type: boolean
+                value: false
+            - name: chatHistoryRound
+              input:
+                type: integer
+                value: "3"
+            - name: systemPrompt
+              input:
+                type: string
+                value: |-
+                    请你查阅公开资料，包括各类企业现状和管理学书籍，了解企业内部在上下级之间沟通不同问题的冲突场景。请你尽可能多地罗列这样的冲突场景。输出要求如下：
+                    1. 标题和内容都要客观中立，不要有任何评价和判断对错，只描述事实；
+                    2. 要明确冲突双方的分别是谁以及其各自的职责是什么；
+                    3. 要分别阐述冲突双方在冲突中各自的诉求和对问题的理解；
+
+                    # 输出示例
+                    场景1：工作计划节奏冲突
+                    - 场景介绍：部门负责人根据企业整体进度要求、外部合作节点等，制定部门及下属的工作推进计划；业务骨干或基层员工结合自身工作量、工作环节的复杂程度，自行安排具体工作节奏，双方在计划推进的快慢、节点设置上存在分歧。
+                    - 岗位：部门负责人 → 业务骨干/员工
+                    - 上级视角：以整体进度、外部要求倒排计划，注重计划的时效性和整体性，要求下属严格按照既定节奏推进，确保整体目标按时达成。
+                    - 下级视角：以实际工作量、环节复杂度安排节奏，更关注工作质量和自身执行效率，希望根据具体工作情况灵活调整推进速度。
+            - name: stableSystemPrompt
+              input:
+                type: string
+                value: ""
+            - name: canContinue
+              input:
+                type: boolean
+                value: false
+            - name: loopPromptVersion
+              input:
+                type: string
+                value: ""
+            - name: loopPromptName
+              input:
+                type: string
+                value: ""
+            - name: loopPromptId
+              input:
+                type: string
+                value: ""
+        node_outputs:
+            output:
+                type: string
+                value: null
+            reasoning_content:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            switch: false
+            timeoutMs: 180000
+    - id: "148369"
+      type: llm
+      title: 角色与任务设计
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg
+      description: "调用大语言模型,使用变量和提示词生成回复"
+      version: "3"
+      position:
+        x: 2220
+        y: 394.80000000000007
+      parameters:
+        fcParamVar:
+            knowledgeFCParam: {}
+        llmParam:
+            - name: modelType
+              input:
+                type: integer
+                value: "1768187121"
+            - name: modelName
+              input:
+                type: string
+                value: 豆包·1.8·深度思考
+            - name: generationDiversity
+              input:
+                type: string
+                value: balance
+            - name: temperature
+              input:
+                type: float
+                value: "0.5"
+            - name: topP
+              input:
+                type: float
+                value: "1"
+            - name: frequencyPenalty
+              input:
+                type: float
+                value: "0"
+            - name: maxTokens
+              input:
+                type: integer
+                value: "4096"
+            - name: spCurrentTime
+              input:
+                type: boolean
+                value: false
+            - name: spAntiLeak
+              input:
+                type: boolean
+                value: false
+            - name: responseFormat
+              input:
+                type: integer
+                value: "2"
+            - name: parameters
+              input:
+                type: object
+                properties:
+                    max_completion_tokens:
+                        type: integer
+                        value: "0"
+                value: null
+            - name: prompt
+              input:
+                type: string
+                value: |-
+                    考生的层级：{{input}}
+                    冲突的场景：{{output}}}
+            - name: enableChatHistory
+              input:
+                type: boolean
+                value: false
+            - name: chatHistoryRound
+              input:
+                type: integer
+                value: "3"
+            - name: systemPrompt
+              input:
+                type: string
+                value: |-
+                    你是一个管理案例撰写专家，你现在需要围绕若干个场景，来编写对应的一些背景信息，来完善这个案例。要求考生在这些冲突场景中必须是上级角色，即将沟通的下级角色只能有一个。
+
+                    # 输入内容
+                    你将会得到若干个如下的冲突场景(示例)：
+                    考察点：目标管理
+                    考察行为：面对工作调整或临时任务时，主动沟通影响、同步共识，在保障核心目标达成的前提下有序推进。
+                    冲突场景1：工作计划节奏冲突
+                    - 场景介绍：部门负责人根据企业整体进度要求、外部合作节点等，制定部门及下属的工作推进计划；业务骨干或基层员工结合自身工作量、工作环节的复杂程度，自行安排具体工作节奏，双方在计划推进的快慢、节点设置上存在分歧。
+                    - 岗位：部门负责人 → 业务骨干/员工
+                    - 上级视角：以整体进度、外部要求倒排计划，注重计划的时效性和整体性，要求下属严格按照既定节奏推进，确保整体目标按时达成。
+                    - 下级视角：以实际工作量、环节复杂度安排节奏，更关注工作质量和自身执行效率，希望根据具体工作情况灵活调整推进速度。
+
+                    # 输出内容与要求
+                    1. 公司简介
+                    内容：包括公司的历史渊源、主营业务、市场环境、现状与挑战
+                    字数：800字以内
+                    段落：最多分2段
+                    2. 角色简介
+                    内容：冲突双方中上下级的角色介绍，主要是让人口学信息，加入公司的时间，业内的影响力，从业经验，过往的业绩。上下级角色会参与参与到所有的场景中。
+                    字数：200字以内
+                    段落：1段
+                    其他要求：要结合考生的在实际工作中的层次和职责{{input}}，同时考生在冲突场景中必须是上级角色，下级的角色只有一个，且会参与到各个冲突场景中。
+                    3. 任务介绍
+                    固定模板如下，标记星号的内容需要你来填充：
+                    你现在有30分钟的时间通读下面的材料并准备李明月的谈话，你和他的谈话最多持续15分钟，时间用完后您会被强制打断并结束谈话。通过本次谈话，您需要针对材料中提到的问题与他共识解决办法。
+                    假设今天的日期是****年**月**日。
+                    注：在模拟过程中，对方（工作人员出演）将称呼您为**经理。
+            - name: stableSystemPrompt
+              input:
+                type: string
+                value: ""
+            - name: canContinue
+              input:
+                type: boolean
+                value: false
+            - name: loopPromptVersion
+              input:
+                type: string
+                value: ""
+            - name: loopPromptName
+              input:
+                type: string
+                value: ""
+            - name: loopPromptId
+              input:
+                type: string
+                value: ""
+        node_inputs:
+            - name: input
+              input:
+                value:
+                    path: output
+                    ref_node: "133431"
+            - name: output
+              input:
+                value:
+                    path: output
+                    ref_node: "197594"
+        node_outputs:
+            output:
+                type: string
+                value: null
+            reasoning_content:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            switch: false
+            timeoutMs: 180000
+    - id: "190041"
+      type: llm
+      title: 冲突场景扩写
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg
+      description: "调用大语言模型,使用变量和提示词生成回复"
+      version: "3"
+      position:
+        x: 2680
+        y: 394.80000000000007
+      parameters:
+        fcParamVar:
+            knowledgeFCParam: {}
+        llmParam:
+            - name: modelType
+              input:
+                type: integer
+                value: "1768187121"
+            - name: modelName
+              input:
+                type: string
+                value: 豆包·1.8·深度思考
+            - name: generationDiversity
+              input:
+                type: string
+                value: balance
+            - name: temperature
+              input:
+                type: float
+                value: "0.5"
+            - name: topP
+              input:
+                type: float
+                value: "1"
+            - name: frequencyPenalty
+              input:
+                type: float
+                value: "0"
+            - name: maxTokens
+              input:
+                type: integer
+                value: "4096"
+            - name: spCurrentTime
+              input:
+                type: boolean
+                value: false
+            - name: spAntiLeak
+              input:
+                type: boolean
+                value: false
+            - name: responseFormat
+              input:
+                type: integer
+                value: "2"
+            - name: parameters
+              input:
+                type: object
+                properties:
+                    max_completion_tokens:
+                        type: integer
+                        value: "0"
+                value: null
+            - name: prompt
+              input:
+                type: string
+                value: ""
+            - name: enableChatHistory
+              input:
+                type: boolean
+                value: false
+            - name: chatHistoryRound
+              input:
+                type: integer
+                value: "3"
+            - name: systemPrompt
+              input:
+                type: string
+                value: |+
+                    你是一个案例撰写专家，你现在需要撰写一些沟通冲突场景的背景。
+
+                    # 你的输入
+                    公司、角色、任务背景：{{output}}
+                    若干个冲突场景：{{output}}
+
+                    # 输出要求
+                    1. 将各个冲突场景进行详细描述，尤其是要将冲突场景的背景信息描述清楚，体现两难之处，并且是任何行业都通用。同样要结合公司、角色、任务背景：{{output}}
+
+                    2. 都必须要涉及到{{output}}中的上下级角色，下级以直接身份身处于场景之中，上级只是第三者视角
+
+
+                    # 输出格式
+                    字数：不超过1000字
+                    关键信息数量：不低于5项
+                    输出格式：按照项目符号对每个冲突场景的背景信息输出
+
+
+            - name: stableSystemPrompt
+              input:
+                type: string
+                value: ""
+            - name: canContinue
+              input:
+                type: boolean
+                value: false
+            - name: loopPromptVersion
+              input:
+                type: string
+                value: ""
+            - name: loopPromptName
+              input:
+                type: string
+                value: ""
+            - name: loopPromptId
+              input:
+                type: string
+                value: ""
+        node_inputs:
+            - name: input
+              input:
+                value:
+                    path: output
+                    ref_node: "197594"
+            - name: output
+              input:
+                value:
+                    path: output
+                    ref_node: "148369"
+        node_outputs:
+            output:
+                type: string
+                value: null
+            reasoning_content:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            switch: false
+            timeoutMs: 180000
+    - id: "1463124"
+      type: llm
+      title: 冲突场景编排
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg
+      description: "调用大语言模型,使用变量和提示词生成回复"
+      version: "3"
+      position:
+        x: 3140
+        y: 394.80000000000007
+      parameters:
+        fcParamVar:
+            knowledgeFCParam: {}
+        llmParam:
+            - name: modelType
+              input:
+                type: integer
+                value: "1768187121"
+            - name: modelName
+              input:
+                type: string
+                value: 豆包·1.8·深度思考
+            - name: generationDiversity
+              input:
+                type: string
+                value: balance
+            - name: temperature
+              input:
+                type: float
+                value: "0.5"
+            - name: topP
+              input:
+                type: float
+                value: "1"
+            - name: frequencyPenalty
+              input:
+                type: float
+                value: "0"
+            - name: maxTokens
+              input:
+                type: integer
+                value: "4096"
+            - name: spCurrentTime
+              input:
+                type: boolean
+                value: false
+            - name: spAntiLeak
+              input:
+                type: boolean
+                value: false
+            - name: responseFormat
+              input:
+                type: integer
+                value: "2"
+            - name: parameters
+              input:
+                type: object
+                properties:
+                    max_completion_tokens:
+                        type: integer
+                        value: "0"
+                value: null
+            - name: prompt
+              input:
+                type: string
+                value: |-
+                    公司、角色、任务背景：{{output}}
+                    若干个冲突场景：{{input}}
+            - name: enableChatHistory
+              input:
+                type: boolean
+                value: false
+            - name: chatHistoryRound
+              input:
+                type: integer
+                value: "3"
+            - name: systemPrompt
+              input:
+                type: string
+                value: |+
+                    你是一个案例撰写专家，公文筐命题专家，你现在需要撰写一些沟通冲突场景的背景。
+
+                    # 你的输入
+                    公司、考生角色、任务背景：{{output}}
+                    若干个冲突场景：{{input}}
+
+                    # 输出要求
+                    将各个冲突场景的背景信息分散糅合在一封封发给考生角色的邮件中，邮件有以下几种类型：
+                    1. 来自上级的邮件
+                    2. 来自业务上下游协同部门的邮件
+                    3. 来自于人力资源的邮件
+                    4. 来自财务部门的邮件
+                    5. 来自于其他下属的邮件
+                    你需要根据冲突场景的类型，选择一种合适邮件形式
+
+                    数量要求：要求邮件数量不低于3项。
+                    内容要求：每一封邮件必须符合发件人和收件人的任务角色，收件人就是{{output}}中的角色；只需要包含若干个完整的邮件信息，不包含任何其他内容
+                    字数要求：每一封邮件500-1000字之间
+                    # 输出格式与示例
+                    标题：概括邮件内容的标题
+                    发信人 ： 蒋慕云@lvchi.com（邮箱要体现公司名称）
+                    收信人 ： 您@lvchi.com（邮箱要体现公司名称）
+                    主题：研发部门对人力资源工作的建议
+                    陈经理：
+                    很高兴公司在加大对人力资源工作的投入，期待您能带领人力资源顺利完成转型。有一些情况我亟需向您反馈，因为已经影响到了业务工作的开展。研发部门的HRBP李明月确实是一位工作负责、踏实、有经验的员工。
+                    对招聘工作也是一丝不苟。但是从结果来看，却不尽如人意。在上个月有两次失败的案例，我想也足够让我们引起注意：
+                    · 研发部门急需一名行业大牛来推进一个关键项目，但由于公司的人力资源政策要求所有高级别的任命都必须经过总部审批，导致候选人迟迟无法入职。最终该候选人被友商“截胡”。研发的同事们对此非常愤怒，认为人力资源的工作过于强调流程是为了保护人力资源自己，并不是在驱动业务发展。
+                    · 软件工程中心目前正处于人力极其短缺的状况，尤其是核心技术骨干。在过去的招聘中，也并不是没有合适的候选人，而是人力资源在薪资水平上管理太严格，我们的薪酬竞争力远不如友商，导致我们在招聘市场上竞争力太弱，如果这个情况得不到改善，软件工程中心的高强度、高负荷的工作不仅影响工作质量、项目开展，还会影响团队稳定性，给管理者带来极大的管理难度。
+                    以上两个方面的问题，希望能够引起您的重视，另外，现在的HRBP习惯于以往的人力资源工作模式，习惯于从政策、合规的角度开展工作，上述两个失败的案例与此紧密相关，我们需要能够提供定制化解决方案的HRBP，希望您能够带领他尽快完成转变。
+                    蒋慕云
+                    绿驰研发部经理
+
+
+
+
+
+
+
+            - name: stableSystemPrompt
+              input:
+                type: string
+                value: ""
+            - name: canContinue
+              input:
+                type: boolean
+                value: false
+            - name: loopPromptVersion
+              input:
+                type: string
+                value: ""
+            - name: loopPromptName
+              input:
+                type: string
+                value: ""
+            - name: loopPromptId
+              input:
+                type: string
+                value: ""
+        node_inputs:
+            - name: input
+              input:
+                value:
+                    path: output
+                    ref_node: "190041"
+            - name: output
+              input:
+                value:
+                    path: output
+                    ref_node: "148369"
+        node_outputs:
+            output:
+                type: string
+                value: null
+            reasoning_content:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            switch: false
+            timeoutMs: 180000
+    - id: "131995"
+      type: llm
+      title: 组织架构图生成
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg
+      description: "调用大语言模型,使用变量和提示词生成回复"
+      version: "3"
+      position:
+        x: 3600
+        y: 263.20000000000005
+      parameters:
+        fcParamVar:
+            knowledgeFCParam: {}
+        llmParam:
+            - name: modelType
+              input:
+                type: integer
+                value: "1768187121"
+            - name: modelName
+              input:
+                type: string
+                value: 豆包·1.8·深度思考
+            - name: generationDiversity
+              input:
+                type: string
+                value: balance
+            - name: temperature
+              input:
+                type: float
+                value: "0.5"
+            - name: topP
+              input:
+                type: float
+                value: "1"
+            - name: frequencyPenalty
+              input:
+                type: float
+                value: "0"
+            - name: maxTokens
+              input:
+                type: integer
+                value: "4096"
+            - name: spCurrentTime
+              input:
+                type: boolean
+                value: false
+            - name: spAntiLeak
+              input:
+                type: boolean
+                value: false
+            - name: responseFormat
+              input:
+                type: integer
+                value: "2"
+            - name: parameters
+              input:
+                type: object
+                properties:
+                    max_completion_tokens:
+                        type: integer
+                        value: "0"
+                value: null
+            - name: prompt
+              input:
+                type: string
+                value: 案例内容为：{{input}}{{output}}
+            - name: enableChatHistory
+              input:
+                type: boolean
+                value: false
+            - name: chatHistoryRound
+              input:
+                type: integer
+                value: "3"
+            - name: systemPrompt
+              input:
+                type: string
+                value: |-
+                    请你基于设计的案例情节，提取其中所有直接、间接参与到其中的角色，并且绘制一张组织架构图，将公司的组织架构梳理清晰，案例中所有的角色要在组织架构图中对应的位置体现。
+                    # 输出要求
+                    1. 组织架构图必须包含该企业的多有部门，不能仅仅是案例中所涉及的部门和角色；
+                    2. 仅仅输出组织架构图本身，不需要包含任何其他信息；
+                    3. 组织架构图中，涉及到案例中的人物，请标记姓名，没有的不需要标注任何其他信息
+            - name: stableSystemPrompt
+              input:
+                type: string
+                value: ""
+            - name: canContinue
+              input:
+                type: boolean
+                value: false
+            - name: loopPromptVersion
+              input:
+                type: string
+                value: ""
+            - name: loopPromptName
+              input:
+                type: string
+                value: ""
+            - name: loopPromptId
+              input:
+                type: string
+                value: ""
+        node_inputs:
+            - name: input
+              input:
+                value:
+                    path: output
+                    ref_node: "148369"
+            - name: output
+              input:
+                value:
+                    path: output
+                    ref_node: "1463124"
+        node_outputs:
+            output:
+                type: string
+                value: null
+            reasoning_content:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            switch: false
+            timeoutMs: 180000
+    - id: "121587"
+      type: llm
+      title: 下级角色生成
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg
+      description: "调用大语言模型,使用变量和提示词生成回复"
+      version: "3"
+      position:
+        x: 3600
+        y: 526.4000000000001
+      parameters:
+        fcParamVar:
+            knowledgeFCParam: {}
+        llmParam:
+            - name: modelType
+              input:
+                type: integer
+                value: "1768187121"
+            - name: modelName
+              input:
+                type: string
+                value: 豆包·1.8·深度思考
+            - name: generationDiversity
+              input:
+                type: string
+                value: balance
+            - name: temperature
+              input:
+                type: float
+                value: "0.5"
+            - name: topP
+              input:
+                type: float
+                value: "1"
+            - name: frequencyPenalty
+              input:
+                type: float
+                value: "0"
+            - name: maxTokens
+              input:
+                type: integer
+                value: "4096"
+            - name: spCurrentTime
+              input:
+                type: boolean
+                value: false
+            - name: spAntiLeak
+              input:
+                type: boolean
+                value: false
+            - name: responseFormat
+              input:
+                type: integer
+                value: "2"
+            - name: parameters
+              input:
+                type: object
+                properties:
+                    max_completion_tokens:
+                        type: integer
+                        value: "0"
+                value: null
+            - name: prompt
+              input:
+                type: string
+                value: |-
+                    员工和上级的角色：{{input}}
+                    员工在业务中的实际表现：{{output}}
+            - name: enableChatHistory
+              input:
+                type: boolean
+                value: false
+            - name: chatHistoryRound
+              input:
+                type: integer
+                value: "3"
+            - name: systemPrompt
+              input:
+                type: string
+                value: |
+                    你是人力资源部专家，现在你需要撰写一份员工的信息，通过邮件的方式发给其上级。
+
+                    员工：{{input}}中的下级角色
+                    上级：{{input}}中的上级角色
+
+                    # 要求
+                    1. 性格尽量鲜明，且不好管理
+                    2. 材料中包含360评估结果，能够体现其能力方面的特征，以数据的形式呈现
+                    3. 包含最近一次的绩效谈话结果（包括绩效结果、阶段复盘、需要提升、员工本人的看法），绩效的结果并不好，不好的原因可以从{{output}}找素材
+                    4. 字数：1500字左右
+
+
+                    # 输出格式与示例
+                    标题：概括邮件内容的标题
+                    发信人 ： 刘远@lvchi.com
+                    收信人 ： 您@lvchi.com
+                    主题：关于李明月的介绍
+                    陈经理：
+                    您好，欢迎您加入绿驰，希望在您的带领下，我们的业务能更上一层楼。应您的要求，现向您介绍一些人力资源部核心骨干员工的情况。
+                    李明月个人信息
+                    姓名： 李明月	岗位：HRBP（研发）
+                    年龄：35岁	司龄：3年
+                    岗位职责
+                    结合公司业务发展需求，与业务单元紧密合作，落地公司人力资源政策，提供针对性的人力资源解决方案，包含招聘与配置、人才培养与发展、薪酬绩效、员工关系等。
+                    当前阶段，招聘是李明月的工作重点：
+                    1. 招聘规划：结合业务需求制定招聘规划。根据行业趋势和岗位特点，建议用人标准调整（如薪资范围、灵活要求等）。
+                    2. 渠道开发与管理：发布职位信息到招聘网站（如猎聘、智联）、社交媒体或内部系统。开拓多样化招聘渠道（校招、猎头、内推、行业论坛等），优化渠道效果。在此基础上，建立行业人才地图和外部人才库。
+                    3. 候选人筛选、沟通与面试流程管理：根据简历、岗位要求快速识别匹配度高的候选人。评估候选人基本素质、求职动机和文化适配性。安排面试时间、场地，协调面试官（如业务部门负责人、高管）进行面试。跟进面试反馈，汇总评价并推进下一轮流程。
+                    4. 背景调查与录用：对拟录用候选人进行背调（学历、工作经历、信用记录等）。
+                    5. 薪资谈判：根据企业薪酬体系与候选人协商薪资福利。发放录用通知书（Offer），跟进入职材料准备（如体检、合同签订）。
+                    个人情况简要介绍
+                    6. 专业经验：是汽车行业的HR老兵，具有多个模块的丰富经验，包括招聘、薪酬福利、员工关系等。
+                    7. 个人特征：认真负责，小心谨慎，注重规则、流程和效率，缺乏创新性，倾向于独立完成任务，不喜欢被外界干扰或改变自己的工作方式。沟通方式直截了当，不会拐弯抹角。
+                    主要优势
+                    1. 严肃、细致、谨慎：是一个注重细节、认真负责的人，严格遵循规则和流程做事；
+                    2. 有执行力：推进工作能够一丝不苟，严格按照计划执行，注重任务的时间节点，能够很好地评估风险。
+                    需要改进的关键领域
+                    3. 工作中缺少创新和变革 ：在人力资源组织的转型中，对新事物的接受度不高，比较依赖于个人已经习惯的做法，习惯按照确定的流程和规范做有把握的事情，不愿意冒险，较少主动探索新的方式和方法；
+                    4. 处理事情缺少灵活性：习惯按照人力资源的各项政策来开展工作，有原则性，但是缺少应对矛盾的灵活性；
+                    5. 与团队的融合不够：与团队之间相处并不是很融洽，同事认为他不太愿意把资源分享出来。
+                    蒋慕云
+                    人力资源部经理
+            - name: stableSystemPrompt
+              input:
+                type: string
+                value: ""
+            - name: canContinue
+              input:
+                type: boolean
+                value: false
+            - name: loopPromptVersion
+              input:
+                type: string
+                value: ""
+            - name: loopPromptName
+              input:
+                type: string
+                value: ""
+            - name: loopPromptId
+              input:
+                type: string
+                value: ""
+        node_inputs:
+            - name: input
+              input:
+                value:
+                    path: output
+                    ref_node: "148369"
+            - name: output
+              input:
+                value:
+                    path: output
+                    ref_node: "1463124"
+        node_outputs:
+            output:
+                type: string
+                value: null
+            reasoning_content:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            switch: false
+            timeoutMs: 180000
+    - id: "188681"
+      type: llm
+      title: 题本拼接
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg
+      description: "调用大语言模型,使用变量和提示词生成回复"
+      version: "3"
+      position:
+        x: 4060
+        y: 394.80000000000007
+      parameters:
+        fcParamVar:
+            knowledgeFCParam: {}
+        llmParam:
+            - name: modelType
+              input:
+                type: integer
+                value: "1768187121"
+            - name: modelName
+              input:
+                type: string
+                value: 豆包·1.8·深度思考
+            - name: generationDiversity
+              input:
+                type: string
+                value: balance
+            - name: temperature
+              input:
+                type: float
+                value: "0.5"
+            - name: topP
+              input:
+                type: float
+                value: "1"
+            - name: frequencyPenalty
+              input:
+                type: float
+                value: "0"
+            - name: maxTokens
+              input:
+                type: integer
+                value: "4096"
+            - name: spCurrentTime
+              input:
+                type: boolean
+                value: false
+            - name: spAntiLeak
+              input:
+                type: boolean
+                value: false
+            - name: responseFormat
+              input:
+                type: integer
+                value: "2"
+            - name: parameters
+              input:
+                type: object
+                properties:
+                    max_completion_tokens:
+                        type: integer
+                        value: "0"
+                value: null
+            - name: prompt
+              input:
+                type: string
+                value: 输入的内容为：{{output}}{{output2}}{{output1}}{{output3}}
+            - name: enableChatHistory
+              input:
+                type: boolean
+                value: false
+            - name: chatHistoryRound
+              input:
+                type: integer
+                value: "3"
+            - name: systemPrompt
+              input:
+                type: string
+                value: |
+                    你是一个案例开发专家，现在需要将案例中各个片段拼接好，不要做任何增删，把所有内容原样拼接。
+
+                    # 拼接逻辑
+                    {{output}}{{output2}}{{output1}}{{output3}}
+            - name: stableSystemPrompt
+              input:
+                type: string
+                value: ""
+            - name: canContinue
+              input:
+                type: boolean
+                value: false
+            - name: loopPromptVersion
+              input:
+                type: string
+                value: ""
+            - name: loopPromptName
+              input:
+                type: string
+                value: ""
+            - name: loopPromptId
+              input:
+                type: string
+                value: ""
+        node_inputs:
+            - name: output
+              input:
+                value:
+                    path: output
+                    ref_node: "148369"
+            - name: output1
+              input:
+                value:
+                    path: output
+                    ref_node: "121587"
+            - name: output2
+              input:
+                value:
+                    path: output
+                    ref_node: "131995"
+            - name: output3
+              input:
+                value:
+                    path: output
+                    ref_node: "1463124"
+        node_outputs:
+            output:
+                type: string
+                value: null
+            reasoning_content:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            switch: false
+            timeoutMs: 180000
+    - id: "116459"
+      type: llm
+      title: 考生模拟校验
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg
+      description: "调用大语言模型,使用变量和提示词生成回复"
+      version: "3"
+      position:
+        x: 4520
+        y: 394.80000000000007
+      parameters:
+        fcParamVar:
+            knowledgeFCParam: {}
+        llmParam:
+            - name: modelType
+              input:
+                type: integer
+                value: "1768187121"
+            - name: modelName
+              input:
+                type: string
+                value: 豆包·1.8·深度思考
+            - name: generationDiversity
+              input:
+                type: string
+                value: balance
+            - name: temperature
+              input:
+                type: float
+                value: "0.5"
+            - name: topP
+              input:
+                type: float
+                value: "1"
+            - name: frequencyPenalty
+              input:
+                type: float
+                value: "0"
+            - name: maxTokens
+              input:
+                type: integer
+                value: "4096"
+            - name: spCurrentTime
+              input:
+                type: boolean
+                value: false
+            - name: spAntiLeak
+              input:
+                type: boolean
+                value: false
+            - name: responseFormat
+              input:
+                type: integer
+                value: "2"
+            - name: parameters
+              input:
+                type: object
+                properties:
+                    max_completion_tokens:
+                        type: integer
+                        value: "0"
+                value: null
+            - name: prompt
+              input:
+                type: string
+                value: 题本内容：{{input}}
+            - name: enableChatHistory
+              input:
+                type: boolean
+                value: false
+            - name: chatHistoryRound
+              input:
+                type: integer
+                value: "3"
+            - name: systemPrompt
+              input:
+                type: string
+                value: |
+                    你是一个考生，你现在正在面临一个测验，即上下级角色扮演模拟演练，现在请你带入自己的角色，详细阅读题本内容，然后找出你感到有歧义、不理解的地方。
+                    # 输入
+                    题本内容：{{input}}
+                    你的角色是题本中的上级角色
+
+                    # 模拟要求
+                    1. 你需要通篇阅读题本
+                    2. 你需要评估自己对题本给的任务和目标是否清晰
+                    3. 你需要发现题本中让你感到困惑的地方有哪些
+
+
+                    # 输出内容和要求
+                    输出内容：任务明确与否、上下文一致与否
+                    输出要求：字数不超过1500字
+            - name: stableSystemPrompt
+              input:
+                type: string
+                value: ""
+            - name: canContinue
+              input:
+                type: boolean
+                value: false
+            - name: loopPromptVersion
+              input:
+                type: string
+                value: ""
+            - name: loopPromptName
+              input:
+                type: string
+                value: ""
+            - name: loopPromptId
+              input:
+                type: string
+                value: ""
+        node_inputs:
+            - name: input
+              input:
+                value:
+                    path: output
+                    ref_node: "188681"
+        node_outputs:
+            output:
+                type: string
+                value: null
+            reasoning_content:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            switch: false
+            timeoutMs: 180000
+    - id: "155140"
+      type: llm
+      title: 优化建议
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg
+      description: "调用大语言模型,使用变量和提示词生成回复"
+      version: "3"
+      position:
+        x: 4980
+        y: 394.80000000000007
+      parameters:
+        fcParamVar:
+            knowledgeFCParam: {}
+        llmParam:
+            - name: modelType
+              input:
+                type: integer
+                value: "1768187121"
+            - name: modelName
+              input:
+                type: string
+                value: 豆包·1.8·深度思考
+            - name: generationDiversity
+              input:
+                type: string
+                value: balance
+            - name: temperature
+              input:
+                type: float
+                value: "0.5"
+            - name: topP
+              input:
+                type: float
+                value: "1"
+            - name: frequencyPenalty
+              input:
+                type: float
+                value: "0"
+            - name: maxTokens
+              input:
+                type: integer
+                value: "4096"
+            - name: spCurrentTime
+              input:
+                type: boolean
+                value: false
+            - name: spAntiLeak
+              input:
+                type: boolean
+                value: false
+            - name: responseFormat
+              input:
+                type: integer
+                value: "2"
+            - name: parameters
+              input:
+                type: object
+                properties:
+                    max_completion_tokens:
+                        type: integer
+                        value: "0"
+                value: null
+            - name: prompt
+              input:
+                type: string
+                value: ""
+            - name: enableChatHistory
+              input:
+                type: boolean
+                value: false
+            - name: chatHistoryRound
+              input:
+                type: integer
+                value: "3"
+            - name: systemPrompt
+              input:
+                type: string
+                value: |-
+                    你是一个题本优化专家，现在我有一套角色扮演题本，经过了考生模拟测试，测试的结果反馈到你这里，你需要基于此来反馈题本是否需要优化，以及优化的建议是什么。
+
+                    # 输入
+                    考生模拟测试反馈：{{input}}
+
+                    # 评审要求
+                    请基于考生模拟测试反馈的内容，对一下信息进行二次判断：
+                    1. 任务明确性：考生理解的题本任务是否明确，是否完全知道自己要做什么，达到什么目的
+                    2. 信息一致性：题本中是否有一些信息不一致、逻辑不一致的地方，如果有请指出
+
+                    # 提出建议要求
+                    提出的修改建议，原则要本着最小修改原则，即尽量不调整的原有内容的基础上，做最微小的调整
+                    # 输出要求
+                    1. 任务明确性
+                    2. 信息一致性
+                    3. 修改建议
+            - name: stableSystemPrompt
+              input:
+                type: string
+                value: ""
+            - name: canContinue
+              input:
+                type: boolean
+                value: false
+            - name: loopPromptVersion
+              input:
+                type: string
+                value: ""
+            - name: loopPromptName
+              input:
+                type: string
+                value: ""
+            - name: loopPromptId
+              input:
+                type: string
+                value: ""
+        node_inputs:
+            - name: input
+              input:
+                value:
+                    path: output
+                    ref_node: "116459"
+        node_outputs:
+            output:
+                type: string
+                value: null
+            reasoning_content:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            switch: false
+            timeoutMs: 180000
+    - id: "151313"
+      type: llm
+      title: 题本优化
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg
+      description: "调用大语言模型,使用变量和提示词生成回复"
+      version: "3"
+      position:
+        x: 5440
+        y: 394.80000000000007
+      parameters:
+        fcParamVar:
+            knowledgeFCParam: {}
+        llmParam:
+            - name: modelType
+              input:
+                type: integer
+                value: "1768187121"
+            - name: modelName
+              input:
+                type: string
+                value: 豆包·1.8·深度思考
+            - name: generationDiversity
+              input:
+                type: string
+                value: balance
+            - name: temperature
+              input:
+                type: float
+                value: "0.5"
+            - name: topP
+              input:
+                type: float
+                value: "1"
+            - name: frequencyPenalty
+              input:
+                type: float
+                value: "0"
+            - name: maxTokens
+              input:
+                type: integer
+                value: "4096"
+            - name: spCurrentTime
+              input:
+                type: boolean
+                value: false
+            - name: spAntiLeak
+              input:
+                type: boolean
+                value: false
+            - name: responseFormat
+              input:
+                type: integer
+                value: "2"
+            - name: parameters
+              input:
+                type: object
+                properties:
+                    max_completion_tokens:
+                        type: integer
+                        value: "0"
+                value: null
+            - name: prompt
+              input:
+                type: string
+                value: |-
+                    题本内容：{{output}}
+                    优化建议：{{input}}
+            - name: enableChatHistory
+              input:
+                type: boolean
+                value: false
+            - name: chatHistoryRound
+              input:
+                type: integer
+                value: "3"
+            - name: systemPrompt
+              input:
+                type: string
+                value: |-
+                    你是一个题本优化专家，现在我有一套角色扮演题本，经过了考生模拟测试和专家复核，优化建议反馈到你这里，你需要基于此对题本进行优化。
+
+                    # 输入
+                    题本内容：{{output}}
+                    优化建议：{{input}}
+
+                    # 优化要求
+                    1. 遵循最小修改原则，不要对题本进行大规模修改，只能做小修小改
+                    2. 不改变原有的题本内容结构
+                    3. 输出的题本内容字数基本和修改前相差不差过300字
+
+                    # 输出
+                    输出优化后的题本内容
+            - name: stableSystemPrompt
+              input:
+                type: string
+                value: ""
+            - name: canContinue
+              input:
+                type: boolean
+                value: false
+            - name: loopPromptVersion
+              input:
+                type: string
+                value: ""
+            - name: loopPromptName
+              input:
+                type: string
+                value: ""
+            - name: loopPromptId
+              input:
+                type: string
+                value: ""
+        node_inputs:
+            - name: input
+              input:
+                value:
+                    path: output
+                    ref_node: "155140"
+            - name: output
+              input:
+                value:
+                    path: output
+                    ref_node: "188681"
+        node_outputs:
+            output:
+                type: string
+                value: null
+            reasoning_content:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            switch: false
+            timeoutMs: 180000
+edges:
+    - source_node: "100001"
+      target_node: "133431"
+    - source_node: "100001"
+      target_node: "198460"
+    - source_node: "100001"
+      target_node: "130819"
+    - source_node: "151313"
+      target_node: "900001"
+    - source_node: "130819"
+      target_node: "112399"
+      source_port: "false"
+    - source_node: "112399"
+      target_node: "197594"
+      source_port: batch-output
+    - source_node: "198460"
+      target_node: "197594"
+    - source_node: "133431"
+      target_node: "197594"
+    - source_node: "155555"
+      target_node: "197594"
+    - source_node: "197594"
+      target_node: "148369"
+    - source_node: "130819"
+      target_node: "155555"
+      source_port: "true"
+    - source_node: "148369"
+      target_node: "190041"
+    - source_node: "190041"
+      target_node: "1463124"
+    - source_node: "1463124"
+      target_node: "131995"
+    - source_node: "1463124"
+      target_node: "121587"
+    - source_node: "131995"
+      target_node: "188681"
+    - source_node: "121587"
+      target_node: "188681"
+    - source_node: "188681"
+      target_node: "116459"
+    - source_node: "116459"
+      target_node: "155140"
+    - source_node: "155140"
+      target_node: "151313"

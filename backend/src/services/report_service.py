@@ -3,9 +3,33 @@ from src.services.ai_service import AIService
 from src.workflows.report_workflow import ReportWorkflow
 
 class ReportService(AIService):
-    def __init__(self, api_key: str, model: str = None, api_url: str = None):
+    def __init__(
+        self,
+        api_key: str,
+        model: str = None,
+        api_url: str = None
+    ):
         super().__init__(api_key, model, api_url)
         self.workflow = ReportWorkflow(self.llm)
+    
+    async def generate(self, **kwargs) -> Dict[str, Any]:
+        return await self.generate_full_report(
+            behavior_record=kwargs.get("behavior_record", ""),
+            ability_standards=kwargs.get("ability_standards", []),
+            report_type=kwargs.get("report_type", "")
+        )
+    
+    async def generate_full_report(
+        self,
+        behavior_record: str,
+        ability_standards: List[Dict[str, Any]],
+        report_type: str
+    ) -> Dict[str, Any]:
+        return await self.workflow.generate_full_report(
+            behavior_record=behavior_record,
+            ability_standards=ability_standards,
+            report_type=report_type
+        )
     
     async def generate_feedback_report(
         self,

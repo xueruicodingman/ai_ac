@@ -1,4 +1,4 @@
-import { FileText, Grid3x3, FileQuestion, FileBarChart, User, LogIn } from 'lucide-react';
+import { FileText, Grid3x3, FileQuestion, FileBarChart, User, LogIn, PlayCircle } from 'lucide-react';
 
 interface ModuleCardProps {
   icon: React.ReactNode;
@@ -56,6 +56,12 @@ export default function Dashboard({ onNavigate, onUserClick, isLoggedIn }: Dashb
       title: '题本生成',
       description: '快速生成多种测评题本，支持在线编辑',
       page: 'question',
+    },
+    {
+      icon: <PlayCircle size={24} />,
+      title: '模拟练习',
+      description: '模拟真实测评场景，提升应试能力',
+      page: 'practice',
     },
     {
       icon: <FileBarChart size={24} />,

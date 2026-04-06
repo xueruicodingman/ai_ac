@@ -1,0 +1,241 @@
+schema_version: 1.0.0
+name: aiac_matrix_gen
+id: 7591890645468594203
+description: "评估矩阵生成"
+mode: workflow
+icon: plugin_icon/workflow.png
+nodes:
+    - id: "100001"
+      type: start
+      title: 开始
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg
+      description: "工作流的起始节点，用于设定启动工作流需要的信息"
+      position:
+        x: 0
+        y: 0
+      parameters:
+        node_outputs:
+            input:
+                type: list
+                items:
+                    type: object
+                    value: null
+                value: null
+    - id: "900001"
+      type: end
+      title: 结束
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg
+      description: "工作流的最终节点，用于返回工作流运行后的结果信息"
+      position:
+        x: 1000
+        y: 0
+      parameters:
+        content:
+            type: string
+            value:
+                content: '{{output}}'
+                type: literal
+        node_inputs:
+            - name: output
+              input:
+                type: list
+                items:
+                    type: string
+                    value: null
+                value:
+                    path: output
+                    ref_node: "180204"
+        streamingOutput: false
+        terminatePlan: useAnswerContent
+    - id: "180204"
+      type: batch
+      title: 批处理
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Batch-v2.jpg
+      description: "通过设定批量运行次数和逻辑，运行批处理体内的任务"
+      position:
+        x: 480
+        y: 0
+      canvas_position:
+        x: 480
+        y: 200
+      parameters:
+        batchSize:
+            type: integer
+            value:
+                content: 100
+                rawMeta:
+                    type: 2
+                type: literal
+        concurrentSize:
+            type: integer
+            value:
+                content: 10
+                rawMeta:
+                    type: 2
+                type: literal
+        node_inputs:
+            - name: input
+              input:
+                value:
+                    path: input
+                    ref_node: "100001"
+        node_outputs:
+            output:
+                value:
+                    type: list
+                    items:
+                        type: string
+                        value: null
+                    value:
+                        path: output
+                        ref_node: "168157"
+      nodes:
+        - id: "168157"
+          type: llm
+          title: 大模型
+          icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg
+          description: "调用大语言模型,使用变量和提示词生成回复"
+          version: "3"
+          position:
+            x: 0
+            y: 100
+          parameters:
+            fcParamVar:
+                knowledgeFCParam: {}
+            llmParam:
+                - name: modelType
+                  input:
+                    type: integer
+                    value: "1737521813"
+                - name: modelName
+                  input:
+                    type: string
+                    value: 豆包·1.5·Pro·32k
+                - name: generationDiversity
+                  input:
+                    type: string
+                    value: balance
+                - name: temperature
+                  input:
+                    type: float
+                    value: "0.8"
+                - name: maxTokens
+                  input:
+                    type: integer
+                    value: "4096"
+                - name: spCurrentTime
+                  input:
+                    type: boolean
+                    value: false
+                - name: spAntiLeak
+                  input:
+                    type: boolean
+                    value: false
+                - name: prefixCache
+                  input:
+                    type: boolean
+                    value: false
+                - name: responseFormat
+                  input:
+                    type: integer
+                    value: "2"
+                - name: parameters
+                  input:
+                    type: object
+                    value: null
+                - name: prompt
+                  input:
+                    type: string
+                    value: 用户输入的胜任力维度为：{{input}}
+                - name: enableChatHistory
+                  input:
+                    type: boolean
+                    value: false
+                - name: chatHistoryRound
+                  input:
+                    type: integer
+                    value: "3"
+                - name: systemPrompt
+                  input:
+                    type: string
+                    value: |
+                        你是一个人才评估专家，你将会接收到一个胜任力维度，其中包括能力名称，能力含义，能力标准。输入示例如下：
+
+                        沟通能力
+                        含义：是个体在特定情境中，通过口头、书面或非语言等方式，清晰、准确地传递信息，同时高效倾听、理解对方意图，并能根据沟通对象和场景调整表达方式，最终达成预期沟通目标的综合能力。它既包含信息传递的输出能力，也涵盖信息接收与反馈的输入能力
+                        行为标准：
+                        1. 信息传递清晰准确：表达观点时逻辑条理分明，能根据沟通对象的认知水平选择合适的语言和案例，避免模糊、歧义的表述；在传递复杂信息时，会主动拆解要点，确保对方准确理解核心内容。
+                        2. 积极倾听与有效反馈：在沟通中能够专注聆听对方发言，不随意打断；会通过复述、提问等方式确认自己对信息的理解，同时针对对方的观点给出有针对性的回应，而非敷衍性的附和。
+                        3. 灵活调整沟通策略：能敏锐感知沟通对象的情绪、态度以及沟通场景的变化，及时调整自己的表达语气、节奏和方式；当沟通出现分歧或障碍时，可主动协调，采用对方更容易接受的方式推进沟通，化解矛盾。
+
+                        你需要结合能力的含义和行为标准，为其匹配合适的考察工具，可选的考察工具包括：行为面试、无领导小组讨论、角色扮演、个人愿景、商业案例。
+
+                        输出示例如下：
+                        [沟通能力]：无领导小组讨论，角色扮演
+                        注意：输出中不需要包含理由、解释等其他内容
+
+                        各类工具的考场方式和考察能力类型说明如下：
+                        1. 行为面试
+                        考察方式：基于 “过去的行为是未来行为的最佳预测” 这一核心，面试官通过提问，让候选人回忆并描述过往真实工作或生活中的具体经历、行为细节。常用提问句式为 “请举例说明你在 XX 情况下是如何做的”，会深挖 “情境（S）— 任务（T）— 行动（A）— 结果（R）” 四个要素。
+                        适合考察的能力：责任心、沟通协调能力、问题解决能力、抗压能力、团队协作能力、执行力等通用软能力，也可考察与岗位相关的专项技能应用经验。
+                        2. 无领导小组讨论
+                        考察方式：将候选人分为小组，给出一个开放性问题或任务（如方案设计、资源分配、争议决策等），不指定领导者，让小组成员在规定时间内自主讨论并达成一致结论。面试官全程观察候选人的发言、互动、组织等表现。
+                        适合考察的能力：领导力、团队协作能力、逻辑思维能力、沟通表达能力、应变能力、冲突解决能力，以及在压力下的分析和决策能力。
+                        3. 角色扮演
+                        考察方式：设定与岗位工作高度相关的真实场景（如客户投诉处理、跨部门协作谈判、下属绩效沟通等），指定候选人扮演特定角色，与面试官或工作人员扮演的角色进行互动，完成既定任务目标。面试官根据候选人的应对方式、言行举止进行评估。
+                        适合考察的能力：岗位实操能力、沟通谈判能力、情绪管理能力、问题解决能力、服务意识（如客服岗位）、危机处理能力，以及对岗位场景的快速适应能力。
+                        4. 个人愿景
+                        考察方式：通过书面撰写、口头陈述或结构化问答的形式，让候选人阐述自己的职业规划、人生目标、价值观追求，以及个人愿景与组织发展目标的契合度。面试官重点关注愿景的清晰度、可行性、稳定性，以及候选人的自我认知和驱动力。
+                        适合考察的能力：自我认知能力、职业规划能力、目标驱动力、价值观匹配度、学习成长意愿，以及对组织的认同感和忠诚度。
+                        5. 商业案例
+                        考察方式：提供一份真实或模拟的商业案例（如企业市场拓展困境、利润下滑问题、新产品上线策略等），要求候选人在规定时间内进行数据分析、问题诊断、方案设计，并向面试官展示和答辩。面试官关注分析的逻辑性、方案的可行性和创新性。
+                        适合考察的能力：商业分析能力、逻辑思维能力、数据处理能力、战略规划能力、创新能力、口头汇报能力，以及针对商业问题的综合决策能力，适合管理岗、咨询岗、市场岗等岗位的考察。
+                - name: stableSystemPrompt
+                  input:
+                    type: string
+                    value: ""
+                - name: canContinue
+                  input:
+                    type: boolean
+                    value: false
+                - name: loopPromptVersion
+                  input:
+                    type: string
+                    value: ""
+                - name: loopPromptName
+                  input:
+                    type: string
+                    value: ""
+                - name: loopPromptId
+                  input:
+                    type: string
+                    value: ""
+            node_inputs:
+                - name: input
+                  input:
+                    type: object
+                    value:
+                        path: input
+                        ref_node: "180204"
+            node_outputs:
+                output:
+                    type: string
+                    value: null
+            settingOnError:
+                processType: 1
+                retryTimes: 0
+                switch: false
+                timeoutMs: 180000
+      edges:
+        - source_node: "180204"
+          target_node: "168157"
+          source_port: batch-function-inline-output
+        - source_node: "168157"
+          target_node: "180204"
+          target_port: batch-function-inline-input
+edges:
+    - source_node: "100001"
+      target_node: "180204"
+    - source_node: "180204"
+      target_node: "900001"
+      source_port: batch-output

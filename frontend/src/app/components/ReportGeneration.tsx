@@ -1,5 +1,8 @@
-import { ArrowLeft, FileText, Users, User, Download, Upload, CheckCircle, Clock, Eye } from 'lucide-react';
-import { useState } from 'react';
+import React from 'react';
+import { ArrowLeft, FileText, Users, User, Download, Upload, CheckCircle, Clock, Eye, X, Edit3, Check, Copy } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { generateFullReport, getCompetencyModel, getQuestionnaires, saveReport, getReports } from '../api';
+import { MDXEditor, MDXEditorMethods } from '@mdxeditor/editor';
 
 interface ReportGenerationProps {
   onBack: () => void;
@@ -7,14 +10,17 @@ interface ReportGenerationProps {
 }
 
 type ReportType = 'feedback' | 'organization' | 'personal';
+type ReportTypeChinese = '反馈版' | '组织版' | '个人版';
 
 interface Report {
   type: ReportType;
+  chineseType: ReportTypeChinese;
   name: string;
   status: 'draft' | 'generated' | 'submitted';
   submitTime?: string;
   canGenerate: boolean;
-  needPrevious?: boolean;
+  content?: string;
+  isGenerating?: boolean;
 }
 
 interface Candidate {
@@ -24,16 +30,85 @@ interface Candidate {
   totalScore: number;
 }
 
+const REPORT_TYPE_MAP: Record<ReportType, ReportTypeChinese> = {
+  'feedback': '反馈版',
+  'organization': '组织版',
+  'personal': '个人版'
+};
+
 export default function ReportGeneration({ onBack, onNavigate }: ReportGenerationProps) {
   const [hasUploadedRecords, setHasUploadedRecords] = useState(false);
+  const [pastedData, setPastedData] = useState(() => localStorage.getItem('report_pasted_data') || '');
+  const [uploadedFileName, setUploadedFileName] = useState(() => localStorage.getItem('report_uploaded_filename') || '');
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [dataPreview, setDataPreview] = useState(false);
   const [reports, setReports] = useState<Report[]>([
-    { type: 'feedback', name: '反馈版报告', status: 'draft', canGenerate: true },
-    { type: 'organization', name: '组织版报告', status: 'draft', canGenerate: false, needPrevious: true },
-    { type: 'personal', name: '个人版报告', status: 'draft', canGenerate: false, needPrevious: true },
+    { type: 'feedback', chineseType: '反馈版', name: '反馈版报告', status: 'draft', canGenerate: true },
+    { type: 'organization', chineseType: '组织版', name: '组织版报告', status: 'draft', canGenerate: true },
+    { type: 'personal', chineseType: '个人版', name: '个人版报告', status: 'draft', canGenerate: true },
   ]);
   const [selectedCandidate, setSelectedCandidate] = useState<string>('1');
   const [editingReport, setEditingReport] = useState<Report | null>(null);
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [error, setError] = useState('');
+  const [abilityStandards, setAbilityStandards] = useState<any>(null);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const editorRef = React.useRef<MDXEditorMethods>(null);
+
+  useEffect(() => {
+    loadAbilityStandards();
+    loadSavedReports();
+  }, []);
+
+  const [editorKey, setEditorKey] = useState(0);
+
+  useEffect(() => {
+    setEditorKey(prev => prev + 1);
+  }, [editingReport?.type]);
+
+  const loadAbilityStandards = async () => {
+    try {
+      const model = await getCompetencyModel();
+      if (model?.dimensions) {
+        setAbilityStandards(model.dimensions);
+      }
+    } catch (err: any) {
+      console.error('Load ability standards error:', err);
+      if (err?.message?.includes('404') || err?.detail?.includes('未找到')) {
+        setError('请先完成胜任力模型生成');
+      }
+    }
+  };
+
+  const loadSavedReports = async () => {
+    try {
+      const savedReports = await getReports();
+      if (savedReports && savedReports.length > 0) {
+        setReports(prevReports => {
+          const updatedReports = [...prevReports];
+          savedReports.forEach((saved: any) => {
+            const reportType = saved.report_type as ReportType;
+            const index = updatedReports.findIndex(r => r.type === reportType);
+            if (index !== -1) {
+              const contentData = saved.content;
+              const contentStr = typeof contentData === 'object' 
+                ? (contentData.content || contentData.report || JSON.stringify(contentData))
+                : contentData;
+              updatedReports[index] = {
+                ...updatedReports[index],
+                status: saved.status === 'submitted' ? 'submitted' : saved.status === 'published' ? 'generated' : 'draft',
+                content: contentStr || '',
+                submitTime: saved.updated_at ? new Date(saved.updated_at).toLocaleString('zh-CN') : undefined,
+                canGenerate: true
+              };
+            }
+          });
+          return updatedReports;
+        });
+      }
+    } catch (err: any) {
+      console.error('加载保存的报告失败:', err);
+    }
+  };
 
   const candidates: Candidate[] = [
     { id: '1', name: '张三', scores: { '领导力': 85, '沟通协作': 90, '创新能力': 78 }, totalScore: 253 },
@@ -43,41 +118,150 @@ export default function ReportGeneration({ onBack, onNavigate }: ReportGeneratio
 
   const currentCandidate = candidates.find(c => c.id === selectedCandidate) || candidates[0];
 
-  const handleUploadRecords = () => {
-    onNavigate('upload');
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setUploadedFile(e.target.files[0]);
+      setUploadedFileName(e.target.files[0].name);
+      localStorage.setItem('report_uploaded_filename', e.target.files[0].name);
+    }
   };
 
-  const handleGenerateReport = (report: Report) => {
+  const handlePreview = () => {
+    setDataPreview(true);
+  };
+
+  const handleRemoveFile = () => {
+    setUploadedFile(null);
+    setUploadedFileName('');
+    setDataPreview(false);
+    localStorage.removeItem('report_uploaded_filename');
+  };
+
+  const handlePastedDataChange = (value: string) => {
+    setPastedData(value);
+    localStorage.setItem('report_pasted_data', value);
+  };
+
+  const handleClearData = () => {
+    setPastedData('');
+    setUploadedFile(null);
+    setUploadedFileName('');
+    setDataPreview(false);
+    localStorage.removeItem('report_pasted_data');
+    localStorage.removeItem('report_uploaded_filename');
+  };
+
+  const getBehaviorData = (): string => {
+    if (uploadedFile) {
+      return `文件: ${uploadedFile.name}`;
+    }
+    return pastedData;
+  };
+
+  const handleGenerateReport = async (report: Report) => {
     if (!report.canGenerate) return;
-    setIsGenerating(true);
+    
+    const behaviorData = getBehaviorData();
+    if (!behaviorData) {
+      setError('请先导入测评数据');
+      return;
+    }
 
-    setTimeout(() => {
-      setReports(reports.map(r =>
-        r.type === report.type ? { ...r, status: 'generated' as const } : r
+    if (!abilityStandards) {
+      setError('请先完成胜任力模型生成');
+      return;
+    }
+
+    setReports(reports.map(r => 
+      r.type === report.type ? { ...r, isGenerating: true } : r
+    ));
+    setError('');
+
+    try {
+      const response = await generateFullReport({
+        behavior_record: behaviorData,
+        ability_standards: abilityStandards,
+        report_type: report.chineseType
+      });
+
+      if (response.success && response.data) {
+        const reportContent = response.data[report.chineseType === '反馈版' ? '反馈版报告' : report.chineseType === '个人版' ? '个人版报告' : '组织版报告'] || '';
+        
+        setReports(reports.map(r =>
+          r.type === report.type ? { ...r, status: 'generated' as const, content: reportContent, isGenerating: false } : r
+        ));
+        
+        if (reportContent) {
+          setEditingReport({ ...report, content: reportContent, isGenerating: false });
+        }
+      } else {
+        throw new Error('生成失败');
+      }
+    } catch (err: any) {
+      console.error('Generate report error:', err);
+      const errorMessage = err?.message || err?.detail || JSON.stringify(err) || '生成报告失败，请重试';
+      setError(errorMessage);
+      setReports(reports.map(r => 
+        r.type === report.type ? { ...r, isGenerating: false } : r
       ));
-      setEditingReport(report);
-      setIsGenerating(false);
-    }, 2000);
+    }
   };
 
-  const handleSubmitReport = () => {
+  const reloadAbilityStandards = async () => {
+    try {
+      const model = await getCompetencyModel();
+      if (model?.dimensions) {
+        setAbilityStandards(model.dimensions);
+        return true;
+      }
+    } catch (err: any) {
+      console.error('Reload ability standards error:', err);
+      if (err?.status === 404 || err?.detail?.includes('未找到')) {
+        setError('请先在"胜任力模型"页面生成模型');
+      } else {
+        setError(err.message || '获取模型失败');
+      }
+      return false;
+    }
+    return false;
+  };
+
+  const handleGenerateWithReload = async (report: Report) => {
+    if (!abilityStandards) {
+      const hasModel = await reloadAbilityStandards();
+      if (!hasModel) return;
+    }
+    await handleGenerateReport(report);
+  };
+
+  const handleSubmitReport = async () => {
     if (!editingReport) return;
 
-    setReports(reports.map(r => {
-      if (r.type === editingReport.type) {
-        return { ...r, status: 'submitted' as const, submitTime: new Date().toLocaleString('zh-CN') };
-      }
-      if (r.type === 'organization' && editingReport.type === 'feedback') {
-        return { ...r, canGenerate: true, status: 'draft' as const };
-      }
-      if (r.type === 'personal' && editingReport.type === 'organization') {
-        return { ...r, canGenerate: true, status: 'draft' as const };
-      }
-      return r;
-    }));
+    try {
+      await saveReport({
+        record_id: 1,
+        report_type: editingReport.type,
+        candidate_id: selectedCandidate,
+        candidate_name: currentCandidate.name,
+        scores_data: currentCandidate.scores,
+        total_score: currentCandidate.totalScore,
+        content: { content: editingReport.content },
+        status: 'submitted',
+      });
 
-    setEditingReport(null);
-    alert('报告已提交！');
+      setReports(reports.map(r => {
+        if (r.type === editingReport.type) {
+          return { ...r, status: 'submitted' as const, submitTime: new Date().toLocaleString('zh-CN') };
+        }
+        return r;
+      }));
+
+      setEditingReport(null);
+      alert('报告已提交并保存到数据库！');
+    } catch (err: any) {
+      console.error('保存报告失败:', err);
+      alert('保存报告失败: ' + (err.message || '未知错误'));
+    }
   };
 
   const handleDownload = (reportType: ReportType) => {
@@ -134,6 +318,28 @@ export default function ReportGeneration({ onBack, onNavigate }: ReportGeneratio
     setEditingReport(null);
   };
 
+  const handleCopyContent = async () => {
+    const contentText = getReportContent(editingReport);
+    if (!contentText) return;
+    try {
+      await navigator.clipboard.writeText(contentText);
+      alert('内容已复制到剪贴板！');
+    } catch (err) {
+      console.error('复制失败:', err);
+      alert('复制失败，请手动复制');
+    }
+  };
+
+  const getReportContent = (report: Report): string => {
+    if (!report?.content) return '';
+    if (typeof report.content === 'string') return report.content;
+    if (typeof report.content === 'object') {
+      const contentObj = report.content as any;
+      return contentObj.content || contentObj.report || contentObj.text || JSON.stringify(report.content);
+    }
+    return String(report.content);
+  };
+
   if (editingReport) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -148,7 +354,9 @@ export default function ReportGeneration({ onBack, onNavigate }: ReportGeneratio
                 <span>返回列表</span>
               </button>
               <div className="h-6 w-px bg-gray-300" />
-              <h1 className="font-semibold text-gray-900">编辑 - {editingReport.name}</h1>
+              <h1 className="font-semibold text-gray-900">
+                编辑 - {editingReport.name}
+              </h1>
             </div>
           </div>
         </header>
@@ -156,58 +364,62 @@ export default function ReportGeneration({ onBack, onNavigate }: ReportGeneratio
         <main className="max-w-5xl mx-auto px-6 py-8">
           <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-medium text-gray-900">选择被测者</h3>
-              <button
-                onClick={handleNextCandidate}
-                className="text-sm text-blue-600 hover:text-blue-700 transition-colors"
-              >
-                下一个 →
-              </button>
-            </div>
-            <div className="grid grid-cols-3 gap-3">
-              {candidates.map(candidate => (
+              <h3 className="font-medium text-gray-900">
+                报告内容
+              </h3>
+              <div className="flex items-center gap-2">
                 <button
-                  key={candidate.id}
-                  onClick={() => setSelectedCandidate(candidate.id)}
-                  className={`p-3 rounded-lg border text-left transition-colors ${
-                    selectedCandidate === candidate.id
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:bg-gray-50'
+                  onClick={handleCopyContent}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200"
+                >
+                  <Copy size={16} />
+                  复制
+                </button>
+                <button
+                  onClick={() => {
+                    if (isEditMode) {
+                      const content = editorRef.current?.getMarkdown();
+                      if (content !== undefined) {
+                        setEditingReport({ ...editingReport, content });
+                        setReports(reports.map(r => 
+                          r.type === editingReport.type ? { ...r, content } : r
+                        ));
+                      }
+                    }
+                    setIsEditMode(!isEditMode);
+                  }}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                    isEditMode 
+                      ? 'bg-green-100 text-green-700 hover:bg-green-200' 
+                      : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
                   }`}
                 >
-                  <p className="font-medium text-gray-900">{candidate.name}</p>
-                  <p className="text-xs text-gray-500">总分：{candidate.totalScore}</p>
+                  {isEditMode ? <Check size={16} /> : <Edit3 size={16} />}
+                  {isEditMode ? '保存' : '编辑'}
                 </button>
-              ))}
+              </div>
             </div>
-          </div>
-
-          <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-            <h3 className="font-medium text-gray-900 mb-4">能力得分数据</h3>
-            <div className="grid grid-cols-3 gap-4 mb-4">
-              {Object.entries(currentCandidate.scores).map(([key, value]) => (
-                <div key={key} className="text-center p-3 bg-gray-50 rounded-lg">
-                  <p className="text-sm text-gray-500 mb-1">{key}</p>
-                  <p className="text-2xl font-semibold text-gray-900">{value}</p>
+            <div className="border border-gray-200 rounded-lg overflow-hidden">
+              {isEditMode ? (
+                <div className="p-4">
+                  <textarea
+                    value={getReportContent(editingReport)}
+                    onChange={(e) => {
+                      setEditingReport({ ...editingReport, content: e.target.value });
+                    }}
+                    className="w-full h-[500px] p-4 border border-gray-300 rounded-lg font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="编辑报告内容..."
+                  />
                 </div>
-              ))}
+              ) : (
+                <div className="bg-gray-50 p-6 max-h-[500px] overflow-y-auto prose prose-sm max-w-none">
+                  <pre className="whitespace-pre-wrap font-mono text-sm text-gray-700">
+                    {getReportContent(editingReport) || '暂无内容'}
+                  </pre>
+                </div>
+              )}
             </div>
-            <p className="text-center text-gray-500">
-              总分：<span className="font-semibold text-gray-900">{currentCandidate.totalScore}</span>
-            </p>
           </div>
-
-          {editingReport.type === 'feedback' && (
-            <FeedbackReportEditor candidate={currentCandidate} />
-          )}
-          
-          {editingReport.type === 'organization' && (
-            <OrganizationReportEditor candidate={currentCandidate} />
-          )}
-          
-          {editingReport.type === 'personal' && (
-            <PersonalReportEditor candidate={currentCandidate} />
-          )}
 
           <div className="flex gap-4 mt-6">
             <button
@@ -215,12 +427,6 @@ export default function ReportGeneration({ onBack, onNavigate }: ReportGeneratio
               className="flex-1 border border-gray-300 text-gray-700 py-3 rounded-lg hover:bg-gray-50 transition-colors font-medium"
             >
               返回列表
-            </button>
-            <button
-              onClick={handleNextCandidate}
-              className="flex-1 bg-blue-50 text-blue-600 py-3 rounded-lg hover:bg-blue-100 transition-colors font-medium"
-            >
-              下一个
             </button>
             <button
               onClick={handleSubmitReport}
@@ -254,30 +460,102 @@ export default function ReportGeneration({ onBack, onNavigate }: ReportGeneratio
 
       <main className="max-w-5xl mx-auto px-6 py-8">
         <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
-          <div className="flex items-start justify-between">
-            <div className="flex gap-4">
-              <div className="w-12 h-12 rounded-lg bg-orange-50 flex items-center justify-center text-orange-600">
-                <Upload size={24} />
+          <h3 className="font-medium text-gray-900 mb-4">导入测评数据</h3>
+          <p className="text-sm text-gray-500 mb-4">选择以下方式之一导入测评数据</p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="border border-gray-200 rounded-lg p-4">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
+                  <Upload size={20} />
+                </div>
+                <h4 className="font-medium text-gray-900">上传文件</h4>
               </div>
-              <div>
-                <h3 className="font-medium text-gray-900 mb-1">上传测评记录</h3>
-                <p className="text-sm text-gray-500">
-                  上传测评数据，支持批量导入分析，下载模板开始录入
-                </p>
-              </div>
+              <p className="text-sm text-gray-500 mb-3">上传Excel、Word或PDF文件</p>
+              
+              {!uploadedFile && !uploadedFileName ? (
+                <div className="border-2 border-dashed border-gray-300 rounded-lg py-4 text-center hover:border-blue-400 transition-colors" style={{ minHeight: '78px' }}>
+                  <input
+                    type="file"
+                    accept=".xlsx,.xls,.docx,.doc,.pdf"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                    id="report-file-upload"
+                  />
+                  <label
+                    htmlFor="report-file-upload"
+                    className="inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer text-sm font-medium"
+                  >
+                    选择文件
+                  </label>
+                  <p className="text-xs text-gray-400 mt-2">支持 .xlsx, .xls, .docx, .pdf</p>
+                </div>
+              ) : (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg px-3" style={{ minHeight: '78px', display: 'flex', alignItems: 'center' }}>
+                  <div className="flex items-center justify-between w-full">
+                    <div className="flex items-center gap-2">
+                      <FileText className="text-blue-600" size={18} />
+                      <span className="text-sm text-gray-900 truncate">{uploadedFile?.name || uploadedFileName}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={handlePreview}
+                        className="px-3 py-1 bg-blue-600 text-white rounded text-xs font-medium"
+                      >
+                        解析
+                      </button>
+                      <button
+                        onClick={handleRemoveFile}
+                        className="p-1 text-gray-400 hover:text-red-500"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
-            <button
-              onClick={handleUploadRecords}
-              className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-sm font-medium whitespace-nowrap"
-            >
-              上传数据
-            </button>
+            
+            <div className="border border-gray-200 rounded-lg p-4">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center text-green-600">
+                  <FileText size={20} />
+                </div>
+                <h4 className="font-medium text-gray-900">粘贴文本</h4>
+              </div>
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-sm text-gray-500">直接在文本框中粘贴数据</p>
+                {(pastedData || uploadedFileName) && (
+                  <button
+                    onClick={handleClearData}
+                    className="text-xs text-red-600 hover:text-red-700"
+                  >
+                    清空数据
+                  </button>
+                )}
+              </div>
+              <textarea
+                value={pastedData}
+                onChange={(e) => handlePastedDataChange(e.target.value)}
+                placeholder="请粘贴测评数据，如：
+A1-小组讨论-问题解决-行为记录内容...
+A1-小组讨论-沟通协作-行为记录内容..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm resize-none"
+                style={{ height: '78px' }}
+              />
+            </div>
           </div>
         </div>
 
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+            {error}
+          </div>
+        )}
+
         <div className="mb-8">
           <h2 className="text-xl font-semibold text-gray-900 mb-2">生成报告</h2>
-          <p className="text-gray-600">按顺序生成反馈版、组织版、个人版报告</p>
+          <p className="text-gray-600">选择要生成的报告类型</p>
         </div>
 
         <div className="space-y-6">
@@ -291,16 +569,16 @@ export default function ReportGeneration({ onBack, onNavigate }: ReportGeneratio
                   <div>
                     <div className="flex items-center gap-2 mb-1">
                       <h3 className="font-medium text-gray-900">{report.name}</h3>
-                      {report.needPrevious && (
-                        <span className="text-xs text-gray-400">（需先生成反馈版）</span>
-                      )}
                     </div>
                     <p className="text-sm text-gray-500 mb-2">
-                      {index === 0 && '包含一句话评价、优势项和不足项，适合快速反馈'}
-                      {index === 1 && '包含详细评价、数据分析和雷达图，供组织决策使用'}
-                      {index === 2 && '包含发展建议、学习课程和书籍推荐，帮助个人提升'}
+                      {report.type === 'feedback' && '包含一句话评价、优势项和不足项，适合快速反馈'}
+                      {report.type === 'organization' && '包含详细评价、数据分析和雷达图，供组织决策使用'}
+                      {report.type === 'personal' && '包含发展建议、学习课程和书籍推荐，帮助个人提升'}
                     </p>
                     {getStatusBadge(report)}
+                    {report.isGenerating && (
+                      <p className="text-sm text-amber-600 mt-2">预计需要10-20分钟，您可以先完成其他工作</p>
+                    )}
                   </div>
                 </div>
                 <div className="flex gap-2">
@@ -318,6 +596,13 @@ export default function ReportGeneration({ onBack, onNavigate }: ReportGeneratio
                       >
                         <Download size={18} />
                       </button>
+                      <button
+                        onClick={() => handleGenerateWithReload(report)}
+                        disabled={report.isGenerating}
+                        className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-sm font-medium disabled:bg-gray-400"
+                      >
+                        {report.isGenerating ? '重新生成中...' : '重新生成'}
+                      </button>
                     </>
                   )}
                   {report.status === 'generated' && (
@@ -334,15 +619,22 @@ export default function ReportGeneration({ onBack, onNavigate }: ReportGeneratio
                       >
                         <Download size={18} />
                       </button>
+                      <button
+                        onClick={() => handleGenerateWithReload(report)}
+                        disabled={report.isGenerating}
+                        className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-sm font-medium disabled:bg-gray-400"
+                      >
+                        {report.isGenerating ? '重新生成中...' : '重新生成'}
+                      </button>
                     </>
                   )}
                   {report.status === 'draft' && report.canGenerate && (
                     <button
-                      onClick={() => handleGenerateReport(report)}
-                      disabled={isGenerating}
+                      onClick={() => handleGenerateWithReload(report)}
+                      disabled={report.isGenerating}
                       className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium disabled:bg-gray-400"
                     >
-                      {isGenerating ? '生成中...' : '生成'}
+                      {report.isGenerating ? '生成中...' : '生成'}
                     </button>
                   )}
                 </div>
@@ -351,344 +643,6 @@ export default function ReportGeneration({ onBack, onNavigate }: ReportGeneratio
           ))}
         </div>
       </main>
-    </div>
-  );
-}
-
-function FeedbackReportEditor({ candidate }: { candidate: Candidate }) {
-  const [oneLiner, setOneLiner] = useState('');
-  const [strengths, setStrengths] = useState([{ competency: '', comment: '', behavior: '' }]);
-  const [weaknesses, setWeaknesses] = useState([{ competency: '', comment: '', behavior: '' }]);
-
-  const addStrength = () => setStrengths([...strengths, { competency: '', comment: '', behavior: '' }]);
-  const addWeakness = () => setWeaknesses([...weaknesses, { competency: '', comment: '', behavior: '' }]);
-
-  return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6">
-      <h3 className="font-medium text-gray-900 mb-4">报告内容（可编辑）</h3>
-      
-      <div className="space-y-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">一句话评价</label>
-          <input
-            type="text"
-            value={oneLiner}
-            onChange={(e) => setOneLiner(e.target.value)}
-            placeholder="例如：张三在沟通协作方面表现突出，问题解决有待提升"
-            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <label className="text-sm font-medium text-gray-700">优势项</label>
-            <button onClick={addStrength} className="text-sm text-blue-600 hover:text-blue-700">+ 添加</button>
-          </div>
-          {strengths.map((item, index) => (
-            <div key={index} className="bg-green-50 rounded-lg p-4 mb-3">
-              <input
-                type="text"
-                value={item.competency}
-                onChange={(e) => {
-                  const newStrengths = [...strengths];
-                  newStrengths[index].competency = e.target.value;
-                  setStrengths(newStrengths);
-                }}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg mb-2 text-sm font-medium"
-                placeholder="能力名称"
-              />
-              <textarea
-                value={item.comment}
-                onChange={(e) => {
-                  const newStrengths = [...strengths];
-                  newStrengths[index].comment = e.target.value;
-                  setStrengths(newStrengths);
-                }}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg mb-2 text-sm"
-                rows={2}
-                placeholder="评价语"
-              />
-              <textarea
-                value={item.behavior}
-                onChange={(e) => {
-                  const newStrengths = [...strengths];
-                  newStrengths[index].behavior = e.target.value;
-                  setStrengths(newStrengths);
-                }}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
-                rows={2}
-                placeholder="行为表现"
-              />
-            </div>
-          ))}
-        </div>
-
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <label className="text-sm font-medium text-gray-700">不足项</label>
-            <button onClick={addWeakness} className="text-sm text-blue-600 hover:text-blue-700">+ 添加</button>
-          </div>
-          {weaknesses.map((item, index) => (
-            <div key={index} className="bg-orange-50 rounded-lg p-4 mb-3">
-              <input
-                type="text"
-                value={item.competency}
-                onChange={(e) => {
-                  const newWeaknesses = [...weaknesses];
-                  newWeaknesses[index].competency = e.target.value;
-                  setWeaknesses(newWeaknesses);
-                }}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg mb-2 text-sm font-medium"
-                placeholder="能力名称"
-              />
-              <textarea
-                value={item.comment}
-                onChange={(e) => {
-                  const newWeaknesses = [...weaknesses];
-                  newWeaknesses[index].comment = e.target.value;
-                  setWeaknesses(newWeaknesses);
-                }}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
-                rows={2}
-                placeholder="评价语"
-              />
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function OrganizationReportEditor({ candidate }: { candidate: Candidate }) {
-  const [evaluation, setEvaluation] = useState('');
-  const [strengths, setStrengths] = useState('');
-  const [weaknesses, setWeaknesses] = useState('');
-  const [valuesPotential, setValuesPotential] = useState('');
-  const [suggestions, setSuggestions] = useState({ usage: '', risks: '' });
-
-  return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6">
-      <h3 className="font-medium text-gray-900 mb-4">报告内容（可编辑）</h3>
-      
-      <div className="space-y-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">个人评价</label>
-          <textarea
-            value={evaluation}
-            onChange={(e) => setEvaluation(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-            rows={4}
-            placeholder="请输入个人评价..."
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">个人优势</label>
-          <textarea
-            value={strengths}
-            onChange={(e) => setStrengths(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-            rows={3}
-            placeholder="请输入个人优势..."
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">个人不足</label>
-          <textarea
-            value={weaknesses}
-            onChange={(e) => setWeaknesses(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-            rows={3}
-            placeholder="请输入个人不足..."
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">价值观/发展潜力</label>
-          <textarea
-            value={valuesPotential}
-            onChange={(e) => setValuesPotential(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-            rows={3}
-            placeholder="请输入价值观/发展潜力..."
-          />
-        </div>
-
-        <div className="bg-blue-50 rounded-lg p-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">培养使用建议</label>
-          <div className="space-y-3">
-            <div>
-              <p className="text-xs text-gray-500 mb-1">使用建议</p>
-              <textarea
-                value={suggestions.usage}
-                onChange={(e) => setSuggestions({ ...suggestions, usage: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
-                rows={2}
-                placeholder="使用建议..."
-              />
-            </div>
-            <div>
-              <p className="text-xs text-gray-500 mb-1">风险提示</p>
-              <textarea
-                value={suggestions.risks}
-                onChange={(e) => setSuggestions({ ...suggestions, risks: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
-                rows={2}
-                placeholder="风险提示..."
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function PersonalReportEditor({ candidate }: { candidate: Candidate }) {
-  const [opening, setOpening] = useState('');
-  const [strengthsNote, setStrengthsNote] = useState('');
-  const [improvementsNote, setImprovementsNote] = useState('');
-  const [suggestions, setSuggestions] = useState(['', '', '']);
-  const [courses, setCourses] = useState([{ name: '', platform: '', quarter: '' }]);
-  const [books, setBooks] = useState('');
-
-  const updateSuggestion = (index: number, value: string) => {
-    const newSuggestions = [...suggestions];
-    newSuggestions[index] = value;
-    setSuggestions(newSuggestions);
-  };
-
-  const addCourse = () => setCourses([...courses, { name: '', platform: '', quarter: '' }]);
-
-  return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6">
-      <h3 className="font-medium text-gray-900 mb-4">报告内容（可编辑）</h3>
-      
-      <div className="space-y-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">开头段落（先扬后抑式评价）</label>
-          <textarea
-            value={opening}
-            onChange={(e) => setOpening(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-            rows={4}
-            placeholder="请输入开头段落..."
-          />
-        </div>
-
-        <div className="bg-green-50 rounded-lg p-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">【优势项】</label>
-          <input
-            type="text"
-            value={strengthsNote}
-            onChange={(e) => setStrengthsNote(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg mb-2 text-sm"
-            placeholder="优势项名称，如：沟通协作、用户思维"
-          />
-          <input
-            type="text"
-            value=""
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-xs text-gray-500"
-            placeholder="标注分数情况，如：最高分项、超过5.5分项"
-          />
-        </div>
-
-        <div className="bg-orange-50 rounded-lg p-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">【待提升项】</label>
-          <input
-            type="text"
-            value={improvementsNote}
-            onChange={(e) => setImprovementsNote(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg mb-2 text-sm"
-            placeholder="待提升项名称，如：问题解决"
-          />
-          <input
-            type="text"
-            value=""
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-xs text-gray-500"
-            placeholder="标注分数情况，如：低于5分项"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-3">【发展建议】</label>
-          <div className="space-y-3">
-            {suggestions.map((suggestion, index) => (
-              <div key={index} className="flex items-start gap-2">
-                <span className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-medium flex-shrink-0 mt-1">
-                  {index + 1}
-                </span>
-                <textarea
-                  value={suggestion}
-                  onChange={(e) => updateSuggestion(index, e.target.value)}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                  rows={2}
-                  placeholder={`第${index + 1}条建议...`}
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <label className="text-sm font-medium text-gray-700">【课程学习】</label>
-            <button onClick={addCourse} className="text-sm text-blue-600 hover:text-blue-700">+ 添加</button>
-          </div>
-          <div className="space-y-2">
-            {courses.map((course, index) => (
-              <div key={index} className="flex gap-2">
-                <input
-                  type="text"
-                  value={course.name}
-                  onChange={(e) => {
-                    const newCourses = [...courses];
-                    newCourses[index].name = e.target.value;
-                    setCourses(newCourses);
-                  }}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                  placeholder="课程名"
-                />
-                <input
-                  type="text"
-                  value={course.platform}
-                  onChange={(e) => {
-                    const newCourses = [...courses];
-                    newCourses[index].platform = e.target.value;
-                    setCourses(newCourses);
-                  }}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                  placeholder="公司/平台"
-                />
-                <input
-                  type="text"
-                  value={course.quarter}
-                  onChange={(e) => {
-                    const newCourses = [...courses];
-                    newCourses[index].quarter = e.target.value;
-                    setCourses(newCourses);
-                  }}
-                  className="w-32 px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                  placeholder="季度年份"
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">【书籍阅读】</label>
-          <textarea
-            value={books}
-            onChange={(e) => setBooks(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-            rows={2}
-            placeholder="请输入书名，多个用顿号分隔，如：《第一性原理》、《创新者的窘境》"
-          />
-        </div>
-      </div>
     </div>
   );
 }

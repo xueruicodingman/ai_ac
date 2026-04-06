@@ -1,5 +1,6 @@
 import { ArrowLeft, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
 import { useState } from 'react';
+import { register, login } from '../api';
 
 interface LoginProps {
   onBack: () => void;
@@ -12,14 +13,47 @@ export default function Login({ onBack, onLogin }: LoginProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = () => {
-    if (isLogin) {
-      console.log('登录:', email, password);
-    } else {
-      console.log('注册:', email, password);
+  const handleSubmit = async () => {
+    setError('');
+    
+    if (!email || !password) {
+      setError('请填写邮箱和密码');
+      return;
     }
-    onLogin();
+
+    if (!isLogin && password !== confirmPassword) {
+      setError('两次输入的密码不一致');
+      return;
+    }
+
+    setLoading(true);
+    console.log('Starting login, email:', email);
+
+    try {
+      if (isLogin) {
+        console.log('Calling login API...');
+        await login(email, password);
+        console.log('Login successful');
+      } else {
+        console.log('Calling register API...');
+        await register(email, password);
+        console.log('Register successful, logging in...');
+        await login(email, password);
+        console.log('Auto-login successful');
+      }
+      console.log('Calling onLogin callback');
+      onLogin();
+    } catch (err: any) {
+      console.error('Login/Register error:', err);
+      const errorMsg = err?.message || err?.detail || JSON.stringify(err) || '操作失败，请重试';
+      setError(errorMsg);
+    } finally {
+      console.log('Setting loading to false');
+      setLoading(false);
+    }
   };
 
   return (
@@ -42,6 +76,11 @@ export default function Login({ onBack, onLogin }: LoginProps) {
           </p>
 
           <div className="space-y-4">
+            {error && (
+              <div className="bg-red-50 text-red-600 px-4 py-3 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 邮箱
@@ -109,9 +148,10 @@ export default function Login({ onBack, onLogin }: LoginProps) {
 
             <button
               onClick={handleSubmit}
-              className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+              disabled={loading}
+              className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
-              {isLogin ? '登录' : '注册'}
+              {loading ? '处理中...' : (isLogin ? '登录' : '注册')}
             </button>
           </div>
 

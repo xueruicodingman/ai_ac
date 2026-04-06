@@ -13,6 +13,60 @@ import uuid
 import aiofiles
 from src.config import settings
 
+def parse_file_content(file_path: str, file_type: str) -> str:
+    """解析不同类型的文件并返回文本内容"""
+    ext = os.path.splitext(file_path)[1].lower()
+    
+    # Word 文件 (.docx)
+    if ext == '.docx' or (file_type and 'word' in file_type.lower()):
+        try:
+            from docx import Document
+            doc = Document(file_path)
+            paragraphs = [p.text for p in doc.paragraphs if p.text.strip()]
+            return '\n'.join(paragraphs)
+        except Exception as e:
+            return f"Word文件解析失败: {str(e)}"
+    
+    # Excel 文件 (.xlsx, .xls)
+    elif ext in ['.xlsx', '.xls'] or (file_type and 'excel' in file_type.lower() or 'sheet' in file_type.lower()):
+        try:
+            from openpyxl import load_workbook
+            wb = load_workbook(file_path, read_only=True, data_only=True)
+            content_parts = []
+            for sheet in wb.sheetnames:
+                ws = wb[sheet]
+                content_parts.append(f"\n--- Sheet: {sheet} ---\n")
+                for row in ws.iter_rows(values_only=True):
+                    row_text = ' | '.join([str(cell) if cell is not None else '' for cell in row])
+                    if row_text.strip():
+                        content_parts.append(row_text)
+            return '\n'.join(content_parts)
+        except Exception as e:
+            return f"Excel文件解析失败: {str(e)}"
+    
+    # PDF 文件
+    elif ext == '.pdf' or (file_type and 'pdf' in file_type.lower()):
+        try:
+            from pypdf import PdfReader
+            reader = PdfReader(file_path)
+            content_parts = []
+            for page in reader.pages:
+                text = page.extract_text()
+                if text:
+                    content_parts.append(text)
+            return '\n'.join(content_parts)
+        except Exception as e:
+            return f"PDF文件解析失败: {str(e)}"
+    
+    # 纯文本文件
+    else:
+        try:
+            with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                return f.read()
+        except Exception as e:
+            return f"文件读取失败: {str(e)}"
+
+
 router = APIRouter(prefix="/api/files", tags=["文件处理"])
 
 @router.post("/upload")
@@ -48,10 +102,46 @@ async def upload_file(
             "id": db_file.id,
             "name": db_file.name,
             "type": db_file.type,
-            "size": db_file.size
+            "size": db_file.size,
+            "file_path": db_file.file_path
         }
     }
 
+@router.get("/{file_id}/content")
+async def get_file_content(
+    file_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    result = await db.execute(
+        select(FileModel).where(
+            FileModel.id == file_id,
+            FileModel.user_id == current_user.id
+        )
+    )
+    file = result.scalar_one_or_none()
+    if not file:
+        raise HTTPException(status_code=404, detail="文件不存在")
+    
+    # 使用新的解析函数提取文件内容
+    try:
+        content = parse_file_content(file.file_path, file.type or "")
+        return {"success": True, "data": {"content": content, "type": get_file_type(file.type or "")}}
+    except Exception as e:
+        return {"success": True, "data": {"content": f"文件解析失败: {str(e)}", "type": "error"}}
+
+
+def get_file_type(content_type: str) -> str:
+    """根据content-type返回文件类型"""
+    if 'pdf' in content_type.lower():
+        return 'pdf'
+    elif 'word' in content_type.lower() or 'document' in content_type.lower():
+        return 'word'
+    elif 'excel' in content_type.lower() or 'sheet' in content_type.lower():
+        return 'excel'
+    elif 'text' in content_type.lower():
+        return 'text'
+    return 'unknown'
 @router.post("/parse-assessment")
 async def parse_assessment(
     file_id: int,

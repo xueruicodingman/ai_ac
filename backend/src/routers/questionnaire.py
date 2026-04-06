@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Body
+from fastapi.requests import Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_
 from src.database import get_db
@@ -10,18 +11,25 @@ from src.schemas.questionnaire import (
 )
 from src.services.questionnaire_service import QuestionnaireService
 from src.services.user_settings_service import get_user_llm_config
-from typing import List
+from typing import List, Optional
+import json
 
 router = APIRouter(prefix="/api/questionnaires", tags=["题本生成"])
 
 @router.post("/generate")
 async def generate_questionnaire(
     tool_id: str,
-    competency_model: dict,
-    evaluation_matrix: dict,
+    competency_model: dict = Body(...),
+    evaluation_matrix: dict = Body(...),
+    background_file_content: Optional[str] = Body(None),
+    requirement: str = Body(""),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
+    print(f"[API] generate_questionnaire called, tool_id={tool_id}")
+    print(f"[API] received background_file_content: {background_file_content[:100] if background_file_content else None}...")
+    print(f"[API] background_file_content length: {len(background_file_content) if background_file_content else 0}")
+    
     llm_config = await get_user_llm_config(db, current_user.id)
     
     if not llm_config["api_key"]:
@@ -32,18 +40,22 @@ async def generate_questionnaire(
         model=llm_config["model"],
         api_url=llm_config["api_url"]
     )
+    print(f"[API] Calling service.generate()...")
     content = await service.generate(
         tool_id=tool_id,
         competency_model=competency_model,
-        evaluation_matrix=evaluation_matrix
+        evaluation_matrix=evaluation_matrix,
+        background_file_content=background_file_content,
+        requirement=requirement
     )
+    print(f"[API] service.generate() completed, content length: {len(content)}")
     tool_info = service.get_tool_info(tool_id)
     return {"success": True, "data": {"content": content, **tool_info}}
 
 @router.get("/tools")
 async def get_tools():
-    service = QuestionnaireService(api_key="")
-    return {"success": True, "data": service.get_all_tools()}
+    from src.services.questionnaire_service import TOOL_INFO
+    return {"success": True, "data": TOOL_INFO}
 
 @router.get("/{tool_id}", response_model=QuestionnaireResponse)
 async def get_questionnaire(

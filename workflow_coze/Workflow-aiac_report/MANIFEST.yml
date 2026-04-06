@@ -1,0 +1,11 @@
+type: Workflow
+version: 1.0.0
+main:
+    id: 7621774086596132873
+    name: aiac_report
+    desc: 需要利用行为记录表生成AC测评报告组织版本
+    icon: plugin_icon/workflow.png
+    version: ""
+    flowMode: 0
+    commitId: ""
+sub: []

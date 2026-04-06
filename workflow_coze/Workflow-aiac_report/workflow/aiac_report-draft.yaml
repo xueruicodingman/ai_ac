@@ -1,0 +1,1641 @@
+schema_version: 1.0.0
+name: aiac_report
+id: 7621774086596132873
+description: "需要利用行为记录表生成AC测评报告组织版本"
+mode: workflow
+icon: plugin_icon/workflow.png
+nodes:
+    - id: "100001"
+      type: start
+      title: 开始
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg
+      description: "工作流的起始节点，用于设定启动工作流需要的信息"
+      position:
+        x: 180
+        y: 57.999999999999936
+      parameters:
+        node_outputs:
+            ability:
+                type: list
+                items:
+                    type: object
+                    value: null
+                required: true
+                value: null
+            behavior_record:
+                type: string
+                required: true
+                value: null
+            report_type:
+                type: string
+                value: null
+    - id: "900001"
+      type: end
+      title: 结束
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg
+      description: "工作流的最终节点，用于返回工作流运行后的结果信息"
+      position:
+        x: 4980
+        y: 259.5999999999999
+      parameters:
+        node_inputs:
+            - name: output
+              input:
+                type: string
+                value:
+                    path: output
+                    ref_node: "195857"
+            - name: output1
+              input:
+                type: string
+                value:
+                    path: output
+                    ref_node: "170858"
+            - name: output2
+              input:
+                type: string
+                value:
+                    path: output
+                    ref_node: "132157"
+        terminatePlan: returnVariables
+    - id: "176371"
+      type: batch
+      title: 能力评价-批处理
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Batch-v2.jpg
+      description: "通过设定批量运行次数和逻辑，运行批处理体内的任务"
+      position:
+        x: 1660
+        y: 44.99999999999999
+      canvas_position:
+        x: 1480
+        y: 336.19999999999993
+      parameters:
+        batchSize:
+            type: integer
+            value:
+                content: 100
+                rawMeta:
+                    type: 2
+                type: literal
+        concurrentSize:
+            type: integer
+            value:
+                content: 10
+                rawMeta:
+                    type: 2
+                type: literal
+        node_inputs:
+            - name: output
+              input:
+                type: list
+                items:
+                    type: object
+                    value: null
+                value:
+                    path: output
+                    ref_node: "136490"
+        node_outputs:
+            output:
+                value:
+                    type: list
+                    items:
+                        type: string
+                        value: null
+                    value:
+                        path: output
+                        ref_node: "170852"
+      nodes:
+        - id: "170852"
+          type: llm
+          title: 大模型
+          icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg
+          description: "调用大语言模型,使用变量和提示词生成回复"
+          version: "3"
+          position:
+            x: 180
+            y: 0
+          parameters:
+            fcParamVar:
+                knowledgeFCParam: {}
+            llmParam:
+                - name: apiMode
+                  input:
+                    type: integer
+                    value: "0"
+                - name: temperature
+                  input:
+                    type: float
+                    value: "0.8"
+                - name: topP
+                  input:
+                    type: float
+                    value: "1"
+                - name: frequencyPenalty
+                  input:
+                    type: float
+                    value: "0"
+                - name: maxTokens
+                  input:
+                    type: integer
+                    value: "32768"
+                - name: spCurrentTime
+                  input:
+                    type: boolean
+                    value: false
+                - name: spAntiLeak
+                  input:
+                    type: boolean
+                    value: false
+                - name: thinkingType
+                  input:
+                    type: string
+                    value: enabled
+                - name: responseFormat
+                  input:
+                    type: integer
+                    value: "2"
+                - name: modelName
+                  input:
+                    type: string
+                    value: 豆包·1.8·深度思考
+                - name: modelType
+                  input:
+                    type: integer
+                    value: "1768187121"
+                - name: generationDiversity
+                  input:
+                    type: string
+                    value: default_val
+                - name: parameters
+                  input:
+                    type: object
+                    properties:
+                        max_completion_tokens:
+                            type: integer
+                            value: "0"
+                        reasoning_effort:
+                            type: string
+                            value: medium
+                    value: null
+                - name: prompt
+                  input:
+                    type: string
+                    value: |-
+                        输入：{{input}}{{output}}
+                        能力评估标准为：{{ability}}
+                - name: enableChatHistory
+                  input:
+                    type: boolean
+                    value: false
+                - name: chatHistoryRound
+                  input:
+                    type: integer
+                    value: "3"
+                - name: systemPrompt
+                  input:
+                    type: string
+                    value: |-
+                        你是一个人才评估专家，你将会得到一个面试官过程不同候选人在不同面试环节的行为表现记录，你需要基于【能力评估标准】和候选人在面试环节的【行为表现】来撰写其各项能力的评价语。
+                        【能力评估标准】
+                        能力评估标准为：{{ability}}
+
+                        请您从以上的评价标准的角度，匹配与【能力评价标准】相关联的【行为表现】，对候选人的各项能力进行评价，并且给出相应的行为依据，输出的内容示例如下：
+                        ########示例#######
+                        【A1】
+                                 【沟通协作】
+                                        【评价语】：沟通不够主动，但是在应对矛盾时有较好的沟通技巧
+                                        【行为表现】：在小组讨论中，发言不主动，比较被动，一直在等待；在FBEI中，在处理和采购沟通摄影师价格，与领导沟通压预算的事情上，不是硬碰硬，而是强调事情本身的价值，同时在非重点项上先做出让步，然后在重点项上努力争取
+                                  【问题解决】
+                                        【评价语】：******
+                                        【行为表现】：********
+                        #######示例结束########
+
+                        注意：
+                        1. 当【行为表现】不够丰富，不足以围绕【能力评价标准】给出评价语时，请在对应的【评价语】后写“未捕捉到充分的行为依据”
+                        2. 行为不对
+                - name: stableSystemPrompt
+                  input:
+                    type: string
+                    value: ""
+                - name: canContinue
+                  input:
+                    type: boolean
+                    value: false
+                - name: loopPromptVersion
+                  input:
+                    type: string
+                    value: ""
+                - name: loopPromptName
+                  input:
+                    type: string
+                    value: ""
+                - name: loopPromptId
+                  input:
+                    type: string
+                    value: ""
+            node_inputs:
+                - name: output
+                  input:
+                    type: list
+                    items:
+                        type: object
+                        value: null
+                    value:
+                        path: output
+                        ref_node: "136490"
+                - name: ability
+                  input:
+                    value:
+                        path: ability
+                        ref_node: "100001"
+            node_outputs:
+                output:
+                    type: string
+                    value: null
+                reasoning_content:
+                    type: string
+                    value: null
+            settingOnError:
+                processType: 1
+                retryTimes: 0
+                switch: false
+                timeoutMs: 600000
+      edges:
+        - source_node: "176371"
+          target_node: "170852"
+          source_port: batch-function-inline-output
+        - source_node: "170852"
+          target_node: "176371"
+          target_port: batch-function-inline-input
+    - id: "102166"
+      type: llm
+      title: 报告审核
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg
+      description: "调用大语言模型,使用变量和提示词生成回复"
+      version: "3"
+      position:
+        x: 2220
+        y: 19
+      parameters:
+        fcParamVar:
+            knowledgeFCParam: {}
+        llmParam:
+            - name: apiMode
+              input:
+                type: integer
+                value: "0"
+            - name: temperature
+              input:
+                type: float
+                value: "0.5"
+            - name: topP
+              input:
+                type: float
+                value: "1"
+            - name: frequencyPenalty
+              input:
+                type: float
+                value: "0"
+            - name: maxTokens
+              input:
+                type: integer
+                value: "4096"
+            - name: spCurrentTime
+              input:
+                type: boolean
+                value: false
+            - name: spAntiLeak
+              input:
+                type: boolean
+                value: false
+            - name: thinkingType
+              input:
+                type: string
+                value: enabled
+            - name: responseFormat
+              input:
+                type: integer
+                value: "2"
+            - name: modelName
+              input:
+                type: string
+                value: 豆包·1.8·深度思考
+            - name: modelType
+              input:
+                type: integer
+                value: "1768187121"
+            - name: generationDiversity
+              input:
+                type: string
+                value: balance
+            - name: parameters
+              input:
+                type: object
+                properties:
+                    max_completion_tokens:
+                        type: integer
+                        value: "0"
+                    reasoning_effort:
+                        type: string
+                        value: medium
+                value: null
+            - name: prompt
+              input:
+                type: string
+                value: ""
+            - name: enableChatHistory
+              input:
+                type: boolean
+                value: false
+            - name: chatHistoryRound
+              input:
+                type: integer
+                value: "3"
+            - name: systemPrompt
+              input:
+                type: string
+                value: "你是一个人才评估专家，善于发现评价报告中的漏洞，尤其善于发现其中的逻辑漏洞。\n\n# 输入\n{{input}}\n\n# 评价标准      \n{{ability}}\n# 审核原则    \n从以下两个方面进行审核：\n*评价语与评价标准不相关*：并没有围绕评价标准去做评价\n*行为表现不能支撑评价语*：无法通过行为评价得出相应的评价语吗，或者可能也可以其他的评价\n# 输出要求\n1. 找到有漏洞的评价语\n2. 在{{input}}的基础上进行补充标记漏洞分析部分\n3. 输出中不要删减任何输入的内容\n4.  输出中不要遗漏任何一个考生代号\n\n# 输出示例\n \n【候选人A1】\n       【沟通协作】\n                【评价语】：沟通中说话喜欢铺垫，不够简洁\n                【行为表现】：在小组讨论中，发言不主动，比较被动，一直在等待；在FBEI中，在处理和采购沟通摄影师价格，与领导沟通压预算的事情上，不是硬碰硬，而是强调事情本身的价值，同时在非重点项上先做出让步，然后在重点项上努力争取\n                【漏洞分析】：评价语中“沟通中说话喜欢铺垫，不够简洁”的评价，但是在能力标准中并没有“表达简洁”之类的要求，出现*评价语与评价标准不相关*漏洞\n"
+            - name: stableSystemPrompt
+              input:
+                type: string
+                value: ""
+            - name: canContinue
+              input:
+                type: boolean
+                value: false
+            - name: loopPromptVersion
+              input:
+                type: string
+                value: ""
+            - name: loopPromptName
+              input:
+                type: string
+                value: ""
+            - name: loopPromptId
+              input:
+                type: string
+                value: ""
+        node_inputs:
+            - name: input
+              input:
+                type: list
+                items:
+                    type: string
+                    value: null
+                value:
+                    path: output
+                    ref_node: "176371"
+            - name: ability
+              input:
+                value:
+                    path: ability
+                    ref_node: "100001"
+        node_outputs:
+            output:
+                type: string
+                value: null
+            reasoning_content:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            switch: false
+            timeoutMs: 600000
+    - id: "163938"
+      type: llm
+      title: 报告优化
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg
+      description: "调用大语言模型,使用变量和提示词生成回复"
+      version: "3"
+      position:
+        x: 2680
+        y: 19
+      parameters:
+        fcParamVar:
+            knowledgeFCParam: {}
+        llmParam:
+            - name: apiMode
+              input:
+                type: integer
+                value: "0"
+            - name: temperature
+              input:
+                type: float
+                value: "0.5"
+            - name: topP
+              input:
+                type: float
+                value: "1"
+            - name: frequencyPenalty
+              input:
+                type: float
+                value: "0"
+            - name: maxTokens
+              input:
+                type: integer
+                value: "4096"
+            - name: spCurrentTime
+              input:
+                type: boolean
+                value: false
+            - name: spAntiLeak
+              input:
+                type: boolean
+                value: false
+            - name: thinkingType
+              input:
+                type: string
+                value: enabled
+            - name: responseFormat
+              input:
+                type: integer
+                value: "2"
+            - name: modelName
+              input:
+                type: string
+                value: 豆包·1.8·深度思考
+            - name: modelType
+              input:
+                type: integer
+                value: "1768187121"
+            - name: generationDiversity
+              input:
+                type: string
+                value: balance
+            - name: parameters
+              input:
+                type: object
+                properties:
+                    max_completion_tokens:
+                        type: integer
+                        value: "0"
+                    reasoning_effort:
+                        type: string
+                        value: medium
+                value: null
+            - name: prompt
+              input:
+                type: string
+                value: 报告初稿：{{input}}
+            - name: enableChatHistory
+              input:
+                type: boolean
+                value: false
+            - name: chatHistoryRound
+              input:
+                type: integer
+                value: "3"
+            - name: systemPrompt
+              input:
+                type: string
+                value: |-
+                    你是一个报告优化专家，你会基于报告出现的漏洞去对报告做优化。
+
+                    # 输入
+                    报告初稿：{{input}}
+                    # 优化原则
+                    1. 【定位漏洞类型】：对输入材料中【漏洞分析】进行分析，定位是以下哪一类漏洞
+                    *评价语与评价标准不相关*：并没有围绕评价标准去做评价
+                    *行为表现不能支撑评价语*：无法通过行为评价得出相应的评价语吗，或者可能也可以其他的评价
+                    2. 【漏洞优化】
+                    针对*评价语与评价标准不相关*型漏洞，优化逻辑如下：
+                    第一步：对评价标准拆分成若干个细分标准；
+                    第二步：分析与行为表现相关的细分标准；
+                    第三步：围绕该细分标准重新撰写评价语；
+                    针对*行为表现不能支撑评价语*型漏洞，优化逻辑如下：
+                    第一步：基于行为表现提取出若干个可靠的评价结论；
+                    第二步：提取出与评价标准相关的评价结论；
+                    第三步：将该评价结论结论语句润色后座位最后的评价语；
+                    3. 不改变原文结构，不做大规模的调整和修改
+                    4.  漏洞优化后即可删除漏洞分析部分的内容，保留洽谈内容
+                    # 输出
+                    1. 完全按照{{input}}的结构输出，在原有文字的基础上新增、修改内容，进行一版本优化
+                    2. 输出中不要遗漏任何一个考生代号
+            - name: stableSystemPrompt
+              input:
+                type: string
+                value: ""
+            - name: canContinue
+              input:
+                type: boolean
+                value: false
+            - name: loopPromptVersion
+              input:
+                type: string
+                value: ""
+            - name: loopPromptName
+              input:
+                type: string
+                value: ""
+            - name: loopPromptId
+              input:
+                type: string
+                value: ""
+        node_inputs:
+            - name: input
+              input:
+                value:
+                    path: output
+                    ref_node: "102166"
+        node_outputs:
+            output:
+                type: string
+                value: null
+            reasoning_content:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            switch: false
+            timeoutMs: 600000
+    - id: "136490"
+      type: llm
+      title: 文字json化
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg
+      description: "调用大语言模型,使用变量和提示词生成回复"
+      version: "3"
+      position:
+        x: 640
+        y: 18.999999999999943
+      parameters:
+        fcParamVar:
+            knowledgeFCParam: {}
+        llmParam:
+            - name: apiMode
+              input:
+                type: integer
+                value: "0"
+            - name: temperature
+              input:
+                type: float
+                value: "1"
+            - name: topP
+              input:
+                type: float
+                value: "0.7"
+            - name: frequencyPenalty
+              input:
+                type: float
+                value: "0"
+            - name: maxTokens
+              input:
+                type: integer
+                value: "32768"
+            - name: spCurrentTime
+              input:
+                type: boolean
+                value: false
+            - name: spAntiLeak
+              input:
+                type: boolean
+                value: false
+            - name: thinkingType
+              input:
+                type: string
+                value: enabled
+            - name: responseFormat
+              input:
+                type: integer
+                value: "2"
+            - name: modelName
+              input:
+                type: string
+                value: 豆包·1.8·深度思考
+            - name: modelType
+              input:
+                type: integer
+                value: "1768187121"
+            - name: generationDiversity
+              input:
+                type: string
+                value: default_val
+            - name: parameters
+              input:
+                type: object
+                properties:
+                    max_completion_tokens:
+                        type: integer
+                        value: "0"
+                    reasoning_effort:
+                        type: string
+                        value: medium
+                value: null
+            - name: prompt
+              input:
+                type: string
+                value: 输入的内容为：{{input}}
+            - name: enableChatHistory
+              input:
+                type: boolean
+                value: false
+            - name: chatHistoryRound
+              input:
+                type: integer
+                value: "3"
+            - name: systemPrompt
+              input:
+                type: string
+                value: |-
+                    你是一个文字提取专家，你要分辨给你输入的信息是什么，可能是是一个链接，或者一套文字材料，如果是链接，就请你访问链接，然后获取文字材料，如果是文字材料，请你直接分析这些文字。
+                    这些文字是情境模拟中的不同考生的行为记录，请你把它转化成json的数据格式。
+
+
+                    # 输入
+                    输入的内容为：{{input}}
+                    这些文字是情境模拟中的不同考生的行为记录，一定要分析其结构，分析考生和行为的对应关系
+
+                    # 文本内容
+                    1. 文本中的字母代号，例如A1、B1、C2等，这些就是考生代号
+                    2. 文本中的小组讨论、个人愿景、角色扮演、FBEI、案例分析等内容是模拟练习的名称
+                    3. 文本中的内容例如学习创新、沟通协作等是能力的名称
+                    4. 大串文字记录，例如“1. 我们协同的目标是什么，竞争力还是价格？我们有什么课题？2.有没有更具体的对策？拢一下，有没有更具体的措施3.客户分层的都在点子上，被PASS掉了4.6号提到了”，这是行为记录
+                    # 文本对应关系
+                    A1-小组讨论-问题解决-“1. 我们协同的目标是什么，竞争力还是价格？我们有什么课题？2.有没有更具体的对策？拢一下，有没有更具体的措施3.客户分层的都在点子上，被PASS掉了4.6号提到了”，反应的含义是：考生A1在小组讨论模拟练习中，在被考察的问题解决能力上，评委记录的行为表现内容为：“1. 我们协同的目标是什么，竞争力还是价格？我们有什么课题？2.有没有更具体的对策？拢一下，有没有更具体的措施3.客户分层的都在点子上，被PASS掉了4.6号提到了”
+                    # 输出示例
+                    根据内容和结构按照如下的格式输出json格式：
+                    {
+                        "考生代号": "A1",
+                        "练习名称": "小组讨论",
+                        "能力名称": "学习创新"，
+                        "行为记录": "我们协同的目标是什么，竞争力还是价格？我们有什么课题？2.有没有更具体的对策？拢一下，有没有更具体的措施3.客户分层的都在点子上，被PASS掉了4.6号提到了"
+                      }
+                    # 输出要求
+                    考生代号、练习名称、能力名称、行为记录要对应好，不要对应出错。
+            - name: stableSystemPrompt
+              input:
+                type: string
+                value: ""
+            - name: canContinue
+              input:
+                type: boolean
+                value: false
+            - name: loopPromptVersion
+              input:
+                type: string
+                value: ""
+            - name: loopPromptName
+              input:
+                type: string
+                value: ""
+            - name: loopPromptId
+              input:
+                type: string
+                value: ""
+        node_inputs:
+            - name: input
+              input:
+                value:
+                    path: behavior_record
+                    ref_node: "100001"
+        node_outputs:
+            output:
+                type: list
+                items:
+                    type: object
+                    value: null
+                value: null
+            reasoning_content:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            switch: false
+            timeoutMs: 600000
+    - id: "186427"
+      type: llm
+      title: 潜力评估
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg
+      description: "调用大语言模型,使用变量和提示词生成回复"
+      version: "3"
+      position:
+        x: 3600
+        y: 13.999999999999943
+      parameters:
+        fcParamVar:
+            knowledgeFCParam: {}
+        llmParam:
+            - name: modelType
+              input:
+                type: integer
+                value: "1768187121"
+            - name: modelName
+              input:
+                type: string
+                value: 豆包·1.8·深度思考
+            - name: generationDiversity
+              input:
+                type: string
+                value: balance
+            - name: temperature
+              input:
+                type: float
+                value: "0.5"
+            - name: topP
+              input:
+                type: float
+                value: "1"
+            - name: frequencyPenalty
+              input:
+                type: float
+                value: "0"
+            - name: maxTokens
+              input:
+                type: integer
+                value: "4096"
+            - name: spCurrentTime
+              input:
+                type: boolean
+                value: false
+            - name: spAntiLeak
+              input:
+                type: boolean
+                value: false
+            - name: responseFormat
+              input:
+                type: integer
+                value: "2"
+            - name: parameters
+              input:
+                type: object
+                properties:
+                    max_completion_tokens:
+                        type: integer
+                        value: "0"
+                value: null
+            - name: prompt
+              input:
+                type: string
+                value: ""
+            - name: enableChatHistory
+              input:
+                type: boolean
+                value: false
+            - name: chatHistoryRound
+              input:
+                type: integer
+                value: "3"
+            - name: systemPrompt
+              input:
+                type: string
+                value: |-
+                    你是一个人才评估专家，你需要通过考生的胜任力评估报告来对其进行管理潜力评估。
+                    # 输入
+                    输入的是考生的能力评估报告：{{input}}
+                    # 潜力评估标准
+                    1. 学习敏锐度
+                    指快速从经验、信息中吸收知识、提炼规律，并灵活应用于新场景的能力。核心是 “快速迭代”—— 不仅能高效学会新技能、理解新领域，还能在陌生环境或变化中快速调整认知，将学习成果转化为实际成果，不局限于过往经验的束缚。
+                    2. 人际敏感度
+                    是感知、理解他人情绪、需求和行为动机的能力，以及据此灵活调整沟通方式、建立良好关系的素养。表现为能精准捕捉沟通中的潜台词，尊重他人差异，在协作、冲突处理中兼顾他人感受与目标达成，有效搭建人际连接、凝聚团队合力。
+                    3. 自驱力
+                    源于内在目标或兴趣的、持续推动自身前进的动力。核心是 “主动自发”—— 无需外部强督促，就能明确方向、设定高标准，在面对困难时保持韧性，主动寻求突破，不断追求自我提升和目标实现，而非满足于完成基础任务。
+                    4. 情绪稳定性（抗压能力）
+                    指在压力、挫折、突发状况或负面反馈面前，保持情绪平稳、心态理性的能力。关键是 “可控性”—— 不被极端情绪左右决策和行为，能快速调节心态，客观分析问题、聚焦解决方案，在高压环境中依然保持高效输出和稳定表现。
+                    5. 思维能力
+                    是对信息进行加工、分析、判断和构建的核心能力，核心包含两大方向：
+                    批判性思考：不盲从权威或表面信息，能独立审视论据、识别逻辑漏洞，基于事实做出理性判断，不被固有认知或偏见束缚；
+                    系统思考：能看到事物之间的关联与整体格局，从全局视角分析问题的根源与影响，统筹兼顾各要素，制定全面、可持续的解决方案，而非局限于局部细节。
+
+                    # 输出示例
+                    【A1】
+                           【人际敏感性】
+                                  【评价语】：对他人的情绪比较敏感，能够与他人建立良好的互动关系
+
+                    # 注意事项
+                    1. 当【行为表现】不够丰富，不足以围绕【潜力评价标准】给出评价语时，请在对应的【评价语】后写“未捕捉到充分的行为依据”
+                    2. 如果没有充分的行为依据和能力评价结果可以支撑得出任何潜力评价语，就不要在报告中体现该潜力的分析结果
+            - name: stableSystemPrompt
+              input:
+                type: string
+                value: ""
+            - name: canContinue
+              input:
+                type: boolean
+                value: false
+            - name: loopPromptVersion
+              input:
+                type: string
+                value: ""
+            - name: loopPromptName
+              input:
+                type: string
+                value: ""
+            - name: loopPromptId
+              input:
+                type: string
+                value: ""
+        node_inputs:
+            - name: input
+              input:
+                value:
+                    path: output
+                    ref_node: "163938"
+        node_outputs:
+            output:
+                type: string
+                value: null
+            reasoning_content:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            switch: false
+            timeoutMs: 600000
+    - id: "195857"
+      type: llm
+      title: 报告整合
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg
+      description: "调用大语言模型,使用变量和提示词生成回复"
+      version: "3"
+      position:
+        x: 4520
+        y: 13.999999999999943
+      parameters:
+        fcParamVar:
+            knowledgeFCParam: {}
+        llmParam:
+            - name: generationDiversity
+              input:
+                type: string
+                value: default_val
+            - name: apiMode
+              input:
+                type: integer
+                value: "0"
+            - name: temperature
+              input:
+                type: float
+                value: "0.5"
+            - name: topP
+              input:
+                type: float
+                value: "1"
+            - name: frequencyPenalty
+              input:
+                type: float
+                value: "0"
+            - name: maxTokens
+              input:
+                type: integer
+                value: "32768"
+            - name: spCurrentTime
+              input:
+                type: boolean
+                value: false
+            - name: spAntiLeak
+              input:
+                type: boolean
+                value: false
+            - name: thinkingType
+              input:
+                type: string
+                value: enabled
+            - name: responseFormat
+              input:
+                type: integer
+                value: "2"
+            - name: modelType
+              input:
+                type: integer
+                value: "1768187121"
+            - name: modelName
+              input:
+                type: string
+                value: 豆包·1.8·深度思考
+            - name: parameters
+              input:
+                type: object
+                properties:
+                    max_completion_tokens:
+                        type: integer
+                        value: "0"
+                    reasoning_effort:
+                        type: string
+                        value: medium
+                value: null
+            - name: prompt
+              input:
+                type: string
+                value: |-
+                    潜力评估报告：{{output}}
+                    能力评估报告：{{input}}
+                    管理发展建议：{{output1}}
+            - name: enableChatHistory
+              input:
+                type: boolean
+                value: false
+            - name: chatHistoryRound
+              input:
+                type: integer
+                value: "3"
+            - name: systemPrompt
+              input:
+                type: string
+                value: |-
+                    你是一个报告撰写专家，请你整合两份报告。
+
+                    # 输入
+                    潜力评估报告：{{output}}
+                    能力评估报告：{{input}}
+                    管理发展建议：{{output1}}
+
+                    # 整合原则
+                    1. 按照考生编号进行内容聚合，其中A1、B1、C1等是考生的代号
+                    2. 每个考生代号下，都有能力、潜力、管理发展建议方面的内容
+                    3. 输出所有考生的能力、潜力、管理发展建议
+                    4. 不改变原文内容，只按照考生代号进行聚合
+                    5. 结构化输出，格式与标题逻辑严谨
+                    6. 删除原报告中漏洞分析的内容
+
+                    # 输出示例
+                    包括考生编号、该考生的能力、潜力、管理发展建议
+                    ## A1
+                    ### 能力
+                    #### 沟通协作
+                    ##### 评价语
+                    沟通不够主动，但是在应对矛盾时有较好的沟通技巧
+                    ##### 行为表现
+                    在小组讨论中，发言不主动，比较被动，一直在等待；在FBEI中，在处理和采购沟通摄影师价格，与领导沟通压预算的事情上，不是硬碰硬，而是强调事情本身的价值，同时在非重点项上先做出让步，然后在重点项上努力争取
+                    #### 问题解决
+                    ##### 评价语
+                    ***********
+                    ##### 行为表现
+                    ***********
+                    ### 潜力
+                    #### 自驱力
+                    ***********
+                    #### 学习敏锐度
+                    ***********
+                    ### 管理发展建议
+                    #### 使用建议
+                    ***********
+                    #### 风险提示
+                    ***********
+                    #### 发展建议
+                    ***********
+            - name: stableSystemPrompt
+              input:
+                type: string
+                value: ""
+            - name: canContinue
+              input:
+                type: boolean
+                value: false
+            - name: loopPromptVersion
+              input:
+                type: string
+                value: ""
+            - name: loopPromptName
+              input:
+                type: string
+                value: ""
+            - name: loopPromptId
+              input:
+                type: string
+                value: ""
+        node_inputs:
+            - name: input
+              input:
+                value:
+                    path: output
+                    ref_node: "163938"
+            - name: output
+              input:
+                value:
+                    path: output
+                    ref_node: "186427"
+            - name: output1
+              input:
+                type: string
+                value:
+                    path: output
+                    ref_node: "193707"
+        node_outputs:
+            output:
+                type: string
+                value: null
+            reasoning_content:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            switch: false
+            timeoutMs: 600000
+    - id: "193707"
+      type: llm
+      title: 管理发展建议
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg
+      description: "调用大语言模型,使用变量和提示词生成回复"
+      version: "3"
+      position:
+        x: 4060
+        y: 13.999999999999943
+      parameters:
+        fcParamVar:
+            knowledgeFCParam: {}
+        llmParam:
+            - name: modelType
+              input:
+                type: integer
+                value: "1768187121"
+            - name: modelName
+              input:
+                type: string
+                value: 豆包·1.8·深度思考
+            - name: generationDiversity
+              input:
+                type: string
+                value: balance
+            - name: temperature
+              input:
+                type: float
+                value: "0.5"
+            - name: topP
+              input:
+                type: float
+                value: "1"
+            - name: frequencyPenalty
+              input:
+                type: float
+                value: "0"
+            - name: maxTokens
+              input:
+                type: integer
+                value: "4096"
+            - name: spCurrentTime
+              input:
+                type: boolean
+                value: false
+            - name: spAntiLeak
+              input:
+                type: boolean
+                value: false
+            - name: responseFormat
+              input:
+                type: integer
+                value: "2"
+            - name: parameters
+              input:
+                type: object
+                properties:
+                    max_completion_tokens:
+                        type: integer
+                        value: "0"
+                value: null
+            - name: prompt
+              input:
+                type: string
+                value: |-
+                    潜力评估报告：{{input}}
+                    能力评估报告：{{output}}
+            - name: enableChatHistory
+              input:
+                type: boolean
+                value: false
+            - name: chatHistoryRound
+              input:
+                type: integer
+                value: "3"
+            - name: systemPrompt
+              input:
+                type: string
+                value: |
+                    你是一个干部管理专家，你在干部的任用方面非常专业，现在你得到一份干部评估报告，请你基于此报告给出管理发展建议。
+
+                    # 输入
+                    潜力评估报告：{{input}}
+                    能力评估报告：{{output}}
+
+                    # 提建议的内容和原则
+                    使用建议：评估候选人当前适合从事的岗位和未来职业发展的方向
+                    任用风险：评估候选人任职当前推荐岗位的风险是什么
+                    发展建议：提出学习、培养、实践锻炼方面的发展建议
+                    # 输出要求
+                    使用建议：50字以内
+                    任用风险：50字以内
+                    发展建议：100字以内
+            - name: stableSystemPrompt
+              input:
+                type: string
+                value: ""
+            - name: canContinue
+              input:
+                type: boolean
+                value: false
+            - name: loopPromptVersion
+              input:
+                type: string
+                value: ""
+            - name: loopPromptName
+              input:
+                type: string
+                value: ""
+            - name: loopPromptId
+              input:
+                type: string
+                value: ""
+        node_inputs:
+            - name: input
+              input:
+                value:
+                    path: output
+                    ref_node: "186427"
+            - name: output
+              input:
+                value:
+                    path: output
+                    ref_node: "163938"
+        node_outputs:
+            output:
+                type: string
+                value: null
+            reasoning_content:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 1
+            switch: false
+            timeoutMs: 600000
+    - id: "173533"
+      type: intent
+      title: 意图识别
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Intent-v2.jpg
+      description: "用于用户输入的意图识别，并将其与预设意图选项进行匹配。"
+      position:
+        x: 1100
+        y: 323.19999999999993
+      parameters:
+        chatHistorySetting:
+            chatHistoryRound: 3
+            enableChatHistory: false
+        intents:
+            - name: 组织版
+            - name: 个人版
+            - name: 反馈版
+        llmParam:
+            cachingExpireTime: 259200
+            chatHistoryRound: 3
+            enableChatHistory: false
+            frequencyPenalty: 0
+            generationDiversity: default_val
+            maxOutputTokens: 4096
+            maxTokens: 100
+            modelName: 豆包·2.0·lite
+            modelType: 1.772546477e+09
+            parameters:
+                max_completion_tokens: 0
+                reasoning_effort: minimal
+            prompt:
+                type: string
+                value:
+                    content: '{{query}}'
+                    type: literal
+            responseFormat: 2
+            store: true
+            systemPrompt:
+                type: string
+                value:
+                    content: ""
+                    type: literal
+            temperature: 0.3
+            thinkingType: disabled
+            topP: 1
+        mode: top_speed
+        node_inputs:
+            - name: query
+              input:
+                value:
+                    path: report_type
+                    ref_node: "100001"
+        node_outputs:
+            classificationId:
+                type: integer
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            timeoutMs: 60000
+        version: "2"
+    - id: "170858"
+      type: llm
+      title: 反馈版报告撰写
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg
+      description: "调用大语言模型,使用变量和提示词生成回复"
+      version: "3"
+      position:
+        x: 4520
+        y: 552.8
+      parameters:
+        fcParamVar:
+            knowledgeFCParam: {}
+        llmParam:
+            - name: modelType
+              input:
+                type: integer
+                value: "1768187121"
+            - name: modelName
+              input:
+                type: string
+                value: 豆包·1.8·深度思考
+            - name: generationDiversity
+              input:
+                type: string
+                value: balance
+            - name: temperature
+              input:
+                type: float
+                value: "0.5"
+            - name: topP
+              input:
+                type: float
+                value: "1"
+            - name: frequencyPenalty
+              input:
+                type: float
+                value: "0"
+            - name: maxTokens
+              input:
+                type: integer
+                value: "4096"
+            - name: spCurrentTime
+              input:
+                type: boolean
+                value: false
+            - name: spAntiLeak
+              input:
+                type: boolean
+                value: false
+            - name: responseFormat
+              input:
+                type: integer
+                value: "2"
+            - name: parameters
+              input:
+                type: object
+                properties:
+                    max_completion_tokens:
+                        type: integer
+                        value: "0"
+                value: null
+            - name: prompt
+              input:
+                type: string
+                value: ""
+            - name: enableChatHistory
+              input:
+                type: boolean
+                value: false
+            - name: chatHistoryRound
+              input:
+                type: integer
+                value: "3"
+            - name: systemPrompt
+              input:
+                type: string
+                value: |-
+                    你是一个人才评估专家，你将会得到一个考生的模拟练习记录，请你基于该记录生成一份面对面的口头反馈报告。
+
+                    # 输入
+                    ## 输入1：练习行为记录
+                    考生在不同练习、不同能力上的行为表现为：{{input}}
+                    你会得到若干个如下的输入：
+                    练习名称 : "小组讨论"
+                    能力名称 : "问题解决"
+                    考生代号 : "C1"
+                    行为记录 : "1. 在积极出注意，提出来研发协同，先做造型的统一归拢，基础平台 2. 最后总结有一点结构化思维，造型动力基础资源集中，平台模块渠道商品定位，有多维度的考虑 3. 思考不够深入，虽然4号在主导，但是观点都是1号在输出，研发协同和营销协同，最后大家聚焦自协同上，大家并不是完全在说协同的事情，造型和核心总成如何进行；知识面有限，看问题思路 4. 有固定的的模式和讨论，思维的广度和宽度是有欠缺的，带表面性的措施多，成本方面只说成本"
+                    ## 输入1：能力模型
+                    能力模型：{{ability}}
+
+                    # 输出内容
+                    1. 考生在每一项能力上的行为表现
+                    2. 向考生反馈每一项能力的话术
+
+                    # 输出要求
+                    1. 反馈话术必须结合考生在各个练习中的行为表现
+                    2. 反馈要尽量从正面的角度来说，本着鼓励原则，不要打击积极性
+                    3. 反馈中尽量先说优点，再说缺点
+                    4. 每一项能力的反馈话术不超过300字
+            - name: stableSystemPrompt
+              input:
+                type: string
+                value: ""
+            - name: canContinue
+              input:
+                type: boolean
+                value: false
+            - name: loopPromptVersion
+              input:
+                type: string
+                value: ""
+            - name: loopPromptName
+              input:
+                type: string
+                value: ""
+            - name: loopPromptId
+              input:
+                type: string
+                value: ""
+        node_inputs:
+            - name: input
+              input:
+                value:
+                    path: output
+                    ref_node: "136490"
+            - name: ability
+              input:
+                value:
+                    path: ability
+                    ref_node: "100001"
+        node_outputs:
+            output:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            timeoutMs: 180000
+    - id: "180075"
+      type: intent
+      title: 意图识别_1
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Intent-v2.jpg
+      description: "用于用户输入的意图识别，并将其与预设意图选项进行匹配。"
+      position:
+        x: 3140
+        y: 0
+      parameters:
+        chatHistorySetting:
+            chatHistoryRound: 3
+            enableChatHistory: false
+        intents:
+            - name: "1"
+            - name: "2"
+        llmParam:
+            cachingExpireTime: 259200
+            chatHistoryRound: 3
+            enableChatHistory: false
+            frequencyPenalty: 0
+            generationDiversity: default_val
+            maxOutputTokens: 4096
+            maxTokens: 100
+            modelName: 豆包·2.0·lite
+            modelType: 1.772546477e+09
+            parameters:
+                max_completion_tokens: 0
+                reasoning_effort: minimal
+            prompt:
+                type: string
+                value:
+                    content: '{{query}}'
+                    type: literal
+            responseFormat: 2
+            store: true
+            systemPrompt:
+                type: string
+                value:
+                    content: ""
+                    type: literal
+            temperature: 0.3
+            thinkingType: disabled
+            topP: 1
+        mode: top_speed
+        node_inputs:
+            - name: query
+              input:
+                value:
+                    path: classificationId
+                    ref_node: "173533"
+        node_outputs:
+            classificationId:
+                type: integer
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            timeoutMs: 60000
+        version: "2"
+    - id: "132157"
+      type: llm
+      title: 个人版报告撰写
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg
+      description: "调用大语言模型,使用变量和提示词生成回复"
+      version: "3"
+      position:
+        x: 4520
+        y: 285.9
+      parameters:
+        fcParamVar:
+            knowledgeFCParam: {}
+        llmParam:
+            - name: modelType
+              input:
+                type: integer
+                value: "1768187121"
+            - name: modelName
+              input:
+                type: string
+                value: 豆包·1.8·深度思考
+            - name: generationDiversity
+              input:
+                type: string
+                value: balance
+            - name: temperature
+              input:
+                type: float
+                value: "0.5"
+            - name: topP
+              input:
+                type: float
+                value: "1"
+            - name: frequencyPenalty
+              input:
+                type: float
+                value: "0"
+            - name: maxTokens
+              input:
+                type: integer
+                value: "4096"
+            - name: spCurrentTime
+              input:
+                type: boolean
+                value: false
+            - name: spAntiLeak
+              input:
+                type: boolean
+                value: false
+            - name: responseFormat
+              input:
+                type: integer
+                value: "2"
+            - name: parameters
+              input:
+                type: object
+                properties:
+                    max_completion_tokens:
+                        type: integer
+                        value: "0"
+                value: null
+            - name: prompt
+              input:
+                type: string
+                value: ""
+            - name: enableChatHistory
+              input:
+                type: boolean
+                value: false
+            - name: chatHistoryRound
+              input:
+                type: integer
+                value: "3"
+            - name: systemPrompt
+              input:
+                type: string
+                value: |-
+                    你是一名专业的人才发展顾问，擅长将组织的干部评价报告{{input}}，转化为面向候选人本人的发展反馈报告。请按照以下要求完成语言转换：
+
+                    # 转换逻辑与标准
+                    1. 优势部分优化：
+                       -保留原报告中所有优势结论及支撑案例；
+                       -避免空泛表扬，用“具体行为+积极结果”的结构强化说服力
+                    2. 待改进领域转换（核心重点）：
+                       -禁止使用“不足”“缺陷”“短板”“薄弱”“欠缺”等负面词汇，统一替换为“待提升方向”“可进一步强化的领域”“发展机会点”等；
+                       -将“问题定性”转化为“具体行为描述”，例如：
+                         原表述（上级版）：“决策不够果断，多次因犹豫导致项目推进滞后”→
+                         优化表述（候选人版）：“在XX项目面临方案选择时，你对两种路径的利弊进行了细致分析，但决策周期略长，一定程度上影响了项目的推进节奏，这是可重点提升的方向”；
+                       -每个待提升方向后必须补充“改进逻辑+落地建议”，例如：
+                         针对上述决策问题补充：“建议后续遇到类似场景时，可先明确核心决策标准（如：优先级、成本、风险），快速筛选出2个最优方案，通过小范围试点验证后再推进，既保证决策质量，也能提升推进效率”；
+                       -避免抽象指责，所有待提升点均需对应原报告中的具体案例（或合理还原案例场景），不新增未提及的问题，不夸大原有问题。
+                    3. 评估结论优化：
+                       -原报告中“风险提示”“上级担忧”等表述，转化为“发展潜力”“提升空间”的正向引导，例如：
+                         原表述（上级版）：“该干部在团队管理中对下属指导不足，可能影响团队稳定性”→
+                         优化表述（候选人版）：“在团队管理中，你已具备较强的目标拆解能力，若能进一步强化对下属的个性化指导（如定期1对1沟通、明确成长路径），将更充分激发团队潜力，助力团队整体绩效提升”；
+                       -结论部分需强调“认可+期待”，例如：“综合来看，你在XX领域已展现出扎实的专业能力和责任心，若能在待提升方向上持续发力，将进一步突破自身瓶颈，承担更重要的工作任务”。
+                     
+                    4. 语言风格统一：
+                       -语气：温和、尊重、鼓励，避免命令式、评判式表述（如“必须”“应该”可替换为“建议”“不妨尝试”）；
+                       -句式：多用肯定句、陈述句，少用否定句；
+                       -词汇：选择积极、中性的词汇，例如“优化”“提升”“强化”“完善”“探索”“实践”等。
+                     
+                    # 输出要求
+                    1. 无语法错误、无歧义，语言流畅自然，符合职场正式沟通场景；
+                    2. 最终报告需让候选人感受到“被认可、被重视、被支持”，同时明确知道“哪里需要改进、如何改进”，避免产生抵触情绪或挫败感。
+                    3. 不要使用第二人称，将自己当做第三方评估机构来撰写报告。
+                    4. 报告中涉及多个人的评价，不同人的之间评价信息不要互相干扰
+                     
+                    # 输出格式与样例
+                    【综合评价】
+                    ***先生是一位*****。
+                    但在本次测评中，也展现出一些可以更好的地方。*****。
+                     综合评价字数限制：500字以内
+                    【发展建议】
+                    写1-3条
+                     发展建议字数限制：500字以内
+                    【课程学习】
+                    《课程名称1》
+                    《课程名称2》
+                    最多推荐2门课程
+                    【书籍阅读】
+                    《书籍名称1》
+                    《书籍名称2》
+                    最多推荐2本书籍
+
+                    2. 输出报告样例如下
+
+                    【综合评价】
+                      郑之龙先生是一位目标感极强的实干者，内在驱动强，富有挑战精神。在做事方面，具备清晰的目标管理与落地能力，善于剖析问题关键，逻辑严谨，并能提出具前瞻性与实操性的创新方案，在推动技术攻坚与流程优化中展现出强烈的结果导向。在团队协作中，能主动营造讨论氛围，启发他人发言，具备良好的沟通意识与团队影响力，注重通过共识凝聚团队力量。
+                    但在本次测评中，也展现出一些可以更好的地方。首先，口头表达中的习惯性用语较多，影响沟通的严谨性与舒适度，需提升语言表达的专业度。其次，对行业前沿动态与技术趋势的关注尚有不足，可能限制其在更高视野上的突破与发展。最后，在管理认知上，虽有担当管理与提升影响力的意愿，但系统性管理知识及团队领导、绩效管理等实操经验相对欠缺，需将业务专长转化为体系化的团队领导力。
+                     
+                    【发展建议】
+                    1.精进沟通表达，提升职业形象：需有意识地进行口头禅的刻意练习与修正，可在重要沟通前进行预演，并寻求他人反馈。建议在汇报、主持等场合，更加注重语言的精炼与专业，以增强个人表达的说服力与感染力，打造更为沉稳的领导者形象。
+                    2.拓宽行业视野，激活创新思维：建议建立系统的行业信息获取渠道，定期跟踪软件开发领域的前沿技术、竞品动态与商业模式变革。可主动参与外部技术论坛、跨界交流，将外部趋势与内部工作相结合，避免因技术路径依赖而限制创新高度。
+                    3.系统构建管理思维，实现从“管事”到“管人”的转变：需将管理意愿转化为系统性的学习与实践。建议从带领小型团队或项目组入手，有意识地实践目标分解、绩效反馈、人才激励与知识传承，将个人业务能力转化为可复制的团队能力，实现从技术专家到团队领导者的角色升华。
+                     
+                    【课程学习】
+                    《什么是管理者“影响力”》
+                    《战略落地-从目标设定到执行》
+                    《新生代职场精英快速晋升21秘诀》
+                    【书籍阅读】
+                    《金字塔原理：思考、表达和解决问题的逻辑》
+                    《赋能：打造应对不确定性的敏捷团队》
+                    《领导梯队：全面打造领导力驱动型公司》
+            - name: stableSystemPrompt
+              input:
+                type: string
+                value: ""
+            - name: canContinue
+              input:
+                type: boolean
+                value: false
+            - name: loopPromptVersion
+              input:
+                type: string
+                value: ""
+            - name: loopPromptName
+              input:
+                type: string
+                value: ""
+            - name: loopPromptId
+              input:
+                type: string
+                value: ""
+        node_inputs:
+            - name: input
+              input:
+                value:
+                    path: output
+                    ref_node: "163938"
+        node_outputs:
+            output:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            timeoutMs: 180000
+edges:
+    - source_node: "100001"
+      target_node: "136490"
+    - source_node: "195857"
+      target_node: "900001"
+    - source_node: "170858"
+      target_node: "900001"
+    - source_node: "132157"
+      target_node: "900001"
+    - source_node: "173533"
+      target_node: "900001"
+      source_port: default
+    - source_node: "173533"
+      target_node: "176371"
+      source_port: branch_0
+    - source_node: "173533"
+      target_node: "176371"
+      source_port: branch_1
+    - source_node: "176371"
+      target_node: "102166"
+      source_port: batch-output
+    - source_node: "102166"
+      target_node: "163938"
+    - source_node: "163938"
+      target_node: "180075"
+    - source_node: "136490"
+      target_node: "173533"
+    - source_node: "180075"
+      target_node: "186427"
+      source_port: branch_0
+    - source_node: "180075"
+      target_node: "186427"
+      source_port: default
+    - source_node: "186427"
+      target_node: "193707"
+    - source_node: "193707"
+      target_node: "195857"
+    - source_node: "173533"
+      target_node: "170858"
+      source_port: branch_2
+    - source_node: "180075"
+      target_node: "132157"
+      source_port: branch_1

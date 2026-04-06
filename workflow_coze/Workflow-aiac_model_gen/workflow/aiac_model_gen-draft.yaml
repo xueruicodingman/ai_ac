@@ -1,0 +1,222 @@
+schema_version: 1.0.0
+name: aiac_model_gen
+id: 7591485278851825673
+description: "生成胜任力模型"
+mode: workflow
+icon: plugin_icon/workflow.png
+nodes:
+    - id: "100001"
+      type: start
+      title: 开始
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg
+      description: "工作流的起始节点，用于设定启动工作流需要的信息"
+      position:
+        x: 0
+        y: 0
+      parameters:
+        node_outputs:
+            input:
+                type: list
+                items:
+                    type: string
+                    value: null
+                value: null
+    - id: "900001"
+      type: end
+      title: 结束
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg
+      description: "工作流的最终节点，用于返回工作流运行后的结果信息"
+      position:
+        x: 1000
+        y: 0
+      parameters:
+        node_inputs:
+            - name: output
+              input:
+                type: list
+                items:
+                    type: string
+                    value: null
+                value:
+                    path: output
+                    ref_node: "170706"
+        terminatePlan: returnVariables
+    - id: "170706"
+      type: batch
+      title: 批处理
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Batch-v2.jpg
+      description: "通过设定批量运行次数和逻辑，运行批处理体内的任务"
+      position:
+        x: 458.6263627353816
+        y: -111.2
+      canvas_position:
+        x: 358.6263627353816
+        y: 184.34412648662038
+      parameters:
+        batchSize:
+            type: integer
+            value:
+                content: 100
+                rawMeta:
+                    type: 2
+                type: literal
+        concurrentSize:
+            type: integer
+            value:
+                content: 10
+                rawMeta:
+                    type: 2
+                type: literal
+        node_inputs:
+            - name: input
+              input:
+                value:
+                    path: input
+                    ref_node: "100001"
+        node_outputs:
+            output:
+                value:
+                    type: list
+                    items:
+                        type: string
+                        value: null
+                    value:
+                        path: output
+                        ref_node: "140559"
+      nodes:
+        - id: "140559"
+          type: llm
+          title: 大模型
+          icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg
+          description: "调用大语言模型,使用变量和提示词生成回复"
+          version: "3"
+          position:
+            x: 0
+            y: 100
+          parameters:
+            fcParamVar:
+                knowledgeFCParam: {}
+            llmParam:
+                - name: modelType
+                  input:
+                    type: integer
+                    value: "1737521813"
+                - name: modelName
+                  input:
+                    type: string
+                    value: 豆包·1.5·Pro·32k
+                - name: generationDiversity
+                  input:
+                    type: string
+                    value: balance
+                - name: temperature
+                  input:
+                    type: float
+                    value: "0.8"
+                - name: maxTokens
+                  input:
+                    type: integer
+                    value: "4096"
+                - name: spCurrentTime
+                  input:
+                    type: boolean
+                    value: false
+                - name: spAntiLeak
+                  input:
+                    type: boolean
+                    value: false
+                - name: prefixCache
+                  input:
+                    type: boolean
+                    value: false
+                - name: responseFormat
+                  input:
+                    type: integer
+                    value: "2"
+                - name: parameters
+                  input:
+                    type: object
+                    value: null
+                - name: prompt
+                  input:
+                    type: string
+                    value: 我提供的胜任力词条是：{{input}}
+                - name: enableChatHistory
+                  input:
+                    type: boolean
+                    value: false
+                - name: chatHistoryRound
+                  input:
+                    type: integer
+                    value: "3"
+                - name: systemPrompt
+                  input:
+                    type: string
+                    value: |+
+                        你现在是一名资深人才测评与干部考察领域的专家，擅长将抽象的胜任力名称转化为可落地、可观察的能力定义和行为标准。请按照以下要求，基于我提供的胜任力词条。
+                        胜任力词条输入示例如下：
+                        问题解决、沟通协作等词语
+
+                        生成对应的内容：
+                        能力含义：用简洁、专业的语言，清晰界定该胜任力的核心内涵，说明该能力是指在工作场景中，个体具备的何种特质、思维模式或行为倾向，需贴合干部考察、人才测评的实际应用场景。
+                        3 条行为标准：
+                        每条行为标准需包含核心行为维度 + 具体场景行为描述，维度要相互独立、覆盖能力的关键方面，不重复、不交叉。
+                        行为描述必须是【一个概括性的词语：详细的解释】格式，要具备可观察性、可评估性，避免空泛表述，需明确 “在什么场景下，做什么事，达到什么效果”。
+                        严格参考以下示例的结构和风格撰写：
+                        解决问题能力
+                        面对各类复杂工作问题时，能够运用科学的思维方式、方法和技能，有效分析问题、制定解决方案并推动方案落地实施，从而达成预期目标的特质和行为倾向。
+                        1. 问题拆解与根源分析：面对复杂问题时，能将其拆解为若干具体、可落地的子问题，通过收集数据、调研访谈等方式定位问题根源，而非仅处理表面现象。
+                        2. 方案设计与择优落地：基于问题分析提出至少 2 种可行解决方案，结合成本、风险、效果等维度评估对比，选择最优方案并制定清晰的执行步骤，跟进落地进度。
+                        3. 复盘优化与经验沉淀：问题解决后，及时复盘整个过程中的成功经验与不足，总结可复用的方法或规避措施，形成案例沉淀，为同类问题提供参考。
+
+                        请你根据上述规则，针对我给出的胜任力词条，输出能力含义和3 条行为标准，无需额外内容。
+
+                - name: stableSystemPrompt
+                  input:
+                    type: string
+                    value: ""
+                - name: canContinue
+                  input:
+                    type: boolean
+                    value: false
+                - name: loopPromptVersion
+                  input:
+                    type: string
+                    value: ""
+                - name: loopPromptName
+                  input:
+                    type: string
+                    value: ""
+                - name: loopPromptId
+                  input:
+                    type: string
+                    value: ""
+            node_inputs:
+                - name: input
+                  input:
+                    type: string
+                    value:
+                        path: input
+                        ref_node: "170706"
+            node_outputs:
+                output:
+                    type: string
+                    value: null
+            settingOnError:
+                processType: 1
+                retryTimes: 0
+                switch: false
+                timeoutMs: 180000
+      edges:
+        - source_node: "170706"
+          target_node: "140559"
+          source_port: batch-function-inline-output
+        - source_node: "140559"
+          target_node: "170706"
+          target_port: batch-function-inline-input
+edges:
+    - source_node: "100001"
+      target_node: "170706"
+    - source_node: "170706"
+      target_node: "900001"
+      source_port: batch-output

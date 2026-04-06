@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Body
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from src.database import get_db
@@ -10,21 +10,22 @@ from src.schemas.handbook import (
 )
 from src.services.handbook_service import HandbookService
 from src.services.user_settings_service import get_user_llm_config
+from typing import List, Any, Dict
 import json
 
 router = APIRouter(prefix="/api/judge-handbooks", tags=["评委手册"])
 
 @router.post("/generate")
 async def generate_handbook(
-    competency_model: dict,
-    evaluation_matrix: dict,
-    questionnaires: list,
+    competency_model: dict = Body(...),
+    evaluation_matrix: dict = Body(...),
+    questionnaires: List[Dict[str, Any]] = Body(...),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     llm_config = await get_user_llm_config(db, current_user.id)
     
-    if not llm_config["api_key"]:
+    if not llm_config["api_key"] or not llm_config["api_key"].strip():
         raise HTTPException(status_code=400, detail="请先在设置中配置API Key")
     
     service = HandbookService(
@@ -32,12 +33,17 @@ async def generate_handbook(
         model=llm_config["model"],
         api_url=llm_config["api_url"]
     )
-    content = await service.generate(
-        competency_model=competency_model,
-        evaluation_matrix=evaluation_matrix,
-        questionnaires=questionnaires
-    )
-    return {"success": True, "data": {"content": content}}
+    try:
+        content = await service.generate(
+            competency_model=competency_model,
+            evaluation_matrix=evaluation_matrix,
+            questionnaires=questionnaires
+        )
+        return {"success": True, "data": {"content": content}}
+    except Exception as e:
+        import traceback
+        print(f"Error generating handbook: {traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"生成评委手册失败: {str(e)}")
 
 @router.get("", response_model=HandbookResponse)
 async def get_handbook(

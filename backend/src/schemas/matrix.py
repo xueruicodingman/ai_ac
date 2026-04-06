@@ -10,7 +10,7 @@ class Tool(BaseModel):
 class MatrixGenerateRequest(BaseModel):
     competency_model: dict
     tools: Optional[List[Tool]] = None
-    api_key: str
+    selected_tools: Optional[List[str]] = None
 
 class MatrixSaveRequest(BaseModel):
     model_id: int

@@ -30,4 +30,3 @@ class CompetencyGenerateRequest(BaseModel):
     files: Optional[List[str]] = None
     specified_abilities: Optional[List[str]] = None
     num_competencies: int = 5
-    api_key: str

@@ -1,0 +1,1432 @@
+schema_version: 1.0.0
+name: judger_handbook
+id: 7623704577498742794
+description: "基于题本生成手册"
+mode: workflow
+icon: plugin_icon/workflow.png
+nodes:
+    - id: "100001"
+      type: start
+      title: 开始
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg
+      description: "工作流的起始节点，用于设定启动工作流需要的信息"
+      position:
+        x: 180
+        y: 13
+      parameters:
+        node_outputs:
+            booklist:
+                type: list
+                items:
+                    type: object
+                    value: null
+                required: true
+                value: null
+            matrix:
+                type: object
+                required: true
+                value: null
+            model:
+                type: list
+                items:
+                    type: object
+                    value: null
+                required: true
+                value: null
+    - id: "900001"
+      type: end
+      title: 结束
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg
+      description: "工作流的最终节点，用于返回工作流运行后的结果信息"
+      position:
+        x: 2680
+        y: 0
+      parameters:
+        node_inputs:
+            - name: output_list4
+              input:
+                type: string
+                value:
+                    path: output
+                    ref_node: "135526"
+        terminatePlan: returnVariables
+    - id: "174726"
+      type: batch
+      title: 批处理
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Batch-v2.jpg
+      description: "通过设定批量运行次数和逻辑，运行批处理体内的任务"
+      position:
+        x: 1430
+        y: 0
+      canvas_position:
+        x: 560
+        y: 291.20000000000005
+      parameters:
+        batchSize:
+            type: integer
+            value:
+                content: 100
+                rawMeta:
+                    type: 2
+                type: literal
+        concurrentSize:
+            type: integer
+            value:
+                content: 10
+                rawMeta:
+                    type: 2
+                type: literal
+        node_inputs:
+            - name: input
+              input:
+                value:
+                    path: booklist
+                    ref_node: "100001"
+        node_outputs:
+            output_list:
+                value:
+                    type: list
+                    items:
+                        type: string
+                        value: null
+                    value:
+                        path: output
+                        ref_node: "103531"
+            output_list1:
+                value:
+                    type: list
+                    items:
+                        type: string
+                        value: null
+                    value:
+                        path: output
+                        ref_node: "166667"
+            output_list2:
+                value:
+                    type: list
+                    items:
+                        type: string
+                        value: null
+                    value:
+                        path: output
+                        ref_node: "1874901"
+            output_list3:
+                value:
+                    type: list
+                    items:
+                        type: string
+                        value: null
+                    value:
+                        path: output
+                        ref_node: "101195"
+            output_list4:
+                value:
+                    type: list
+                    items:
+                        type: string
+                        value: null
+                    value:
+                        path: output
+                        ref_node: "178939"
+      nodes:
+        - id: "103531"
+          type: llm
+          title: 个人愿景
+          icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg
+          description: "调用大语言模型,使用变量和提示词生成回复"
+          version: "3"
+          position:
+            x: 640
+            y: 0
+          parameters:
+            fcParamVar:
+                knowledgeFCParam: {}
+            llmParam:
+                - name: modelType
+                  input:
+                    type: integer
+                    value: "1768187121"
+                - name: modelName
+                  input:
+                    type: string
+                    value: 豆包·1.8·深度思考
+                - name: generationDiversity
+                  input:
+                    type: string
+                    value: balance
+                - name: temperature
+                  input:
+                    type: float
+                    value: "0.5"
+                - name: topP
+                  input:
+                    type: float
+                    value: "1"
+                - name: frequencyPenalty
+                  input:
+                    type: float
+                    value: "0"
+                - name: maxTokens
+                  input:
+                    type: integer
+                    value: "4096"
+                - name: spCurrentTime
+                  input:
+                    type: boolean
+                    value: false
+                - name: spAntiLeak
+                  input:
+                    type: boolean
+                    value: false
+                - name: responseFormat
+                  input:
+                    type: integer
+                    value: "2"
+                - name: parameters
+                  input:
+                    type: object
+                    properties:
+                        max_completion_tokens:
+                            type: integer
+                            value: "0"
+                    value: null
+                - name: prompt
+                  input:
+                    type: string
+                    value: ""
+                - name: enableChatHistory
+                  input:
+                    type: boolean
+                    value: false
+                - name: chatHistoryRound
+                  input:
+                    type: integer
+                    value: "3"
+                - name: systemPrompt
+                  input:
+                    type: string
+                    value: |
+                        你是一个人才评审专家，专注于开发评价中心测评题本，目前你将会拿到一个AC测评的题本，题本类型为个人愿景。你需要根据题本的内容来开发题本使用的评委指导手册。
+
+                        # 输入
+                        1. 胜任力模型
+                        输入内容为：{{model}}，包含所有的能力
+                        格式为：包含能力名称、能力含义、行为标准的json文件
+                        作用：帮助你来了解能力的具体内涵
+                        2. 个人愿景题本所考察的能力
+                        输入内容为：{{matrix}}
+                        格式为：包含每一个能力所对应的考察工具，你需要分析个人愿景所对应能力有哪些,题本名称和代号的对应关系如下：
+                        ID	名称
+                        beh	BEI行为事件访谈
+                        lgd	无领导小组讨论
+                        roleplay	角色扮演
+                        case	案例分析
+                        vision	个人愿景
+                        矩阵的输入格式为json，例如战略思维中"vision": true，则表示个人vision要考察战略思维， "beh": false则表示bei行为事件访谈不考察战略思维。
+                        你需要基于此来判断vision要考察的能力有哪些
+                        作用：帮助你来了解题本所考察的能力有哪些，考察的能力往往不止一个，要将"vision": true所有能力都要算上
+                        3. 个人愿景题本的内容
+                        输入内容为：{{input}}
+                        格式为：一段文字
+                        作用：帮助你了解题本的具体内容
+                        # 评委指导手册撰写原则
+                        1. 要告知评委题本给考生呈现的核心任务与挑战有哪些
+                        2. 告知评委题本所考察的能力有哪些
+                        3. 告知评委题本的核心任务与挑战是如何考察这些能力的
+                        4. 告知评委考生面对这些挑战可能的好的行为表现和不好的行为表现有安歇
+                        5. 考生可能采取哪些规避考察的策略，此处的回避策略是指考生故意回避自身短板的策略，这些策略本身具有欺骗性和掩饰性，可能引导评委出现高估其能力的表现
+
+                        # 评委指导手册的内容和要求
+                        1. 核心挑战和任务与考察点对应（要求每个考察点都要包含）
+                        2. 考生可能的好的表现和不好的表现
+                        3. 考生可能的回避策略及应对方法
+                - name: stableSystemPrompt
+                  input:
+                    type: string
+                    value: ""
+                - name: canContinue
+                  input:
+                    type: boolean
+                    value: false
+                - name: loopPromptVersion
+                  input:
+                    type: string
+                    value: ""
+                - name: loopPromptName
+                  input:
+                    type: string
+                    value: ""
+                - name: loopPromptId
+                  input:
+                    type: string
+                    value: ""
+            node_inputs:
+                - name: input
+                  input:
+                    type: object
+                    value:
+                        path: input
+                        ref_node: "174726"
+                - name: matrix
+                  input:
+                    value:
+                        path: matrix
+                        ref_node: "100001"
+                - name: model
+                  input:
+                    value:
+                        path: model
+                        ref_node: "100001"
+            node_outputs:
+                output:
+                    type: string
+                    value: null
+                reasoning_content:
+                    type: string
+                    value: null
+            settingOnError:
+                processType: 1
+                retryTimes: 0
+                switch: false
+                timeoutMs: 180000
+        - id: "139390"
+          type: intent
+          title: 意图识别
+          icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Intent-v2.jpg
+          description: "用于用户输入的意图识别，并将其与预设意图选项进行匹配。"
+          position:
+            x: 180
+            y: 336.84999999999997
+          parameters:
+            chatHistorySetting:
+                chatHistoryRound: 3
+                enableChatHistory: false
+            intents:
+                - name: 个人愿景
+                - name: BEI行为事件访谈
+                - name: 案例分析
+                - name: 角色扮演
+                - name: 无领导小组讨论
+            llmParam:
+                cachingExpireTime: 259200
+                chatHistoryRound: 3
+                enableChatHistory: false
+                frequencyPenalty: 0
+                generationDiversity: default_val
+                maxOutputTokens: 4096
+                maxTokens: 100
+                modelName: 豆包·2.0·lite
+                modelType: 1.772546477e+09
+                parameters:
+                    max_completion_tokens: 0
+                    reasoning_effort: minimal
+                prompt:
+                    type: string
+                    value:
+                        content: '{{query}}'
+                        type: literal
+                responseFormat: 2
+                store: true
+                systemPrompt:
+                    type: string
+                    value:
+                        content: ""
+                        type: literal
+                temperature: 0.3
+                thinkingType: disabled
+                topP: 1
+            mode: top_speed
+            node_inputs:
+                - name: query
+                  input:
+                    type: object
+                    value:
+                        path: input
+                        ref_node: "174726"
+            node_outputs:
+                classificationId:
+                    type: integer
+                    value: null
+            settingOnError:
+                processType: 1
+                retryTimes: 0
+                timeoutMs: 60000
+            version: "2"
+        - id: "1543051"
+          type: llm
+          title: 评委手册
+          icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg
+          description: "调用大语言模型,使用变量和提示词生成回复"
+          version: "3"
+          position:
+            x: 640
+            y: 526.3999999999999
+          parameters:
+            fcParamVar:
+                knowledgeFCParam: {}
+            llmParam:
+                - name: modelType
+                  input:
+                    type: integer
+                    value: "1768187121"
+                - name: modelName
+                  input:
+                    type: string
+                    value: 豆包·1.8·深度思考
+                - name: generationDiversity
+                  input:
+                    type: string
+                    value: balance
+                - name: temperature
+                  input:
+                    type: float
+                    value: "0.5"
+                - name: topP
+                  input:
+                    type: float
+                    value: "1"
+                - name: frequencyPenalty
+                  input:
+                    type: float
+                    value: "0"
+                - name: maxTokens
+                  input:
+                    type: integer
+                    value: "4096"
+                - name: spCurrentTime
+                  input:
+                    type: boolean
+                    value: false
+                - name: spAntiLeak
+                  input:
+                    type: boolean
+                    value: false
+                - name: responseFormat
+                  input:
+                    type: integer
+                    value: "2"
+                - name: parameters
+                  input:
+                    type: object
+                    properties:
+                        max_completion_tokens:
+                            type: integer
+                            value: "0"
+                    value: null
+                - name: prompt
+                  input:
+                    type: string
+                    value: ""
+                - name: enableChatHistory
+                  input:
+                    type: boolean
+                    value: false
+                - name: chatHistoryRound
+                  input:
+                    type: integer
+                    value: "3"
+                - name: systemPrompt
+                  input:
+                    type: string
+                    value: |
+                        你是一个人才评审专家，专注于开发评价中心测评题本，目前你将会拿到一个AC测评的题本，题本类型为角色扮演。你需要根据题本的内容来开发题本使用的评委指导手册。
+
+                        # 输入
+                        1. 胜任力模型
+                        输入内容为：{{model}}，包含所有的能力
+                        格式为：包含能力名称、能力含义、行为标准的json文件
+                        作用：帮助你来了解能力的具体内涵
+                        2. 角色扮演题本所考察的能力
+                        输入内容为：{{matrix}}
+                        格式为：包含每一个能力所对应的考察工具，你需要分析角色扮演所对应能力有哪些,题本名称和代号的对应关系如下：
+                        ID	名称
+                        beh	BEI行为事件访谈
+                        lgd	无领导小组讨论
+                        roleplay	角色扮演
+                        case	案例分析
+                        vision	个人愿景
+                        矩阵的输入格式为json，例如战略思维中"roleplay": true，则表示个人vision要考察战略思维， "beh": false则表示bei行为事件访谈不考察战略思维。
+                        你需要基于此来判断roleplay	要考察的能力有哪些
+                        作用：帮助你来了解题本所考察的能力有哪些，考察的能力往往不止一个，要将"roleplay": true所有能力都要算上
+                        3. 角色扮演题本的内容
+                        输入内容为：{{input}}
+                        格式为：一段文字
+                        作用：帮助你了解题本的具体内容
+                        # 评委指导手册撰写原则
+                        1. 要告知评委考生完成任务所需要应对的挑战情境
+                        2. 要告知评委这些挑战情境所对应的考察点
+                        3. 要告知评委，考生可能出现的好的表现和不好的表现
+                        # 评委指导手册的内容和要求
+                        1. 核心挑战和任务与考察点对应（要求每个考察点都要包含）
+                        2. 考生可能的好的表现和不好的表现
+                - name: stableSystemPrompt
+                  input:
+                    type: string
+                    value: ""
+                - name: canContinue
+                  input:
+                    type: boolean
+                    value: false
+                - name: loopPromptVersion
+                  input:
+                    type: string
+                    value: ""
+                - name: loopPromptName
+                  input:
+                    type: string
+                    value: ""
+                - name: loopPromptId
+                  input:
+                    type: string
+                    value: ""
+            node_inputs:
+                - name: input
+                  input:
+                    type: object
+                    value:
+                        path: input
+                        ref_node: "174726"
+                - name: matrix
+                  input:
+                    value:
+                        path: matrix
+                        ref_node: "100001"
+                - name: model
+                  input:
+                    value:
+                        path: model
+                        ref_node: "100001"
+            node_outputs:
+                output:
+                    type: string
+                    value: null
+                reasoning_content:
+                    type: string
+                    value: null
+            settingOnError:
+                processType: 1
+                retryTimes: 0
+                switch: false
+                timeoutMs: 180000
+        - id: "1874901"
+          type: llm
+          title: 无领导小组讨论
+          icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg
+          description: "调用大语言模型,使用变量和提示词生成回复"
+          version: "3"
+          position:
+            x: 640
+            y: 789.5999999999999
+          parameters:
+            fcParamVar:
+                knowledgeFCParam: {}
+            llmParam:
+                - name: modelType
+                  input:
+                    type: integer
+                    value: "1768187121"
+                - name: modelName
+                  input:
+                    type: string
+                    value: 豆包·1.8·深度思考
+                - name: generationDiversity
+                  input:
+                    type: string
+                    value: balance
+                - name: temperature
+                  input:
+                    type: float
+                    value: "0.5"
+                - name: topP
+                  input:
+                    type: float
+                    value: "1"
+                - name: frequencyPenalty
+                  input:
+                    type: float
+                    value: "0"
+                - name: maxTokens
+                  input:
+                    type: integer
+                    value: "4096"
+                - name: spCurrentTime
+                  input:
+                    type: boolean
+                    value: false
+                - name: spAntiLeak
+                  input:
+                    type: boolean
+                    value: false
+                - name: responseFormat
+                  input:
+                    type: integer
+                    value: "2"
+                - name: parameters
+                  input:
+                    type: object
+                    properties:
+                        max_completion_tokens:
+                            type: integer
+                            value: "0"
+                    value: null
+                - name: prompt
+                  input:
+                    type: string
+                    value: ""
+                - name: enableChatHistory
+                  input:
+                    type: boolean
+                    value: false
+                - name: chatHistoryRound
+                  input:
+                    type: integer
+                    value: "3"
+                - name: systemPrompt
+                  input:
+                    type: string
+                    value: |
+                        你是一个人才评审专家，专注于开发评价中心测评题本，目前你将会拿到一个AC测评的题本，题本类型为无领导小组讨论。你需要根据题本的内容来开发题本使用的评委指导手册。
+
+                        # 输入
+                        1. 胜任力模型
+                        输入内容为：{{model}}，包含所有的能力
+                        格式为：包含能力名称、能力含义、行为标准的json文件
+                        作用：帮助你来了解能力的具体内涵
+                        2. 无领导小组讨论题本所考察的能力
+                        输入内容为：{{matrix}}
+                        格式为：包含每一个能力所对应的考察工具，你需要分析无领导小组讨论所对应能力有哪些,题本名称和代号的对应关系如下：
+                        ID	名称
+                        beh	BEI行为事件访谈
+                        lgd	无领导小组讨论
+                        roleplay	角色扮演
+                        case	案例分析
+                        vision	个人愿景
+                        矩阵的输入格式为json，例如战略思维中"lgd": true，则表示个人vision要考察战略思维， "beh": false则表示bei行为事件访谈不考察战略思维。
+                        你需要基于此来判断lgd要考察的能力有哪些
+                        作用：帮助你来了解题本所考察的能力有哪些，考察的能力往往不止一个，要将"lgd": true所有能力都要算上
+                        3. 无领导小组讨论题本的内容
+                        输入内容为：{{input}}
+                        格式为：一段文字
+                        作用：帮助你了解题本的具体内容
+                        # 评委指导手册撰写原则
+                        1. 要告知评委题本给考生呈现的核心任务与挑战有哪些
+                        2. 告知评委题本所考察的能力有哪些
+                        3. 告知评委题本的核心任务与挑战是如何考察这些能力的
+                        4. 告知评委考生面对这些挑战可能的好的行为表现和不好的行为表现有安歇
+                        5. 考生可能采取哪些规避考察的策略，此处的回避策略是指考生故意回避自身短板的策略，这些策略本身具有欺骗性和掩饰性，可能引导评委出现高估其能力的表现
+
+                        # 评委指导手册的内容和要求
+                        1. 核心挑战和任务与考察点对应（要求每个考察点都要包含）
+                        2. 考生可能的好的表现和不好的表现
+                        3. 考生可能的回避策略与评委注意事项
+                - name: stableSystemPrompt
+                  input:
+                    type: string
+                    value: ""
+                - name: canContinue
+                  input:
+                    type: boolean
+                    value: false
+                - name: loopPromptVersion
+                  input:
+                    type: string
+                    value: ""
+                - name: loopPromptName
+                  input:
+                    type: string
+                    value: ""
+                - name: loopPromptId
+                  input:
+                    type: string
+                    value: ""
+            node_inputs:
+                - name: input
+                  input:
+                    type: object
+                    value:
+                        path: input
+                        ref_node: "174726"
+                - name: matrix
+                  input:
+                    value:
+                        path: matrix
+                        ref_node: "100001"
+                - name: model
+                  input:
+                    value:
+                        path: model
+                        ref_node: "100001"
+            node_outputs:
+                output:
+                    type: string
+                    value: null
+                reasoning_content:
+                    type: string
+                    value: null
+            settingOnError:
+                processType: 1
+                retryTimes: 0
+                switch: false
+                timeoutMs: 180000
+        - id: "176309"
+          type: llm
+          title: 演员手册
+          icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg
+          description: "调用大语言模型,使用变量和提示词生成回复"
+          version: "3"
+          position:
+            x: 1100
+            y: 526.3999999999999
+          parameters:
+            fcParamVar:
+                knowledgeFCParam: {}
+            llmParam:
+                - name: modelType
+                  input:
+                    type: integer
+                    value: "1768187121"
+                - name: modelName
+                  input:
+                    type: string
+                    value: 豆包·1.8·深度思考
+                - name: generationDiversity
+                  input:
+                    type: string
+                    value: balance
+                - name: temperature
+                  input:
+                    type: float
+                    value: "0.5"
+                - name: topP
+                  input:
+                    type: float
+                    value: "1"
+                - name: frequencyPenalty
+                  input:
+                    type: float
+                    value: "0"
+                - name: maxTokens
+                  input:
+                    type: integer
+                    value: "4096"
+                - name: spCurrentTime
+                  input:
+                    type: boolean
+                    value: false
+                - name: spAntiLeak
+                  input:
+                    type: boolean
+                    value: false
+                - name: responseFormat
+                  input:
+                    type: integer
+                    value: "2"
+                - name: parameters
+                  input:
+                    type: object
+                    properties:
+                        max_completion_tokens:
+                            type: integer
+                            value: "0"
+                    value: null
+                - name: prompt
+                  input:
+                    type: string
+                    value: ""
+                - name: enableChatHistory
+                  input:
+                    type: boolean
+                    value: false
+                - name: chatHistoryRound
+                  input:
+                    type: integer
+                    value: "3"
+                - name: systemPrompt
+                  input:
+                    type: string
+                    value: |+
+                        你是一个人才评审专家，专注于开发评价中心测评题本，目前你将会拿到一个AC测评的题本，题本类型为角色扮演，该题本为面向考生的剧本，你需要按照完全相同的格式写一份面向演员的剧本，叫做演员手册。
+
+                        # 演员的定义
+                        题本中的下级的角色，与考生的角色不相同，请不要混淆，所以演员手册是题本中下级看的手册，而题本是上级（考生）看的手册
+
+                        # 输入
+                        1. 评委指导手册
+                        输入内容为：{{output}}
+                        作用：帮助你了解题本挑战情境、考察点以及考生的可能表现
+                        2. 角色扮演题本的内容
+                        输入内容为：{{input}}
+                        作用：帮助你了解题本的具体内容
+
+                        # 演员手册撰写原则
+                        1. 要告知演员题本中设计的挑战情境、考察点以及如何在互动中向该话题引导的策略和话术
+                        2. 要告知演员考生应对这些挑战情境可能的行为表现，以及演员的应对策略和话术
+                        3. 演员手册要帮助演员来更好地帮助演员与考生互动，激发考生应对挑战情境的表现，帮助评委更好地观察和评价
+                        4. 告知演员，考生和演员之间的信息差是什么，哪些是各自掌握而对方不掌握的信息
+
+                        # 评委指导手册的内容和要求
+                        1. 核心挑战和考察点
+                        2. 你和上级的信息差
+                        3. 关键话题引导策略、话术
+                        4. 关键话题上考生可能表现与应对策略、话术
+                        5. 考生可能采取的回避应对挑战的策略以及考生的应对策略
+
+                - name: stableSystemPrompt
+                  input:
+                    type: string
+                    value: ""
+                - name: canContinue
+                  input:
+                    type: boolean
+                    value: false
+                - name: loopPromptVersion
+                  input:
+                    type: string
+                    value: ""
+                - name: loopPromptName
+                  input:
+                    type: string
+                    value: ""
+                - name: loopPromptId
+                  input:
+                    type: string
+                    value: ""
+            node_inputs:
+                - name: input
+                  input:
+                    type: object
+                    value:
+                        path: input
+                        ref_node: "174726"
+                - name: output
+                  input:
+                    value:
+                        path: output
+                        ref_node: "1543051"
+            node_outputs:
+                output:
+                    type: string
+                    value: null
+                reasoning_content:
+                    type: string
+                    value: null
+            settingOnError:
+                processType: 1
+                retryTimes: 0
+                switch: false
+                timeoutMs: 180000
+        - id: "166667"
+          type: llm
+          title: 手册整合
+          icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg
+          description: "调用大语言模型,使用变量和提示词生成回复"
+          version: "3"
+          position:
+            x: 1560
+            y: 526.3999999999999
+          parameters:
+            fcParamVar:
+                knowledgeFCParam: {}
+            llmParam:
+                - name: modelType
+                  input:
+                    type: integer
+                    value: "1768187121"
+                - name: modelName
+                  input:
+                    type: string
+                    value: 豆包·1.8·深度思考
+                - name: generationDiversity
+                  input:
+                    type: string
+                    value: balance
+                - name: temperature
+                  input:
+                    type: float
+                    value: "0.5"
+                - name: topP
+                  input:
+                    type: float
+                    value: "1"
+                - name: frequencyPenalty
+                  input:
+                    type: float
+                    value: "0"
+                - name: maxTokens
+                  input:
+                    type: integer
+                    value: "4096"
+                - name: spCurrentTime
+                  input:
+                    type: boolean
+                    value: false
+                - name: spAntiLeak
+                  input:
+                    type: boolean
+                    value: false
+                - name: responseFormat
+                  input:
+                    type: integer
+                    value: "2"
+                - name: parameters
+                  input:
+                    type: object
+                    properties:
+                        max_completion_tokens:
+                            type: integer
+                            value: "0"
+                    value: null
+                - name: prompt
+                  input:
+                    type: string
+                    value: ""
+                - name: enableChatHistory
+                  input:
+                    type: boolean
+                    value: false
+                - name: chatHistoryRound
+                  input:
+                    type: integer
+                    value: "3"
+                - name: systemPrompt
+                  input:
+                    type: string
+                    value: |-
+                        你是一个人才评审专家，专注于开发评价中心测评题本，目前你将会拿到一个AC测评的题本，题本类型为角色扮演，评委手册、演员手册。你需要将评委手册和演员手册拼接在一起输出。
+
+                        # 输入
+                        演员手册：{{input}}
+                        评委手册：{{output}}
+
+                        # 拼接原则
+                        1. 标题要规范统一
+                        2. 内容上前后文要一致
+                - name: stableSystemPrompt
+                  input:
+                    type: string
+                    value: ""
+                - name: canContinue
+                  input:
+                    type: boolean
+                    value: false
+                - name: loopPromptVersion
+                  input:
+                    type: string
+                    value: ""
+                - name: loopPromptName
+                  input:
+                    type: string
+                    value: ""
+                - name: loopPromptId
+                  input:
+                    type: string
+                    value: ""
+            node_inputs:
+                - name: input
+                  input:
+                    value:
+                        path: output
+                        ref_node: "176309"
+                - name: output
+                  input:
+                    value:
+                        path: output
+                        ref_node: "1543051"
+            node_outputs:
+                output:
+                    type: string
+                    value: null
+                reasoning_content:
+                    type: string
+                    value: null
+            settingOnError:
+                processType: 1
+                retryTimes: 0
+                switch: false
+                timeoutMs: 600000
+        - id: "178939"
+          type: llm
+          title: BEI行为事件访谈
+          icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg
+          description: "调用大语言模型,使用变量和提示词生成回复"
+          version: "3"
+          position:
+            x: 640
+            y: 263.19999999999993
+          parameters:
+            fcParamVar:
+                knowledgeFCParam: {}
+            llmParam:
+                - name: modelType
+                  input:
+                    type: integer
+                    value: "1768187121"
+                - name: modelName
+                  input:
+                    type: string
+                    value: 豆包·1.8·深度思考
+                - name: generationDiversity
+                  input:
+                    type: string
+                    value: balance
+                - name: temperature
+                  input:
+                    type: float
+                    value: "0.5"
+                - name: topP
+                  input:
+                    type: float
+                    value: "1"
+                - name: frequencyPenalty
+                  input:
+                    type: float
+                    value: "0"
+                - name: maxTokens
+                  input:
+                    type: integer
+                    value: "4096"
+                - name: spCurrentTime
+                  input:
+                    type: boolean
+                    value: false
+                - name: spAntiLeak
+                  input:
+                    type: boolean
+                    value: false
+                - name: responseFormat
+                  input:
+                    type: integer
+                    value: "2"
+                - name: parameters
+                  input:
+                    type: object
+                    properties:
+                        max_completion_tokens:
+                            type: integer
+                            value: "0"
+                    value: null
+                - name: prompt
+                  input:
+                    type: string
+                    value: 原文内容为：{{input}}
+                - name: enableChatHistory
+                  input:
+                    type: boolean
+                    value: false
+                - name: chatHistoryRound
+                  input:
+                    type: integer
+                    value: "3"
+                - name: systemPrompt
+                  input:
+                    type: string
+                    value: 请你直接照搬原文输出，不做任何处理。
+                - name: stableSystemPrompt
+                  input:
+                    type: string
+                    value: ""
+                - name: canContinue
+                  input:
+                    type: boolean
+                    value: false
+                - name: loopPromptVersion
+                  input:
+                    type: string
+                    value: ""
+                - name: loopPromptName
+                  input:
+                    type: string
+                    value: ""
+                - name: loopPromptId
+                  input:
+                    type: string
+                    value: ""
+            node_inputs:
+                - name: input
+                  input:
+                    type: object
+                    value:
+                        path: input
+                        ref_node: "174726"
+            node_outputs:
+                output:
+                    type: string
+                    value: null
+                reasoning_content:
+                    type: string
+                    value: null
+            settingOnError:
+                processType: 1
+                retryTimes: 0
+                switch: false
+                timeoutMs: 180000
+        - id: "101195"
+          type: llm
+          title: 案例分析
+          icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg
+          description: "调用大语言模型,使用变量和提示词生成回复"
+          version: "3"
+          position:
+            x: 1108.0609534262574
+            y: 843.6114280030315
+          parameters:
+            fcParamVar:
+                knowledgeFCParam: {}
+            llmParam:
+                - name: modelType
+                  input:
+                    type: integer
+                    value: "1768187121"
+                - name: modelName
+                  input:
+                    type: string
+                    value: 豆包·1.8·深度思考
+                - name: generationDiversity
+                  input:
+                    type: string
+                    value: balance
+                - name: temperature
+                  input:
+                    type: float
+                    value: "0.5"
+                - name: topP
+                  input:
+                    type: float
+                    value: "1"
+                - name: frequencyPenalty
+                  input:
+                    type: float
+                    value: "0"
+                - name: maxTokens
+                  input:
+                    type: integer
+                    value: "4096"
+                - name: spCurrentTime
+                  input:
+                    type: boolean
+                    value: false
+                - name: spAntiLeak
+                  input:
+                    type: boolean
+                    value: false
+                - name: responseFormat
+                  input:
+                    type: integer
+                    value: "2"
+                - name: parameters
+                  input:
+                    type: object
+                    properties:
+                        max_completion_tokens:
+                            type: integer
+                            value: "0"
+                    value: null
+                - name: prompt
+                  input:
+                    type: string
+                    value: ""
+                - name: enableChatHistory
+                  input:
+                    type: boolean
+                    value: false
+                - name: chatHistoryRound
+                  input:
+                    type: integer
+                    value: "3"
+                - name: systemPrompt
+                  input:
+                    type: string
+                    value: |
+                        你是一个人才评审专家，专注于开发评价中心测评题本，目前你将会拿到一个AC测评的题本，题本类型为案例分析。你需要根据题本的内容来开发题本使用的评委指导手册。
+
+                        # 输入
+                        1. 胜任力模型
+                        输入内容为：{{input}}，包含所有的能力
+                        格式为：包含能力名称、能力含义、行为标准的json文件
+                        作用：帮助你来了解能力的具体内涵
+                        2. 案例分析题本所考察的能力
+                        输入内容为：{{matrix}}
+                        格式为：包含每一个能力所对应的考察工具，你需要分析案例分析所对应能力有哪些,题本名称和代号的对应关系如下：
+                        ID	名称
+                        beh	BEI行为事件访谈
+                        lgd	无领导小组讨论
+                        roleplay	角色扮演
+                        case	案例分析
+                        vision	个人愿景
+                        矩阵的输入格式为json，例如战略思维中"case": true，则表示个人case要考察战略思维， "beh": false则表示bei行为事件访谈不考察战略思维。
+                        你需要基于此来判断vision要考察的能力有哪些
+                        作用：帮助你来了解题本所考察的能力有哪些，考察的能力往往不止一个，要将"case": true所有能力都要算上
+                        3. 案例分析题本的内容
+                        输入内容为：{{booklist}}
+                        格式为：一段文字
+                        作用：帮助你了解题本的具体内容
+                        # 评委指导手册撰写原则
+                        1. 要告知评委题本给考生呈现的核心任务与挑战有哪些
+                        2. 告知评委题本所考察的能力有哪些
+                        3. 告知评委题本的核心任务与挑战是如何考察这些能力的
+                        4. 告知评委考生面对这些挑战可能的好的行为表现和不好的行为表现有安歇
+                        5. 考生可能采取哪些规避考察的策略，此处的回避策略是指考生故意回避自身短板的策略，这些策略本身具有欺骗性和掩饰性，可能引导评委出现高估其能力的表现
+
+                        # 评委指导手册的内容和要求
+                        1. 核心挑战和任务与考察点对应（要求每个考察点都要包含）
+                        2. 考生可能的好的表现和不好的表现
+                        3. 考生可能的回避策略及应对方法
+                - name: stableSystemPrompt
+                  input:
+                    type: string
+                    value: ""
+                - name: canContinue
+                  input:
+                    type: boolean
+                    value: false
+                - name: loopPromptVersion
+                  input:
+                    type: string
+                    value: ""
+                - name: loopPromptName
+                  input:
+                    type: string
+                    value: ""
+                - name: loopPromptId
+                  input:
+                    type: string
+                    value: ""
+            node_inputs:
+                - name: input
+                  input:
+                    value:
+                        path: model
+                        ref_node: "100001"
+                - name: matrix
+                  input:
+                    value:
+                        path: matrix
+                        ref_node: "100001"
+                - name: booklist
+                  input:
+                    type: object
+                    value:
+                        path: input
+                        ref_node: "174726"
+            node_outputs:
+                output:
+                    type: string
+                    value: null
+                reasoning_content:
+                    type: string
+                    value: null
+            settingOnError:
+                processType: 1
+                retryTimes: 0
+                switch: false
+                timeoutMs: 180000
+      edges:
+        - source_node: "139390"
+          target_node: "103531"
+          source_port: branch_0
+        - source_node: "103531"
+          target_node: "174726"
+          target_port: batch-function-inline-input
+        - source_node: "174726"
+          target_node: "139390"
+          source_port: batch-function-inline-output
+        - source_node: "139390"
+          target_node: "178939"
+          source_port: branch_1
+        - source_node: "139390"
+          target_node: "1543051"
+          source_port: branch_3
+        - source_node: "139390"
+          target_node: "1874901"
+          source_port: branch_4
+        - source_node: "139390"
+          target_node: "174726"
+          source_port: default
+          target_port: batch-function-inline-input
+        - source_node: "139390"
+          target_node: "101195"
+          source_port: branch_2
+        - source_node: "1543051"
+          target_node: "176309"
+        - source_node: "1874901"
+          target_node: "174726"
+          target_port: batch-function-inline-input
+        - source_node: "176309"
+          target_node: "166667"
+        - source_node: "166667"
+          target_node: "174726"
+          target_port: batch-function-inline-input
+        - source_node: "178939"
+          target_node: "174726"
+          target_port: batch-function-inline-input
+        - source_node: "101195"
+          target_node: "174726"
+          target_port: batch-function-inline-input
+    - id: "135526"
+      type: llm
+      title: 评委手册整合
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg
+      description: "调用大语言模型,使用变量和提示词生成回复"
+      version: "3"
+      position:
+        x: 2077.8776469279082
+        y: 15.996262032241603
+      parameters:
+        fcParamVar:
+            knowledgeFCParam: {}
+        llmParam:
+            - name: modelType
+              input:
+                type: integer
+                value: "1768187121"
+            - name: modelName
+              input:
+                type: string
+                value: 豆包·1.8·深度思考
+            - name: generationDiversity
+              input:
+                type: string
+                value: balance
+            - name: temperature
+              input:
+                type: float
+                value: "0.5"
+            - name: topP
+              input:
+                type: float
+                value: "1"
+            - name: frequencyPenalty
+              input:
+                type: float
+                value: "0"
+            - name: maxTokens
+              input:
+                type: integer
+                value: "4096"
+            - name: spCurrentTime
+              input:
+                type: boolean
+                value: false
+            - name: spAntiLeak
+              input:
+                type: boolean
+                value: false
+            - name: responseFormat
+              input:
+                type: integer
+                value: "2"
+            - name: parameters
+              input:
+                type: object
+                properties:
+                    max_completion_tokens:
+                        type: integer
+                        value: "0"
+                value: null
+            - name: prompt
+              input:
+                type: string
+                value: ""
+            - name: enableChatHistory
+              input:
+                type: boolean
+                value: false
+            - name: chatHistoryRound
+              input:
+                type: integer
+                value: "3"
+            - name: systemPrompt
+              input:
+                type: string
+                value: |-
+                    你是一个文档整合专家，你擅于将材料严格按照格式做好排板。
+
+                    # 输入
+                    {{input}}{{output_list1}}{{output_list2}}{{output_list3}}{{output_list4}}
+
+                    # 输出要求
+                    1. 不改变原文的任何内容
+                    2. 将输入的各份材料整合成一份材料
+                    3. 标题、格式要规范
+            - name: stableSystemPrompt
+              input:
+                type: string
+                value: ""
+            - name: canContinue
+              input:
+                type: boolean
+                value: false
+            - name: loopPromptVersion
+              input:
+                type: string
+                value: ""
+            - name: loopPromptName
+              input:
+                type: string
+                value: ""
+            - name: loopPromptId
+              input:
+                type: string
+                value: ""
+        node_inputs:
+            - name: input
+              input:
+                type: list
+                items:
+                    type: string
+                    value: null
+                value:
+                    path: output_list
+                    ref_node: "174726"
+            - name: output_list1
+              input:
+                type: list
+                items:
+                    type: string
+                    value: null
+                value:
+                    path: output_list1
+                    ref_node: "174726"
+            - name: output_list2
+              input:
+                type: list
+                items:
+                    type: string
+                    value: null
+                value:
+                    path: output_list2
+                    ref_node: "174726"
+            - name: output_list3
+              input:
+                type: list
+                items:
+                    type: string
+                    value: null
+                value:
+                    path: output_list3
+                    ref_node: "174726"
+            - name: output_list4
+              input:
+                type: list
+                items:
+                    type: string
+                    value: null
+                value:
+                    path: output_list4
+                    ref_node: "174726"
+        node_outputs:
+            output:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            timeoutMs: 180000
+edges:
+    - source_node: "100001"
+      target_node: "174726"
+    - source_node: "135526"
+      target_node: "900001"
+    - source_node: "174726"
+      target_node: "135526"
+      source_port: batch-output

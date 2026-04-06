@@ -1,4 +1,4 @@
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from src.services.ai_service import AIService
 from src.workflows.beh_workflow import BEHWorkflow
 from src.workflows.lgd_workflow import LGDWorkflow
@@ -34,13 +34,20 @@ class QuestionnaireService(AIService):
         self,
         tool_id: str,
         competency_model: Dict[str, Any],
-        evaluation_matrix: Dict[str, Any]
+        evaluation_matrix: Dict[str, Any],
+        background_file_content: Optional[str] = None,
+        requirement: str = ""
     ) -> str:
         if tool_id not in self.workflows:
             raise ValueError(f"Unknown tool: {tool_id}")
         
         workflow = self.workflows[tool_id]
-        return await workflow.generate(competency_model, evaluation_matrix)
+        return await workflow.generate(
+            competency_model, 
+            evaluation_matrix,
+            background_file_content=background_file_content,
+            requirement=requirement
+        )
     
     def get_tool_info(self, tool_id: str) -> Dict[str, Any]:
         return TOOL_INFO.get(tool_id, {})

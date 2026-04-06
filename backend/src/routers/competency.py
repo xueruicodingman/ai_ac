@@ -6,7 +6,7 @@ from src.models.user import User
 from src.routers.auth import get_current_user
 from src.models.competency_model import CompetencyModel
 from src.schemas.competency import (
-    CompetencyModelCreate, CompetencyModelResponse
+    CompetencyModelCreate, CompetencyModelResponse, CompetencyGenerateRequest
 )
 from src.services.competency_service import CompetencyService
 from src.services.user_settings_service import get_user_llm_config
@@ -16,13 +16,21 @@ router = APIRouter(prefix="/api/competency-models", tags=["胜任力模型"])
 
 @router.post("/generate")
 async def generate_competency_model(
-    background: str = "",
-    files: list = None,
-    specified_abilities: list = None,
-    num_competencies: int = 5,
+    request: CompetencyGenerateRequest,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
+    # 验证 num_competencies 必填
+    if request.num_competencies is None or request.num_competencies < 1:
+        raise HTTPException(status_code=400, detail="num_competencies 为必填参数")
+    
+    # 验证 background 和 specified_abilities 至少填一个
+    has_background = request.background and len(request.background.strip()) > 0
+    has_specified = request.specified_abilities and len(request.specified_abilities) > 0
+    
+    if not has_background and not has_specified:
+        raise HTTPException(status_code=400, detail="background 和 specified_abilities 至少填写一个")
+    
     llm_config = await get_user_llm_config(db, current_user.id)
     
     if not llm_config["api_key"]:
@@ -34,9 +42,9 @@ async def generate_competency_model(
         api_url=llm_config["api_url"]
     )
     result = await service.generate(
-        background=background,
-        specified_abilities=specified_abilities,
-        num_competencies=num_competencies
+        background=request.background or "",
+        specified_abilities=request.specified_abilities,
+        num_competencies=request.num_competencies
     )
     return {"success": True, "data": result}
 

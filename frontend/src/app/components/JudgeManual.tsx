@@ -1,5 +1,6 @@
-import { ArrowLeft, Download, Edit2, Save, FileText } from 'lucide-react';
-import { useState } from 'react';
+import { ArrowLeft, Download, Edit2, Save, FileText, Copy, Check } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { generateJudgeHandbook, getQuestionnaires, getCompetencyModel, getEvaluationMatrix } from '../api';
 
 interface JudgeManualProps {
   onBack: () => void;
@@ -10,89 +11,91 @@ export default function JudgeManual({ onBack }: JudgeManualProps) {
   const [isGenerated, setIsGenerated] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [manualContent, setManualContent] = useState('');
+  const [error, setError] = useState('');
 
-  const handleGenerate = () => {
+  useEffect(() => {
+    loadExistingHandbook();
+  }, []);
+
+  const loadExistingHandbook = async () => {
+    try {
+      const savedContent = localStorage.getItem('judge_handbook_content');
+      if (savedContent) {
+        setManualContent(savedContent);
+        setIsGenerated(true);
+      }
+    } catch (err) {
+      console.error('Load handbook error:', err);
+    }
+  };
+
+  const handleDownload = async (format: 'word' | 'pdf') => {
+    alert(`正在下载${format === 'word' ? 'Word' : 'PDF'}版本...`);
+  };
+
+  const handleCopyContent = async () => {
+    if (!manualContent) return;
+    try {
+      await navigator.clipboard.writeText(manualContent);
+      alert('内容已复制到剪贴板！');
+    } catch (err) {
+      console.error('复制失败:', err);
+      alert('复制失败，请手动复制');
+    }
+  };
+
+  const handleGenerate = async () => {
     setIsGenerating(true);
-    setTimeout(() => {
-      const content = `# 评委手册
+    setError('');
 
-## 一、测评说明
+    try {
+      const [model, matrix, questionnaires] = await Promise.all([
+        getCompetencyModel(),
+        getEvaluationMatrix(),
+        getQuestionnaires()
+      ]);
 
-本次评估采用多维度综合测评方式，包含以下几个环节：
+      if (!model || !questionnaires || questionnaires.length === 0) {
+        throw new Error('请先完成胜任力模型和题本生成');
+      }
 
-### 1. BEI行为事件访谈（60分钟）
-- 目的：了解被测者过去的真实行为表现
-- 评估能力：领导力、沟通协作
-- 评分要点：关注具体事例的STAR结构
+      const questionnaireList = questionnaires.map((q: any) => ({
+        tool_id: q.tool_id,
+        tool_name: q.tool_name || q.tool_id,
+        content: q.content
+      }));
 
-### 2. 无领导小组讨论（90分钟）
-- 目的：观察被测者在团队协作中的表现
-- 评估能力：沟通协作、领导力、创新能力
-- 评分要点：观察发言质量、倾听能力、影响力
+      const response = await generateJudgeHandbook({
+        competency_model: model,
+        evaluation_matrix: matrix,
+        questionnaires: questionnaireList
+      });
 
-### 3. 角色扮演（45分钟）
-- 目的：评估被测者在特定情境下的应对能力
-- 评估能力：沟通协作、问题解决
-- 评分要点：关注应变能力、同理心
-
-### 4. 案例分析（120分钟）
-- 目的：考察被测者的逻辑思维和决策能力
-- 评估能力：分析思维、创新能力
-- 评分要点：方案可行性、分析深度
-
-### 5. 个人愿景（30分钟）
-- 目的：了解被测者的职业发展规划
-- 评估能力：事业心、学习能力
-- 评分要点：目标清晰度、行动计划
-
-## 二、评分标准
-
-### 领导力
-- 5分：能够清晰设定目标，有效激励团队，展现强大的影响力
-- 4分：能够设定目标并推动执行，具备一定影响力
-- 3分：能够执行既定目标，偶尔展现领导行为
-- 2分：较少展现领导行为，主要听从他人指挥
-- 1分：完全没有展现领导力
-
-### 沟通协作
-- 5分：表达清晰有力，善于倾听，能够促进团队共识
-- 4分：表达清晰，愿意倾听，能够配合团队
-- 3分：基本能够表达观点，偶尔倾听他人
-- 2分：表达不够清晰，较少倾听他人
-- 1分：无法有效沟通
-
-## 三、注意事项
-
-1. **客观记录**：详细记录被测者的具体行为表现，避免主观判断
-2. **独立评分**：评委之间不要相互讨论分数
-3. **行为证据**：评分需要基于观察到的具体行为
-4. **时间控制**：严格控制各环节时间，确保测评顺利进行
-
-## 四、行为记录表
-
-| 时间 | 被测者 | 行为描述 | 相关能力 | 评分 |
-|-----|-------|---------|---------|-----|
-| 09:30 | 张三 | 主动提出解决方案并说服团队采纳 | 领导力 | 5 |
-| 09:35 | 李四 | 认真倾听他人观点并总结要点 | 沟通协作 | 4 |
-| ... | ... | ... | ... | ... |
-`;
-      setManualContent(content);
-      setIsGenerated(true);
+      if (response.success && response.data?.content) {
+        setManualContent(response.data.content);
+        localStorage.setItem('judge_handbook_content', response.data.content);
+        setIsGenerated(true);
+      } else {
+        throw new Error('生成失败，请重试');
+      }
+    } catch (err: any) {
+      console.error('Generate handbook error:', err);
+      const errorMessage = err?.message || err?.detail || JSON.stringify(err) || '生成评委手册失败，请重试';
+      setError(errorMessage);
+    } finally {
       setIsGenerating(false);
-    }, 2000);
+    }
   };
 
   const handleSave = () => {
+    localStorage.setItem('judge_handbook_content', manualContent);
     setIsEditing(false);
     alert('评委手册已保存！');
   };
 
   const handleSubmit = () => {
+    localStorage.setItem('judge_handbook_content', manualContent);
     alert('评委手册已提交定稿！');
-  };
-
-  const handleDownload = (format: 'word' | 'pdf') => {
-    alert(`正在下载${format === 'word' ? 'Word' : 'PDF'}格式评委手册...`);
   };
 
   return (
@@ -126,13 +129,19 @@ export default function JudgeManual({ onBack }: JudgeManualProps) {
           </div>
         </div>
 
-        {!isGenerated && (
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+            {error}
+          </div>
+        )}
+
+        {(!isGenerated || manualContent) && (
           <button
             onClick={handleGenerate}
             disabled={isGenerating}
             className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:bg-gray-400 disabled:cursor-not-allowed mb-6"
           >
-            {isGenerating ? '正在生成中...' : '生成评委手册'}
+            {isGenerating ? '正在生成中，请稍候...' : (manualContent ? '重新生成' : '生成评委手册')}
           </button>
         )}
 
@@ -141,7 +150,40 @@ export default function JudgeManual({ onBack }: JudgeManualProps) {
             <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-medium text-gray-900">评委手册内容</h3>
-                <span className="text-sm text-gray-500">可编辑</span>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleCopyContent}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  >
+                    <Copy size={16} />
+                    复制
+                  </button>
+                  <button
+                    onClick={() => handleDownload('word')}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  >
+                    <Download size={16} />
+                    Word
+                  </button>
+                  <button
+                    onClick={() => handleDownload('pdf')}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  >
+                    <Download size={16} />
+                    PDF
+                  </button>
+                  <button
+                    onClick={() => setIsEditing(!isEditing)}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                      isEditing 
+                        ? 'bg-green-100 text-green-700 hover:bg-green-200' 
+                        : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                    }`}
+                  >
+                    {isEditing ? <Check size={16} /> : <Edit2 size={16} />}
+                    {isEditing ? '保存' : '编辑'}
+                  </button>
+                </div>
               </div>
 
               {isEditing ? (
@@ -155,39 +197,6 @@ export default function JudgeManual({ onBack }: JudgeManualProps) {
                   <pre className="whitespace-pre-wrap font-mono text-sm text-gray-700">{manualContent}</pre>
                 </div>
               )}
-            </div>
-
-            <div className="flex gap-4 mb-6">
-              <button
-                onClick={() => setIsEditing(!isEditing)}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors text-sm font-medium"
-              >
-                {isEditing ? (
-                  <>
-                    <Save size={18} />
-                    完成编辑
-                  </>
-                ) : (
-                  <>
-                    <Edit2 size={18} />
-                    编辑
-                  </>
-                )}
-              </button>
-              <button
-                onClick={() => handleDownload('word')}
-                className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium"
-              >
-                <Download size={18} />
-                Word
-              </button>
-              <button
-                onClick={() => handleDownload('pdf')}
-                className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium"
-              >
-                <Download size={18} />
-                PDF
-              </button>
             </div>
 
             <button

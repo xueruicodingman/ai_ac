@@ -1,24 +1,132 @@
 import { ArrowLeft, Check, RotateCcw } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { getCompetencyModel, generateEvaluationMatrix, getEvaluationMatrix, saveEvaluationMatrix } from '../api';
 
 interface AssessmentMatrixProps {
   onBack: () => void;
 }
 
+interface Dimension {
+  id: string;
+  name: string;
+  meaning: string;
+  behavior_criteria: Array<{ id: string; title: string; description: string }>;
+}
+
+interface CompetencyModelData {
+  id: number;
+  name: string;
+  dimensions: Dimension[];
+  created_at: string;
+  updated_at: string;
+}
+
 export default function AssessmentMatrix({ onBack }: AssessmentMatrixProps) {
   const [selectedAbilities, setSelectedAbilities] = useState<string[]>([]);
-  const [selectedTools, setSelectedTools] = useState<string[]>(['bei', 'lgd']);
+  const [selectedTools, setSelectedTools] = useState<string[]>(['beh', 'lgd']);
   const [matrixGenerated, setMatrixGenerated] = useState(false);
   const [matrix, setMatrix] = useState<{ [key: string]: string[] }>({});
+  const [abilities, setAbilities] = useState<string[]>([]);
+  const [competencyModelData, setCompetencyModelData] = useState<CompetencyModelData | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [error, setError] = useState('');
+  const [hasSubmitted, setHasSubmitted] = useState(false);
 
-  const abilities = ['领导力', '沟通协作', '创新能力', '分析思维', '执行力'];
   const tools = [
-    { id: 'bei', name: 'BEI行为事件访谈' },
+    { id: 'beh', name: 'BEI行为事件访谈' },
     { id: 'lgd', name: '无领导小组讨论' },
-    { id: 'role', name: '角色扮演' },
+    { id: 'roleplay', name: '角色扮演' },
     { id: 'case', name: '案例分析' },
     { id: 'vision', name: '个人愿景' },
   ];
+
+  useEffect(() => {
+    loadSavedData();
+  }, []);
+
+  const loadSavedData = async () => {
+    try {
+      // 加载胜任力模型
+      const modelData = await getCompetencyModel();
+      setCompetencyModelData(modelData);
+      const dimensionNames = modelData.dimensions.map((d: Dimension) => d.name);
+      setAbilities(dimensionNames);
+      
+      // 加载已保存的矩阵
+      try {
+        const matrixData = await getEvaluationMatrix();
+        console.log('Loaded matrix data from API:', matrixData);
+        if (matrixData && matrixData.matrix) {
+          const savedMatrix: { [key: string]: string[] } = {};
+          const savedAbilities: string[] = [];
+          for (const [ability, toolsObj] of Object.entries(matrixData.matrix)) {
+            savedMatrix[ability] = Object.keys(toolsObj).filter(k => toolsObj[k]);
+            savedAbilities.push(ability);
+          }
+          console.log('Parsed savedMatrix:', savedMatrix);
+          console.log('Parsed savedAbilities:', savedAbilities);
+          setMatrix(savedMatrix);
+          setSelectedAbilities(savedAbilities);
+          if (Object.keys(savedMatrix).length > 0) {
+            setMatrixGenerated(true);
+            setHasSubmitted(true);
+          }
+        }
+      } catch (err) {
+        console.log('No saved matrix found');
+      }
+    } catch (err) {
+      console.log('No saved data found');
+    }
+  };
+
+  const generateMatrix = async () => {
+    if (!competencyModelData || selectedAbilities.length === 0) {
+      setError('请先提交胜任力模型并选择能力');
+      return;
+    }
+
+    setError('');
+    setIsGenerating(true);
+
+    try {
+      // 过滤出选中能力的维度数据
+      const selectedDimensions = competencyModelData.dimensions.filter(
+        (d: Dimension) => selectedAbilities.includes(d.name)
+      );
+
+      console.log('Selected dimensions:', selectedDimensions);
+      console.log('Selected abilities:', selectedAbilities);
+
+      const requestData = {
+        competency_model: {
+          dimensions: selectedDimensions
+        },
+        selected_tools: selectedTools
+      };
+      console.log('Request data:', JSON.stringify(requestData));
+
+      const response = await generateEvaluationMatrix(requestData);
+
+      console.log('Matrix API response:', response);
+      
+      const matrixData = response.data || {};
+      console.log('Matrix data:', matrixData);
+      
+      // 转换格式: {能力名: [工具1, 工具2]} → {能力名: {工具1: true, 工具2: true}}
+      const newMatrix: { [key: string]: string[] } = {};
+      for (const [ability, tools] of Object.entries(matrixData)) {
+        newMatrix[ability] = tools as string[];
+      }
+
+      setMatrix(newMatrix);
+      setMatrixGenerated(true);
+    } catch (err: any) {
+      setError(err.message || '生成矩阵失败');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   const toggleAbility = (ability: string) => {
     setSelectedAbilities(prev =>
@@ -36,36 +144,56 @@ export default function AssessmentMatrix({ onBack }: AssessmentMatrixProps) {
     setSelectedAbilities([...abilities]);
   };
 
-  const generateMatrix = () => {
-    const newMatrix: { [key: string]: string[] } = {};
-    selectedAbilities.forEach((ability) => {
-      const randomTools = selectedTools
-        .sort(() => Math.random() - 0.5)
-        .slice(0, Math.floor(Math.random() * 3) + 2);
-      newMatrix[ability] = randomTools;
-    });
-    setMatrix(newMatrix);
-    setMatrixGenerated(true);
-  };
-
   const toggleMatrixCell = (ability: string, toolId: string) => {
+    console.log('Toggle:', ability, toolId);
     setMatrix(prev => {
       const current = prev[ability] || [];
+      console.log('Current tools for', ability, ':', current);
       const updated = current.includes(toolId)
         ? current.filter(t => t !== toolId)
         : [...current, toolId];
+      console.log('Updated tools for', ability, ':', updated);
       return { ...prev, [ability]: updated };
     });
   };
 
-  const handleSubmit = () => {
-    alert('矩阵已保存！');
+  const handleSubmit = async () => {
+    if (!competencyModelData || Object.keys(matrix).length === 0) {
+      return;
+    }
+
+    try {
+      // 转换矩阵格式: {能力名: [工具1, 工具2]} → {能力名: {工具1: true, 工具2: true}}
+      const matrixData: Record<string, Record<string, boolean>> = {};
+      for (const [ability, tools] of Object.entries(matrix)) {
+        matrixData[ability] = {};
+        for (const tool of tools) {
+          matrixData[ability][tool] = true;
+        }
+      }
+
+      console.log('=== Submit Info ===');
+      console.log('matrix state:', JSON.stringify(matrix));
+      console.log('matrixData to save:', JSON.stringify(matrixData));
+      console.log('selectedTools:', JSON.stringify(selectedTools));
+
+      await saveEvaluationMatrix({
+        model_id: competencyModelData.id,
+        tools: tools.map(t => ({ id: t.id, name: t.name, weight: 20, enabled: true })),
+        matrix: matrixData
+      });
+      setHasSubmitted(true);
+      alert('矩阵已保存！');
+    } catch (err: any) {
+      alert(err.message || '保存失败');
+    }
   };
 
   const handleReset = () => {
     setMatrixGenerated(false);
     setMatrix({});
     setSelectedAbilities([]);
+    setHasSubmitted(false);
   };
 
   return (
@@ -90,7 +218,7 @@ export default function AssessmentMatrix({ onBack }: AssessmentMatrixProps) {
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
           <p className="text-sm text-blue-900">
             <span className="font-medium">胜任力模型（已提交）：</span>
-            领导力、沟通协作、创新能力、分析思维、执行力
+            {abilities.length > 0 ? abilities.join('、') : '暂无提交数据'}
           </p>
         </div>
 
@@ -145,13 +273,21 @@ export default function AssessmentMatrix({ onBack }: AssessmentMatrixProps) {
         </div>
 
         {!matrixGenerated && (
-          <button
-            onClick={generateMatrix}
-            disabled={selectedAbilities.length === 0 || selectedTools.length === 0}
-            className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:bg-gray-400 disabled:cursor-not-allowed mb-6"
-          >
-            生成矩阵
-          </button>
+          <>
+            <button
+              onClick={generateMatrix}
+              disabled={selectedAbilities.length === 0 || selectedTools.length === 0 || isGenerating}
+              className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:bg-gray-400 disabled:cursor-not-allowed mb-2"
+            >
+              {isGenerating ? '生成中...' : '生成矩阵'}
+            </button>
+
+            {error && (
+              <div className="bg-red-50 text-red-600 px-4 py-3 rounded-lg text-sm mb-4">
+                {error}
+              </div>
+            )}
+          </>
         )}
 
         {matrixGenerated && (
@@ -181,7 +317,9 @@ export default function AssessmentMatrix({ onBack }: AssessmentMatrixProps) {
                   </tr>
                 </thead>
                 <tbody>
-                  {selectedAbilities.map((ability) => (
+                  {selectedAbilities.map((ability) => {
+                    console.log('Rendering row for:', ability, 'matrix[ability]:', matrix[ability]);
+                    return (
                     <tr key={ability} className="border-b border-gray-100 hover:bg-gray-50">
                       <td className="py-3 px-4 font-medium text-gray-900">{ability}</td>
                       {tools
@@ -201,7 +339,8 @@ export default function AssessmentMatrix({ onBack }: AssessmentMatrixProps) {
                           </td>
                         ))}
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -209,13 +348,15 @@ export default function AssessmentMatrix({ onBack }: AssessmentMatrixProps) {
             <div className="flex gap-4">
               <button
                 onClick={generateMatrix}
-                className="flex-1 bg-white border border-gray-300 text-gray-700 py-3 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                disabled={isGenerating}
+                className="flex-1 bg-white border border-gray-300 text-gray-700 py-3 rounded-lg hover:bg-gray-50 transition-colors font-medium disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
               >
-                重新生成
+                {isGenerating ? '生成中...' : '重新生成'}
               </button>
               <button
                 onClick={handleSubmit}
-                className="flex-1 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors font-medium"
+                disabled={isGenerating}
+                className="flex-1 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors font-medium disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
                 提交矩阵
               </button>

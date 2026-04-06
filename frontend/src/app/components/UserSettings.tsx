@@ -1,31 +1,118 @@
-import { ArrowLeft, Lock, Key, User, LogOut } from 'lucide-react';
-import { useState } from 'react';
+import { ArrowLeft, Lock, Key, User, LogOut, Eye, EyeOff, Globe } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { getUserSettings, updateUserSettings, logout } from '../api';
 
 interface UserSettingsProps {
   onBack: () => void;
   onLogout: () => void;
 }
 
+interface UserSettingsData {
+  api_key: string;
+  api_url: string;
+  default_model: string;
+  default_api_url: string;
+  default_model_name: string;
+}
+
+// 根据API URL自动识别模型选项
+const MODEL_OPTIONS: Record<string, { label: string; value: string }[]> = {
+  'openai': [
+    { label: 'GPT-4o', value: 'gpt-4o' },
+    { label: 'GPT-4o-mini', value: 'gpt-4o-mini' },
+    { label: 'GPT-4 Turbo', value: 'gpt-4-turbo' },
+    { label: 'GPT-4', value: 'gpt-4' },
+    { label: 'GPT-3.5 Turbo', value: 'gpt-3.5-turbo' },
+  ],
+  'anthropic': [
+    { label: 'Claude 3.5 Sonnet', value: 'claude-3-5-sonnet-20241022' },
+    { label: 'Claude 3 Opus', value: 'claude-3-opus-20240229' },
+    { label: 'Claude 3 Sonnet', value: 'claude-3-sonnet-20240229' },
+    { label: 'Claude 3 Haiku', value: 'claude-3-haiku-20240307' },
+  ],
+  'google': [
+    { label: 'Gemini 1.5 Pro', value: 'gemini-1.5-pro' },
+    { label: 'Gemini 1.5 Flash', value: 'gemini-1.5-flash' },
+    { label: 'Gemini 1.0 Pro', value: 'gemini-1.0-pro' },
+  ],
+  'azure': [
+    { label: 'Azure OpenAI GPT-4', value: 'gpt-4' },
+    { label: 'Azure OpenAI GPT-3.5', value: 'gpt-35-turbo' },
+  ],
+  'default': [
+    { label: 'GPT-4', value: 'gpt-4' },
+    { label: 'GPT-3.5 Turbo', value: 'gpt-3.5-turbo' },
+    { label: 'Claude 3.5 Sonnet', value: 'claude-3-5-sonnet-20241022' },
+  ]
+};
+
+function getModelsByApiUrl(apiUrl: string): { label: string; value: string }[] {
+  const url = apiUrl.toLowerCase();
+  
+  if (url.includes('openai') || url.includes('azure')) {
+    return url.includes('azure') ? MODEL_OPTIONS['azure'] : MODEL_OPTIONS['openai'];
+  } else if (url.includes('anthropic') || url.includes('claude')) {
+    return MODEL_OPTIONS['anthropic'];
+  } else if (url.includes('google') || url.includes('gemini')) {
+    return MODEL_OPTIONS['google'];
+  } else if (url.includes('volcengine') || url.includes('火山引擎')) {
+    return MODEL_OPTIONS['openai']; // 火山引擎兼容OpenAI
+  }
+  
+  return MODEL_OPTIONS['default'];
+}
+
 export default function UserSettings({ onBack, onLogout }: UserSettingsProps) {
-  const [activeTab, setActiveTab] = useState<'password' | 'profile'>('password');
+  const [activeTab, setActiveTab] = useState<'password' | 'profile'>('profile');
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
+  
+  // API Settings
+  const [apiKey, setApiKey] = useState('');
+  const [apiUrl, setApiUrl] = useState('');
+  const [model, setModel] = useState('');
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState({ type: '', text: '' });
 
-  const handleChangePassword = () => {
-    if (newPassword !== confirmPassword) {
-      alert('新密码与确认密码不一致');
-      return;
+  useEffect(() => {
+    loadSettings();
+  }, []);
+
+  const loadSettings = async () => {
+    try {
+      const data = await getUserSettings();
+      setApiKey(data.api_key || '');
+      setApiUrl(data.api_url || data.default_api_url || '');
+      setModel(data.default_model || data.default_model_name || 'gpt-4');
+    } catch (err) {
+      console.error('Failed to load settings:', err);
     }
-    setShowSuccess(true);
-    setTimeout(() => {
-      setShowSuccess(false);
-      setOldPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
-      alert('密码修改成功！');
-    }, 500);
+  };
+
+  const handleSaveApiSettings = async () => {
+    setSaving(true);
+    setMessage({ type: '', text: '' });
+    
+    try {
+      await updateUserSettings({
+        api_key: apiKey,
+        api_url: apiUrl,
+        default_model: model,
+      });
+      setMessage({ type: 'success', text: '设置保存成功！' });
+    } catch (err: any) {
+      setMessage({ type: 'error', text: err.message || '保存失败' });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleLogout = () => {
+    logout();
+    onLogout();
   };
 
   return (
@@ -51,6 +138,17 @@ export default function UserSettings({ onBack, onLogout }: UserSettingsProps) {
           <div className="w-48">
             <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
               <button
+                onClick={() => setActiveTab('profile')}
+                className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${
+                  activeTab === 'profile'
+                    ? 'bg-blue-50 text-blue-600 border-l-2 border-blue-600'
+                    : 'text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                <Key size={18} />
+                <span className="text-sm font-medium">API设置</span>
+              </button>
+              <button
                 onClick={() => setActiveTab('password')}
                 className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${
                   activeTab === 'password'
@@ -61,21 +159,10 @@ export default function UserSettings({ onBack, onLogout }: UserSettingsProps) {
                 <Lock size={18} />
                 <span className="text-sm font-medium">修改密码</span>
               </button>
-              <button
-                onClick={() => setActiveTab('profile')}
-                className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${
-                  activeTab === 'profile'
-                    ? 'bg-blue-50 text-blue-600 border-l-2 border-blue-600'
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                <User size={18} />
-                <span className="text-sm font-medium">个人信息</span>
-              </button>
             </div>
 
             <button
-              onClick={onLogout}
+              onClick={handleLogout}
               className="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg border border-red-200 mt-4 transition-colors"
             >
               <LogOut size={18} />
@@ -84,6 +171,90 @@ export default function UserSettings({ onBack, onLogout }: UserSettingsProps) {
           </div>
 
           <div className="flex-1">
+            {activeTab === 'profile' && (
+              <div className="bg-white rounded-lg border border-gray-200 p-6">
+                <h3 className="text-lg font-medium text-gray-900 mb-6">API 设置</h3>
+
+                {message.text && (
+                  <div className={`mb-4 p-3 rounded-lg text-sm ${
+                    message.type === 'success' 
+                      ? 'bg-green-50 border border-green-200 text-green-700'
+                      : 'bg-red-50 border border-red-200 text-red-700'
+                  }`}>
+                    {message.text}
+                  </div>
+                )}
+
+                <div className="space-y-4 max-w-md">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      API Key
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showApiKey ? 'text' : 'password'}
+                        value={apiKey}
+                        onChange={(e) => setApiKey(e.target.value)}
+                        placeholder="请输入您的API Key"
+                        className="w-full px-4 py-2.5 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowApiKey(!showApiKey)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      >
+                        {showApiKey ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      用于调用AI服务，可在OpenAI或其他AI平台获取
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <Globe size={14} className="inline mr-1" />
+                      API URL（可选）
+                    </label>
+                    <input
+                      type="text"
+                      value={apiUrl}
+                      onChange={(e) => setApiUrl(e.target.value)}
+                      placeholder="留空使用默认: https://api.openai.com/v1"
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      自定义API端点，默认: https://api.openai.com/v1
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      默认AI模型
+                    </label>
+                    <input
+                      type="text"
+                      value={model}
+                      onChange={(e) => setModel(e.target.value)}
+                      placeholder="请输入模型名称，如: gpt-4, claude-3-5-sonnet-20241022"
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      输入模型名称，如：gpt-4、gpt-4o、gpt-3.5-turbo、claude-3-5-sonnet-20241022
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={handleSaveApiSettings}
+                    disabled={saving}
+                    className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  >
+                    {saving ? '保存中...' : '保存设置'}
+                  </button>
+                </div>
+              </div>
+            )}
+
             {activeTab === 'password' && (
               <div className="bg-white rounded-lg border border-gray-200 p-6">
                 <h3 className="text-lg font-medium text-gray-900 mb-6">修改密码</h3>
@@ -143,75 +314,13 @@ export default function UserSettings({ onBack, onLogout }: UserSettingsProps) {
                 </div>
               </div>
             )}
-
-            {activeTab === 'profile' && (
-              <div className="bg-white rounded-lg border border-gray-200 p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-6">个人信息</h3>
-
-                <div className="flex items-center gap-6 mb-6">
-                  <div className="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center">
-                    <span className="text-2xl font-medium text-blue-600">U</span>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500 mb-1">头像</p>
-                    <button className="text-sm text-blue-600 hover:text-blue-700">
-                      更换头像
-                    </button>
-                  </div>
-                </div>
-
-                <div className="space-y-4 max-w-md">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      邮箱
-                    </label>
-                    <input
-                      type="email"
-                      defaultValue="user@example.com"
-                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50"
-                      disabled
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      API Key
-                    </label>
-                    <div className="flex gap-2">
-                      <input
-                        type="password"
-                        defaultValue="sk-xxxxxx"
-                        className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                      <button className="px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
-                        保存
-                      </button>
-                    </div>
-                    <p className="text-xs text-gray-500 mt-1">
-                      用于调用AI服务，可在OpenAI或其他AI平台获取
-                    </p>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      默认AI模型
-                    </label>
-                    <select className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                      <option value="gpt-4">GPT-4</option>
-                      <option value="gpt-3.5">GPT-3.5</option>
-                      <option value="claude-3">Claude 3</option>
-                    </select>
-                  </div>
-
-                  <button className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
-                    保存修改
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </main>
     </div>
   );
+}
+
+function handleChangePassword() {
+  alert('修改密码功能待开发');
 }

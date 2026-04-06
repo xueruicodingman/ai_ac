@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Body
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_
 from src.database import get_db
@@ -11,10 +11,43 @@ from src.schemas.report import (
 )
 from src.services.report_service import ReportService
 from src.services.user_settings_service import get_user_llm_config
-from typing import List
+from typing import List, Dict, Any
 import json
 
 router = APIRouter(prefix="/api/reports", tags=["报告生成"])
+
+@router.post("/generate/full")
+async def generate_full_report(
+    behavior_record: str = Body(...),
+    ability_standards: List[Dict[str, Any]] = Body(...),
+    report_type: str = Body(...),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    llm_config = await get_user_llm_config(db, current_user.id)
+    
+    if not llm_config["api_key"]:
+        raise HTTPException(status_code=400, detail="请先在设置中配置API Key")
+    
+    if not llm_config["api_key"].strip():
+        raise HTTPException(status_code=400, detail="请先在设置中配置API Key")
+    
+    service = ReportService(
+        api_key=llm_config["api_key"],
+        model=llm_config["model"],
+        api_url=llm_config["api_url"]
+    )
+    try:
+        result = await service.generate_full_report(
+            behavior_record=behavior_record,
+            ability_standards=ability_standards,
+            report_type=report_type
+        )
+        return {"success": True, "data": result}
+    except Exception as e:
+        import traceback
+        print(f"Error generating report: {traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"生成报告失败: {str(e)}")
 
 @router.post("/generate/feedback")
 async def generate_feedback_report(
