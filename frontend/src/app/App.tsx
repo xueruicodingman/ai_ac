@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Dashboard from './components/Dashboard';
 import CompetencyModel from './components/CompetencyModel';
 import AssessmentMatrix from './components/AssessmentMatrix';
@@ -8,11 +8,15 @@ import ReportGeneration from './components/ReportGeneration';
 import JudgeManual from './components/JudgeManual';
 import Login from './components/Login';
 import UserSettings from './components/UserSettings';
+import PracticeList from './components/PracticeList';
+import PracticeSession from './components/PracticeSession';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [navigationStack, setNavigationStack] = useState<string[]>(['dashboard']);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    return !!sessionStorage.getItem('auth_token');
+  });
   const [showUserMenu, setShowUserMenu] = useState(false);
 
   const navigateTo = (page: string) => {
@@ -72,6 +76,10 @@ export default function App() {
         return <UploadRecords onBack={goBack} />;
       case 'report':
         return <ReportGeneration onBack={goBack} onNavigate={navigateTo} />;
+      case 'practice':
+        return <PracticeList onBack={goBack} onNavigate={navigateTo} />;
+      case 'practice-session':
+        return <PracticeSession onBack={goBack} />;
       default:
         return (
           <Dashboard
