@@ -5,6 +5,11 @@ logger = logging.getLogger(__name__)
 
 
 class RolePlayPromptBuilder:
+    # 内容截断长度
+    MAX_CONTENT_LENGTH = 200
+    # 历史消息保留数量
+    MAX_HISTORY_MESSAGES = 10
+    
     def __init__(self):
         pass
     
@@ -16,6 +21,14 @@ class RolePlayPromptBuilder:
         latest_message: str
     ) -> str:
         """构建4部分动态Prompt"""
+        if not role_info:
+            role_info = {}
+        if not context_chunks:
+            context_chunks = []
+        if not conversation_history:
+            conversation_history = []
+        if not latest_message:
+            latest_message = ""
         
         prompt_parts = []
         
@@ -49,7 +62,7 @@ class RolePlayPromptBuilder:
         contexts = []
         for i, chunk in enumerate(chunks, 1):
             ctx = chunk.get('chunk', {})
-            contexts.append(f"相关背景{i}：{ctx.get('content', '')[:200]}")
+            contexts.append(f"相关背景{i}：{ctx.get('content', '')[:self.MAX_CONTENT_LENGTH]}")
         
         topics = set()
         for c in chunks:
@@ -64,13 +77,13 @@ class RolePlayPromptBuilder:
         if not history:
             return "[对话历史]\n暂无对话历史"
         
-        recent = history[-10:]
+        recent = history[-self.MAX_HISTORY_MESSAGES:]
         lines = ["[对话历史]"]
         
         for msg in recent:
             role = "你" if msg.get('role') == 'ai' else "用户"
             content = msg.get('content', '')
-            lines.append(f"{role}：{content[:200]}")
+            lines.append(f"{role}：{content[:self.MAX_CONTENT_LENGTH]}")
         
         return "\n".join(lines)
     
