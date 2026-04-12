@@ -58,7 +58,7 @@ class RolePlayPromptBuilder:
         if not history:
             return "[对话历史]\n暂无对话历史"
         
-        recent = history[-10:]
+        recent = history[-10:]  # 最近5轮（10条消息）
         lines = ["[对话历史]"]
         
         for msg in recent:
