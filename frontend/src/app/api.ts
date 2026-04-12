@@ -531,3 +531,54 @@ export const getSessionHistory = async (sessionId: number) => {
   
   return response.json();
 };
+
+// 角色扮演练习 API
+export const startRolePlayPractice = async () => {
+  const response = await fetch(`${API_BASE_URL}/api/roleplay/start`, {
+    method: "POST",
+    headers: getHeaders(),
+  });
+  
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || "开始角色扮演练习失败");
+  }
+  
+  return response.json();
+};
+
+export const submitRolePlayAnswer = async (
+  sessionId: number,
+  content: string
+) => {
+  const response = await fetch(
+    `${API_BASE_URL}/api/roleplay/${sessionId}/answer`,
+    {
+      method: "POST",
+      headers: getHeaders(),
+      body: JSON.stringify({ content }),
+    }
+  );
+  
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || "提交回答失败");
+  }
+  
+  return response.json();
+};
+
+export const getRolePlaySessionStatus = async (sessionId: number) => {
+  const response = await fetch(
+    `${API_BASE_URL}/api/roleplay/${sessionId}/status`,
+    {
+      headers: getHeaders(),
+    }
+  );
+  
+  if (!response.ok) {
+    throw new Error("获取状态失败");
+  }
+  
+  return response.json();
+};
