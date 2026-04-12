@@ -9,3 +9,4 @@ from src.models.report import Report
 from src.models.file import File
 from src.models.assessment_record import AssessmentRecord
 from src.models.practice import PracticeSession, CompetencyRecord
+from src.models.roleplay_practice import RolePlaySession, RolePlayMessage
