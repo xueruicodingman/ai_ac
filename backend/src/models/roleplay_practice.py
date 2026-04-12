@@ -10,6 +10,7 @@ class RolePlaySession(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     tool_id = Column(String(50), nullable=False, default="roleplay")
     questionnaire_content = Column(Text, nullable=False)
+    rag_index_data = Column(JSON)
     status = Column(String(20), default="in_progress")
     duration = Column(Integer, default=1800)
     remaining_time = Column(Integer, default=1800)

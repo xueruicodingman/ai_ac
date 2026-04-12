@@ -7,3 +7,4 @@ from .report import router as report_router
 from .file import router as file_router
 from .user_settings import router as user_settings_router
 from .practice import router as practice_router
+from .roleplay import router as roleplay_router

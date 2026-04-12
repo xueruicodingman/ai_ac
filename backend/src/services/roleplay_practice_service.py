@@ -1,7 +1,9 @@
 import json
 import logging
+import pickle
+import numpy as np
 from datetime import datetime
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from langchain_core.messages import HumanMessage, SystemMessage
@@ -14,7 +16,6 @@ from src.services.roleplay_prompt import RolePlayPromptBuilder
 from src.config import settings
 
 logger = logging.getLogger(__name__)
-
 
 SYSTEM_PROMPT = """你是一个角色扮演中的AI角色。请根据以下设定和上下文进行回复。
 
@@ -42,8 +43,29 @@ SYSTEM_PROMPT = """你是一个角色扮演中的AI角色。请根据以下设�
 class RolePlayPracticeService:
     def __init__(self, model: str = None, api_url: str = None):
         self.ai_service = AIService(settings.API_KEY, model, api_url)
-        self.rag = RolePlayRAG()
         self.prompt_builder = RolePlayPromptBuilder()
+        self._rag = RolePlayRAG()
+
+    def _build_rag_index(self, chunks: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+        """Build RAG index and return serialized data"""
+        if not chunks:
+            return None
+        self._rag.build_index(chunks)
+        return {
+            "chunks": self._rag.chunks,
+            "index_bytes": pickle.dumps(self._rag.index) if self._rag.index else None,
+            "dimension": self._rag.dimension
+        }
+
+    def _load_rag_from_session(self, rag_index_data: Optional[Dict[str, Any]]) -> None:
+        """Load RAG index from session data"""
+        if not rag_index_data or not rag_index_data.get("index_bytes"):
+            self._rag.index = None
+            self._rag.chunks = []
+            return
+        self._rag.index = pickle.loads(rag_index_data["index_bytes"])
+        self._rag.chunks = rag_index_data["chunks"]
+        self._rag.dimension = rag_index_data.get("dimension")
 
     async def start_session(
         self,
@@ -58,8 +80,8 @@ class RolePlayPracticeService:
         role_info = role_play_content.get("role_info", {})
         scenario = role_play_content.get("scenario", "")
 
-        chunks = self.rag.chunk_text(scenario)
-        self.rag.build_index(chunks)
+        chunks = self._rag.chunk_text(scenario)
+        rag_index_data = self._build_rag_index(chunks)
 
         role_info_text = role_info.get("background", "") + role_info.get("personality", "")
         if role_info_text:
@@ -71,6 +93,7 @@ class RolePlayPracticeService:
             user_id=user_id,
             tool_id="roleplay",
             questionnaire_content=json.dumps(questionnaire_content),
+            rag_index_data=rag_index_data,
             status="in_progress",
             duration=1800,
             remaining_time=1800
@@ -116,6 +139,8 @@ class RolePlayPracticeService:
         if session.status != "in_progress":
             raise ValueError("会话已结束")
 
+        self._load_rag_from_session(session.rag_index_data)
+
         questionnaire_content = json.loads(session.questionnaire_content)
         role_info = questionnaire_content.get("role_play_content", {}).get("role_info", {})
         if not role_info:
@@ -141,8 +166,8 @@ class RolePlayPracticeService:
         ]
 
         retrieved_chunks = []
-        if self.rag.index:
-            retrieved = self.rag.search(user_answer, top_k=3)
+        if self._rag.index:
+            retrieved = self._rag.search(user_answer, top_k=3)
             retrieved_chunks = retrieved
 
         prompt = self.prompt_builder.build(

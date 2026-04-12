@@ -1,6 +1,7 @@
 import logging
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from src.database import get_db
 from src.schemas.roleplay import (
     StartRolePlayRequest,
@@ -13,10 +14,28 @@ from src.schemas.roleplay import (
 from src.services.roleplay_practice_service import RolePlayPracticeService
 from src.routers.auth import get_current_user
 from src.models.user import User
+from src.models.roleplay_practice import RolePlaySession
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/roleplay", tags=["roleplay"])
+
+
+async def verify_session_ownership(
+    session_id: int,
+    db: AsyncSession,
+    current_user: User
+) -> RolePlaySession:
+    """Verify that the current user owns the session"""
+    result = await db.execute(
+        select(RolePlaySession).where(RolePlaySession.id == session_id)
+    )
+    session = result.scalar_one_or_none()
+    if not session:
+        raise HTTPException(status_code=404, detail="会话不存在")
+    if session.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="无权访问此会话")
+    return session
 
 
 def get_roleplay_service():
@@ -70,6 +89,7 @@ async def submit_answer(
     service: RolePlayPracticeService = Depends(get_roleplay_service)
 ):
     """提交回答"""
+    await verify_session_ownership(session_id, db, current_user)
     try:
         result = await service.submit_answer(
             db=db,
@@ -93,6 +113,7 @@ async def get_session_status(
     service: RolePlayPracticeService = Depends(get_roleplay_service)
 ):
     """获取会话状态"""
+    await verify_session_ownership(session_id, db, current_user)
     try:
         result = await service.get_session_status(db=db, session_id=session_id)
         return result
@@ -111,6 +132,7 @@ async def get_session_history(
     service: RolePlayPracticeService = Depends(get_roleplay_service)
 ):
     """获取对话历史"""
+    await verify_session_ownership(session_id, db, current_user)
     try:
         result = await service.get_history(db=db, session_id=session_id)
         return result
@@ -129,6 +151,7 @@ async def end_session(
     service: RolePlayPracticeService = Depends(get_roleplay_service)
 ):
     """结束练习"""
+    await verify_session_ownership(session_id, db, current_user)
     try:
         result = await service.end_session(db=db, session_id=session_id)
         return result
