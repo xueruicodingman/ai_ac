@@ -13,13 +13,6 @@ class RolePlayRAG:
     def __init__(self, model_name: str = 'paraphrase-multilingual-MiniLM-L12-v2'):
         self._model_name = model_name
         self._embedding_model = None
-        self.dimension = 384
-        self.index = None
-        self.chunks: List[Dict[str, Any]] = []
-    
-    def __init__(self, model_name: str = 'paraphrase-multilingual-MiniLM-L12-v2'):
-        self._model_name = model_name
-        self._embedding_model = None
         self.dimension = None
         self.index = None
         self.chunks: List[Dict[str, Any]] = []
