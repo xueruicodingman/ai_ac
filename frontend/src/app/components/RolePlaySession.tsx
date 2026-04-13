@@ -5,6 +5,7 @@ import {
   submitRolePlayAnswer,
   submitRolePlayAnswerStream,
   getRolePlaySessionStatus,
+  endRolePlaySession,
 } from "../api";
 import ChatPanel from "./ChatPanel";
 import QuestionBookPanel from "./QuestionBookPanel";
@@ -29,8 +30,8 @@ export default function RolePlaySession({
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
-  const [timeLimit, setTimeLimit] = useState(45 * 60);
-  const [questionBookContent, setQuestionBookContent] = useState<string>("");
+  const [timeLimit, setTimeLimit] = useState(30 * 60);
+  const [questionnaireContent, setQuestionnaireContent] = useState<string>("");
   const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
@@ -47,13 +48,15 @@ export default function RolePlaySession({
       setIsLoading(true);
       const result = await startRolePlayPractice();
       setSessionId(result.session_id);
-      setTimeLimit(result.time_limit * 60);
-      setQuestionBookContent(result.question_book_content || "");
+      setTimeLimit(result.remaining_time);
+      setQuestionnaireContent(
+        JSON.stringify(result.first_message, null, 2)
+      );
 
       setMessages([
         {
           role: "ai",
-          content: result.welcome_message || "您好，我是您的角色扮演练习对手。让我们开始吧！",
+          content: result.first_message?.content || "您好，我是您的角色扮演练习对手。让我们开始吧！",
         },
       ]);
     } catch (error) {
@@ -110,8 +113,15 @@ export default function RolePlaySession({
     }
   };
 
-  const handleEndPractice = () => {
+  const handleEndPractice = async () => {
     if (confirm("确定要结束练习吗？")) {
+      if (sessionId) {
+        try {
+          await endRolePlaySession(sessionId);
+        } catch (error) {
+          console.error("结束会话失败:", error);
+        }
+      }
       setIsCompleted(true);
     }
   };
@@ -181,7 +191,7 @@ export default function RolePlaySession({
             />
           </div>
           <div className="h-full">
-            <QuestionBookPanel content={questionBookContent} />
+            <QuestionBookPanel content={questionnaireContent} />
           </div>
         </div>
       </main>
