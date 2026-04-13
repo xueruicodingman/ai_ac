@@ -1,10 +1,16 @@
+import logging
 from typing import List, Dict, Any
+
+logger = logging.getLogger(__name__)
 
 
 class RolePlayPromptBuilder:
+    MAX_CONTENT_LENGTH = 200
+    MAX_HISTORY_MESSAGES = 10
+    
     def __init__(self):
         pass
-
+    
     def build(
         self,
         role_info: Dict[str, Any],
@@ -13,6 +19,14 @@ class RolePlayPromptBuilder:
         latest_message: str
     ) -> str:
         """构建4部分动态Prompt"""
+        if not role_info:
+            role_info = {}
+        if not context_chunks:
+            context_chunks = []
+        if not conversation_history:
+            conversation_history = []
+        if not latest_message:
+            latest_message = ""
         
         prompt_parts = []
         
@@ -31,6 +45,7 @@ class RolePlayPromptBuilder:
         return "\n\n".join(prompt_parts)
     
     def _build_role_section(self, role_info: Dict) -> str:
+        """构建角色定义部分"""
         return f"""[角色定义]
 你扮演{role_info.get('subordinate_name', '下级角色')}，
 角色背景：{role_info.get('background', '')}
@@ -38,13 +53,14 @@ class RolePlayPromptBuilder:
 立场：{role_info.get('position', '')}"""
     
     def _build_context_section(self, chunks: List[Dict]) -> str:
+        """构建话题上下文部分"""
         if not chunks:
             return "[话题上下文]\n当前无相关上下文"
         
         contexts = []
         for i, chunk in enumerate(chunks, 1):
             ctx = chunk.get('chunk', {})
-            contexts.append(f"相关背景{i}：{ctx.get('content', '')[:200]}")
+            contexts.append(f"相关背景{i}：{ctx.get('content', '')[:self.MAX_CONTENT_LENGTH]}")
         
         topics = set()
         for c in chunks:
@@ -55,19 +71,21 @@ class RolePlayPromptBuilder:
 {chr(10).join(contexts)}"""
     
     def _build_history_section(self, history: List[Dict]) -> str:
+        """构建对话历史部分（最近5轮=10条消息）"""
         if not history:
             return "[对话历史]\n暂无对话历史"
         
-        recent = history[-10:]  # 最近5轮（10条消息）
+        recent = history[-self.MAX_HISTORY_MESSAGES:]
         lines = ["[对话历史]"]
         
         for msg in recent:
             role = "你" if msg.get('role') == 'ai' else "用户"
             content = msg.get('content', '')
-            lines.append(f"{role}：{content[:200]}")
+            lines.append(f"{role}：{content[:self.MAX_CONTENT_LENGTH]}")
         
         return "\n".join(lines)
     
     def _build_latest_section(self, message: str) -> str:
+        """构建用户最新答复部分"""
         return f"""[用户最新答复]
 用户：{message}"""
