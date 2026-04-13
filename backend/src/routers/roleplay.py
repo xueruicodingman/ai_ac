@@ -1,5 +1,6 @@
 import logging
 import json
+import asyncio
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -129,15 +130,17 @@ async def submit_answer_stream(
 
     async def event_generator():
         try:
-            yield "data: {\"content\": \"\", \"done\": false}\n\n"
-            
-            async for chunk in service.stream_generate_response(
-                db=db,
-                session_id=session_id,
-                user_answer=request.content,
-                input_type=request.input_type
-            ):
-                yield f"data: {json.dumps({'content': chunk, 'done': False})}\n\n"
+            try:
+                async for chunk in service.stream_generate_response(
+                    db=db,
+                    session_id=session_id,
+                    user_answer=request.content,
+                    input_type=request.input_type
+                ):
+                    yield f"data: {json.dumps({'content': chunk, 'done': False})}\n\n"
+            except asyncio.CancelledError:
+                logger.info("Client disconnected, stopping stream generation")
+                raise
             
             yield "data: {\"content\": \"\", \"done\": true}\n\n"
         except Exception as e:
