@@ -31,10 +31,15 @@ export default function RolePlaySession({
   const [isCompleted, setIsCompleted] = useState(false);
   const [timeLimit, setTimeLimit] = useState(45 * 60);
   const [questionBookContent, setQuestionBookContent] = useState<string>("");
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     initPractice();
-    return () => {};
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
   }, []);
 
   const initPractice = async () => {
@@ -60,6 +65,11 @@ export default function RolePlaySession({
 
   const handleSend = async (content: string) => {
     if (!sessionId || isLoading) return;
+
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    abortControllerRef.current = new AbortController();
 
     setMessages((prev) => [...prev, { role: "user", content }]);
 
@@ -87,9 +97,13 @@ export default function RolePlaySession({
               return newMessages;
             });
           }
-        }
+        },
+        abortControllerRef.current.signal
       );
     } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        return;
+      }
       console.error("提交回答失败:", error);
     } finally {
       setIsLoading(false);

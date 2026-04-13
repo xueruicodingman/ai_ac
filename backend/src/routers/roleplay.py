@@ -129,8 +129,7 @@ async def submit_answer_stream(
 
     async def event_generator():
         try:
-            yield "data: \n\n"
-            yield "data: {\"content\": \"\"}\n\n"
+            yield "data: {\"content\": \"\", \"done\": false}\n\n"
             
             async for chunk in service.stream_generate_response(
                 db=db,
@@ -138,12 +137,12 @@ async def submit_answer_stream(
                 user_answer=request.content,
                 input_type=request.input_type
             ):
-                yield f"data: {json.dumps({'content': chunk})}\n\n"
+                yield f"data: {json.dumps({'content': chunk, 'done': False})}\n\n"
             
-            yield "data: [DONE]\n\n"
+            yield "data: {\"content\": \"\", \"done\": true}\n\n"
         except Exception as e:
             logger.error(f"Stream error: {e}")
-            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+            yield f"data: {json.dumps({'content': '', 'done': true, 'error': str(e)})}\n\n"
 
     return StreamingResponse(
         event_generator(),

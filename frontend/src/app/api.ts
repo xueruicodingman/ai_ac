@@ -586,7 +586,8 @@ export const getRolePlaySessionStatus = async (sessionId: number) => {
 export const submitRolePlayAnswerStream = async (
   sessionId: number,
   content: string,
-  onChunk: (content: string, done: boolean) => void
+  onChunk: (content: string, done: boolean) => void,
+  signal?: AbortSignal
 ) => {
   const token = sessionStorage.getItem('auth_token');
   
@@ -599,6 +600,7 @@ export const submitRolePlayAnswerStream = async (
         'Authorization': token ? `Bearer ${token}` : '',
       },
       body: JSON.stringify({ content }),
+      signal,
     }
   );
 
@@ -615,27 +617,34 @@ export const submitRolePlayAnswerStream = async (
   const decoder = new TextDecoder();
   let buffer = "";
 
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    
-    buffer += decoder.decode(value, { stream: true });
-    const lines = buffer.split('\n');
-    buffer = lines.pop() || "";
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || "";
 
-    for (const line of lines) {
-      if (line.startsWith('data: ')) {
-        try {
-          const data = JSON.parse(line.slice(6));
-          if (data.error) {
-            throw new Error(data.error);
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          try {
+            const data = JSON.parse(line.slice(6));
+            if (data.error) {
+              throw new Error(data.error);
+            }
+            onChunk(data.content || "", data.done || false);
+            if (data.done) break;
+          } catch (e) {
+            console.error("Parse error:", e);
           }
-          onChunk(data.content || "", data.done || false);
-          if (data.done) break;
-        } catch (e) {
-          console.error("Parse error:", e);
         }
       }
     }
+  } catch (e) {
+    if (e instanceof Error && e.name === 'AbortError') {
+      return;
+    }
+    throw e;
   }
 };
