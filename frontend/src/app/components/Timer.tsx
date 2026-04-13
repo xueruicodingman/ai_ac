@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 interface TimerProps {
   seconds: number;
@@ -7,6 +7,11 @@ interface TimerProps {
 
 export default function Timer({ seconds, onTimeUp }: TimerProps) {
   const [timeLeft, setTimeLeft] = useState(seconds);
+  const onTimeUpRef = useRef(onTimeUp);
+
+  useEffect(() => {
+    onTimeUpRef.current = onTimeUp;
+  }, [onTimeUp]);
 
   useEffect(() => {
     setTimeLeft(seconds);
@@ -14,7 +19,7 @@ export default function Timer({ seconds, onTimeUp }: TimerProps) {
 
   useEffect(() => {
     if (timeLeft <= 0) {
-      onTimeUp?.();
+      onTimeUpRef.current?.();
       return;
     }
 
@@ -23,7 +28,7 @@ export default function Timer({ seconds, onTimeUp }: TimerProps) {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [timeLeft, onTimeUp]);
+  }, [timeLeft]);
 
   const formatTime = (secs: number) => {
     const mins = Math.floor(secs / 60);
