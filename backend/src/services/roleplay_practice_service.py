@@ -1,14 +1,16 @@
 import json
 import logging
 import pickle
+import asyncio
 import numpy as np
 from datetime import datetime
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional, List, AsyncGenerator
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.output_parsers import StrOutputParser
 from langchain.prompts import ChatPromptTemplate
+from langchain_openai import ChatOpenAI
 from src.models.roleplay_practice import RolePlaySession, RolePlayMessage
 from src.services.ai_service import AIService
 from src.services.roleplay_rag import RolePlayRAG
@@ -45,6 +47,11 @@ class RolePlayPracticeService:
         self.ai_service = AIService(settings.API_KEY, model, api_url)
         self.prompt_builder = RolePlayPromptBuilder()
         self._rag = RolePlayRAG()
+        self._api_key = settings.API_KEY
+
+    def set_api_key(self, api_key: str):
+        self._api_key = api_key
+        self.ai_service.llm.openai_api_key = api_key
 
     def _build_rag_index(self, chunks: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
         """Build RAG index and return serialized data"""
@@ -219,6 +226,112 @@ class RolePlayPracticeService:
             "remaining_time": remaining_time,
             "status": session.status
         }
+
+    async def stream_generate_response(
+        self,
+        db: AsyncSession,
+        session_id: int,
+        user_answer: str,
+        input_type: str = "text"
+    ) -> AsyncGenerator[str, None]:
+        """流式生成AI回复"""
+        session = await db.get(RolePlaySession, session_id)
+        if not session:
+            yield f"data: {json.dumps({'error': '会话不存在'})}\n\n"
+            return
+
+        if session.status != "in_progress":
+            yield f"data: {json.dumps({'error': '会话已结束'})}\n\n"
+            return
+
+        self._load_rag_from_session(session.rag_index_data)
+
+        questionnaire_content = json.loads(session.questionnaire_content)
+        role_info = questionnaire_content.get("role_play_content", {}).get("role_info", {})
+        if not role_info:
+            role_info = questionnaire_content.get("role_info", {})
+
+        user_message = RolePlayMessage(
+            session_id=session_id,
+            role="user",
+            content=user_answer
+        )
+        db.add(user_message)
+        await db.commit()
+
+        messages_result = await db.execute(
+            select(RolePlayMessage)
+            .where(RolePlayMessage.session_id == session_id)
+            .order_by(RolePlayMessage.timestamp)
+        )
+        messages = messages_result.scalars().all()
+        conversation_history = [
+            {"role": m.role, "content": m.content}
+            for m in messages
+        ]
+
+        retrieved_chunks = []
+        if self._rag.index:
+            retrieved = self._rag.search(user_answer, top_k=3)
+            retrieved_chunks = retrieved
+
+        prompt = self.prompt_builder.build(
+            role_info=role_info,
+            context_chunks=retrieved_chunks,
+            conversation_history=conversation_history,
+            latest_message=user_answer
+        )
+
+        full_prompt = SYSTEM_PROMPT.format(
+            role_section=prompt.split("[话题上下文]")[0].replace("[角色定义]", "").replace("[用户最新答复]", ""),
+            context_section=prompt.split("[话题上下文]")[1].split("[对话历史]")[0] if "[话题上下文]" in prompt else "",
+            history_section=prompt.split("[对话历史]")[1].split("[用户最新答复]")[0] if "[对话历史]" in prompt else "",
+            latest_section=prompt.split("[用户最新答复]")[1] if "[用户最新答复]" in prompt else "",
+            subordinate_name=role_info.get("subordinate_name", "相关角色")
+        )
+
+        api_key = self._api_key
+        base_url = str(self.ai_service.llm.base_url)
+        model = self.ai_service.llm.model
+
+        llm = ChatOpenAI(
+            api_key=api_key,
+            base_url=base_url,
+            model=model,
+            temperature=0.7,
+            streaming=True
+        )
+
+        try:
+            chat_prompt = ChatPromptTemplate.from_messages([
+                SystemMessage(content=full_prompt),
+                HumanMessage(content=user_answer)
+            ])
+            chain = chat_prompt | llm
+
+            full_content = ""
+            async for chunk in chain.astream({}):
+                if chunk.content:
+                    full_content += chunk.content
+                    yield f"data: {json.dumps({'content': chunk.content, 'done': False})}\n\n"
+
+            remaining_time = max(0, session.remaining_time - 30)
+            session.remaining_time = remaining_time
+
+            ai_message = RolePlayMessage(
+                session_id=session_id,
+                role="ai",
+                content=full_content,
+                current_topic=retrieved_chunks[0].get("chunk", {}).get("chunk_type") if retrieved_chunks else None,
+                context_chunks=[c.get("chunk") for c in retrieved_chunks[:3]] if retrieved_chunks else []
+            )
+            db.add(ai_message)
+            await db.commit()
+
+            yield f"data: {json.dumps({'content': '', 'done': True, 'remaining_time': remaining_time})}\n\n"
+        except Exception as e:
+            logger.error(f"Streaming generation failed: {e}")
+            yield f"data: {json.dumps({'error': str(e)})}\n\n"
 
     async def get_history(
         self,

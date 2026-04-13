@@ -3,6 +3,7 @@ import { ArrowLeft, User, Clock, XCircle, Loader2 } from "lucide-react";
 import {
   startRolePlayPractice,
   submitRolePlayAnswer,
+  submitRolePlayAnswerStream,
   getRolePlaySessionStatus,
 } from "../api";
 import ChatPanel from "./ChatPanel";
@@ -62,20 +63,32 @@ export default function RolePlaySession({
 
     setMessages((prev) => [...prev, { role: "user", content }]);
 
+    const aiMessage: Message = { role: "ai", content: "" };
+    setMessages((prev) => [...prev, aiMessage]);
+
     try {
       setIsLoading(true);
-      const result = await submitRolePlayAnswer(sessionId, content);
-
-      if (result.ai_message) {
-        setMessages((prev) => [
-          ...prev,
-          { role: "ai", content: result.ai_message },
-        ]);
-      }
-
-      if (result.is_completed) {
-        setIsCompleted(true);
-      }
+      
+      await submitRolePlayAnswerStream(
+        sessionId,
+        content,
+        (chunk: string, done: boolean) => {
+          if (done) {
+            if (chunk.includes("练习已结束") || chunk.includes("时间到")) {
+              setIsCompleted(true);
+            }
+          } else {
+            setMessages((prev) => {
+              const newMessages = [...prev];
+              const lastMsg = newMessages[newMessages.length - 1];
+              if (lastMsg && lastMsg.role === "ai") {
+                lastMsg.content += chunk;
+              }
+              return newMessages;
+            });
+          }
+        }
+      );
     } catch (error) {
       console.error("提交回答失败:", error);
     } finally {

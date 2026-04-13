@@ -1,5 +1,7 @@
 import logging
+import json
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from src.database import get_db
@@ -15,6 +17,7 @@ from src.services.roleplay_practice_service import RolePlayPracticeService
 from src.routers.auth import get_current_user
 from src.models.user import User
 from src.models.roleplay_practice import RolePlaySession
+from src.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -103,6 +106,49 @@ async def submit_answer(
     except Exception as e:
         logger.error(f"Submit answer failed: {e}")
         raise HTTPException(status_code=500, detail="服务器内部错误")
+
+
+@router.post("/{session_id}/answer/stream")
+async def submit_answer_stream(
+    session_id: int,
+    request: AnswerRolePlayRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """流式提交回答"""
+    await verify_session_ownership(session_id, db, current_user)
+
+    from src.services.user_settings_service import get_or_create_settings
+    user_settings = await get_or_create_settings(db, current_user.id)
+    api_key = user_settings.api_key or settings.API_KEY
+    api_url = user_settings.api_url or settings.DEFAULT_API_URL
+    model = user_settings.default_model or settings.DEFAULT_MODEL
+
+    service = RolePlayPracticeService(model=model, api_url=api_url)
+    service.set_api_key(api_key)
+
+    async def event_generator():
+        try:
+            async for chunk in service.stream_generate_response(
+                db=db,
+                session_id=session_id,
+                user_answer=request.content,
+                input_type=request.input_type
+            ):
+                yield chunk
+        except Exception as e:
+            logger.error(f"Stream error: {e}")
+            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no"
+        }
+    )
 
 
 @router.get("/{session_id}/status", response_model=RolePlayStatusResponse)

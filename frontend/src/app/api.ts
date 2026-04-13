@@ -582,3 +582,60 @@ export const getRolePlaySessionStatus = async (sessionId: number) => {
   
   return response.json();
 };
+
+export const submitRolePlayAnswerStream = async (
+  sessionId: number,
+  content: string,
+  onChunk: (content: string, done: boolean) => void
+) => {
+  const token = sessionStorage.getItem('auth_token');
+  
+  const response = await fetch(
+    `${API_BASE_URL}/api/roleplay/${sessionId}/answer/stream`,
+    {
+      method: "POST",
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': token ? `Bearer ${token}` : '',
+      },
+      body: JSON.stringify({ content }),
+    }
+  );
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || "提交回答失败");
+  }
+
+  const reader = response.body?.getReader();
+  if (!reader) {
+    throw new Error("无法读取响应");
+  }
+
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop() || "";
+
+    for (const line of lines) {
+      if (line.startsWith('data: ')) {
+        try {
+          const data = JSON.parse(line.slice(6));
+          if (data.error) {
+            throw new Error(data.error);
+          }
+          onChunk(data.content || "", data.done || false);
+          if (data.done) break;
+        } catch (e) {
+          console.error("Parse error:", e);
+        }
+      }
+    }
+  }
+};
