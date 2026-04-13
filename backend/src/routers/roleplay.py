@@ -129,13 +129,18 @@ async def submit_answer_stream(
 
     async def event_generator():
         try:
+            yield "data: \n\n"
+            yield "data: {\"content\": \"\"}\n\n"
+            
             async for chunk in service.stream_generate_response(
                 db=db,
                 session_id=session_id,
                 user_answer=request.content,
                 input_type=request.input_type
             ):
-                yield chunk
+                yield f"data: {json.dumps({'content': chunk})}\n\n"
+            
+            yield "data: [DONE]\n\n"
         except Exception as e:
             logger.error(f"Stream error: {e}")
             yield f"data: {json.dumps({'error': str(e)})}\n\n"
