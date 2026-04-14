@@ -52,7 +52,7 @@ class QuestionnaireSchema(BaseModel):
     content: QuestionnaireContent
     
     def to_json_string(self) -> str:
-        return self.model_dump_json(ensure_ascii=False, indent=2)
+        return self.model_dump_json(indent=2)
     
     @classmethod
     def from_json_string(cls, json_str: str) -> "QuestionnaireSchema":

@@ -1,7 +1,11 @@
 from typing import Dict, Any, List, Optional
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.messages import HumanMessage, SystemMessage
-from langchain_core.output_parsers import StrOutputParser
+from langchain_core.output_parsers import StrOutputParser, JsonOutputParser
+from datetime import datetime
+import json
+
+from src.schemas.questionnaire_schema import QuestionnaireSchema, QuestionnaireMeta, QuestionnaireContent, CompetencyItem
 
 BEI_SYSTEM_PROMPT = """你是一位资深人才评估专家，擅长设计BEI行为事件访谈题本。"""
 
@@ -108,6 +112,7 @@ class BEHWorkflow:
     def __init__(self, llm):
         self.llm = llm
         self.parser = StrOutputParser()
+        self.json_parser = JsonOutputParser()
 
     async def generate(
         self,
@@ -125,12 +130,11 @@ class BEHWorkflow:
             requirement: 用户要求（可选）
         
         Returns:
-            生成的题本内容
+            生成的题本内容（JSON格式）
         """
         dimensions = competency_model.get("dimensions", [])
-        matrix = evaluation_matrix.get("matrix", {})
         
-        # 1. 生成行为面试原理
+        # 1. 生成行为面试原理（保持文本）
         theory_prompt = ChatPromptTemplate.from_messages([
             SystemMessage(content=THEORY_SYSTEM_PROMPT),
             HumanMessage(content="请生成行为面试原理说明")
@@ -138,7 +142,7 @@ class BEHWorkflow:
         theory_chain = theory_prompt | self.llm | self.parser
         theory_content = await theory_chain.ainvoke({})
         
-        # 2. 生成追问策略
+        # 2. 生成追问策略（保持文本）
         followup_prompt = ChatPromptTemplate.from_messages([
             SystemMessage(content=FOLLOWUP_SYSTEM_PROMPT),
             HumanMessage(content="请生成行为面试追问策略说明")
@@ -146,8 +150,8 @@ class BEHWorkflow:
         followup_chain = followup_prompt | self.llm | self.parser
         followup_content = await followup_chain.ainvoke({})
         
-        # 3. 为每个能力维度生成核心挑战和引导提问
-        questions_content = []
+        # 3. 为每个能力维度生成核心挑战和引导提问（直接输出JSON）
+        competencies_data = []
         for dim in dimensions:
             ability_name = dim.get("name", "")
             ability_meaning = dim.get("meaning", "")
@@ -155,52 +159,79 @@ class BEHWorkflow:
             
             # 构建行为标准文本
             behavior_text = ""
-            for i, bc in enumerate(behavior_criteria[:3], 1):
-                behavior_text += f"「{bc.get('title', '')}」：{bc.get('description', '')}\n"
+            for bc in behavior_criteria[:3]:
+                behavior_text += f"- {bc.get('title', '')}: {bc.get('description', '')}\n"
             
-            # 3.1 生成核心挑战
-            challenge_prompt = ChatPromptTemplate.from_messages([
-                SystemMessage(content=CHALLENGE_SYSTEM_PROMPT.format(
-                    ability_name=ability_name,
-                    ability_meaning=ability_meaning,
-                    behavior_criteria=behavior_text
-                )),
-                HumanMessage(content=f"输入的胜任力为：{ability_name}")
+            # 3.1 直接生成JSON格式的完整胜任力数据
+            competency_prompt = ChatPromptTemplate.from_messages([
+                SystemMessage(content=f"""你是一个行为事件访谈命题专家。请为以下胜任力生成JSON格式的题本数据。
+
+胜任力名称：{ability_name}
+能力含义：{ability_meaning}
+关键行为标准：
+{behavior_text}
+
+请返回以下JSON格式（必须严格是有效JSON，不能有其他文字）：
+{{
+    "name": "{ability_name}",
+    "meaning": "{ability_meaning}",
+    "behavior_criteria": [
+        {{"title": "行为1标题", "description": "行为1描述"}},
+        {{"title": "行为2标题", "description": "行为2描述"}},
+        {{"title": "行为3标题", "description": "行为3描述"}}
+    ],
+    "challenges": ["挑战1", "挑战2", "挑战3"],
+    "questions": ["问题1", "问题2", "问题3"],
+    "followup_rules": "1. 使用STAR法则（情境、任务、行动、结果）进行追问；2. 切换问题时机：① 已判断该行为与胜任力无关，候选人讲的内容偏离，再问也不会增加有效信息；② 出现明显重复、无新信息，反复绕同一个例子，没有补充新行为、新场景、新做法；③ 候选人明显回忆不起来、情绪不适或过度防御，继续追问只会得到编造内容"
+}}"""),
+                HumanMessage(content="请直接返回JSON，不要有其他文字")
             ])
-            challenge_chain = challenge_prompt | self.llm | self.parser
-            challenges = await challenge_chain.ainvoke({})
             
-            # 3.2 生成引导提问
-            question_prompt = ChatPromptTemplate.from_messages([
-                SystemMessage(content=QUESTION_SYSTEM_PROMPT.format(
-                    ability=ability_name,
-                    ability_meaning=ability_meaning,
-                    behavior_criteria=behavior_text,
-                    challenges=challenges
-                )),
-                HumanMessage(content=f"胜任力：{ability_name}\n核心挑战：{challenges}")
-            ])
-            question_chain = question_prompt | self.llm | self.parser
-            questions = await question_chain.ainvoke({})
-            
-            questions_content.append(f"【{ability_name}】\n{questions}")
+            try:
+                competency_chain = competency_prompt | self.llm | self.json_parser
+                competency_data = await competency_chain.ainvoke({})
+                competencies_data.append(competency_data)
+            except Exception as e:
+                # 如果JSON解析失败，使用备用数据
+                competencies_data.append({
+                    "name": ability_name,
+                    "meaning": ability_meaning,
+                    "behavior_criteria": [
+                        {"title": bc.get("title", ""), "description": bc.get("description", "")}
+                        for bc in behavior_criteria[:3]
+                    ],
+                    "challenges": [f"围绕{ability_name}的核心挑战场景"],
+                    "questions": [f"请分享一次关于{ability_name}的具体经历"],
+                    "followup_rules": "1. 使用STAR法则（情境、任务、行动、结果）进行追问；2. 切换问题时机：① 已判断该行为与胜任力无关，候选人讲的内容偏离，再问也不会增加有效信息；② 出现明显重复、无新信息，反复绕同一个例子，没有补充新行为、新场景、新做法；③ 候选人明显回忆不起来、情绪不适或过度防御，继续追问只会得到编造内容"
+                })
         
-        # 4. 处理背景材料
-        background_content = ""
-        if background_file_content:
-            background_content = f"\n## 企业背景信息\n{background_file_content}"
-        
-        # 5. 整合所有内容
-        all_questions = "\n\n".join(questions_content)
-        integration_prompt = ChatPromptTemplate.from_messages([
-            SystemMessage(content=INTEGRATION_SYSTEM_PROMPT.format(requirement=requirement)),
-            HumanMessage(content=f"""行为面试原理：{theory_content}
-考察方法与引导提问：{all_questions}
-追问策略：{followup_content}
-企业背景信息：{background_content}
-用户的要求:{requirement}""")
-        ])
-        integration_chain = integration_prompt | self.llm | self.parser
-        final_content = await integration_chain.ainvoke({})
-        
-        return final_content
+        # 4. 构建元信息，输出统一JSON格式
+        meta = QuestionnaireMeta(
+            tool_id="beh",
+            tool_name="BEI行为事件访谈",
+            level=competency_model.get("level"),
+            duration=60,
+            generated_at=datetime.now().isoformat()
+        )
+
+        # 转换competencies为CompetencyItem列表
+        competency_items = []
+        for comp in competencies_data:
+            competency_items.append(CompetencyItem(
+                name=comp.get("name", ""),
+                meaning=comp.get("meaning"),
+                behavior_criteria=comp.get("behavior_criteria"),
+                challenges=comp.get("challenges"),
+                questions=comp.get("questions"),
+                followup_rules=comp.get("followup_rules")
+            ))
+
+        content = QuestionnaireContent(
+            theory=theory_content,
+            followup_strategy=followup_content,
+            competencies=competency_items,
+            background=background_file_content
+        )
+
+        schema = QuestionnaireSchema(meta=meta, content=content)
+        return schema.to_json_string()
