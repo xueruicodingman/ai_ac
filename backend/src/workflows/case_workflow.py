@@ -1,6 +1,8 @@
 from typing import Dict, Any, Optional
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.messages import HumanMessage, SystemMessage
+from datetime import datetime
+from src.schemas.questionnaire_schema import QuestionnaireSchema, QuestionnaireMeta, QuestionnaireContent
 
 CASE_CHALLENGE_DESIGN_PROMPT = """你是一个人才评估专家，请基于考察的能力设计案例分析中的关键挑战点。
 
@@ -75,4 +77,19 @@ class CaseWorkflow:
         ])
         
         response = await (book_prompt | self.llm).ainvoke({})
-        return response.content
+        
+        # 构建统一JSON格式
+        meta = QuestionnaireMeta(
+            tool_id="case",
+            tool_name="案例分析",
+            level=competency_model.get("level"),
+            duration=90,
+            generated_at=datetime.now().isoformat()
+        )
+        
+        content = QuestionnaireContent(
+            scenario=response.content[:500] if response.content else "案例分析场景"
+        )
+        
+        schema = QuestionnaireSchema(meta=meta, content=content)
+        return schema.to_json_string()

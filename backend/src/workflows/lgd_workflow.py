@@ -1,6 +1,8 @@
 from typing import Dict, Any, Optional, List
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.messages import HumanMessage, SystemMessage
+from datetime import datetime
+from src.schemas.questionnaire_schema import QuestionnaireSchema, QuestionnaireMeta, QuestionnaireContent
 
 LGD_CHALLENGE_DESIGN_PROMPT = """你是一个人才评估专家，你能够基于需要考察的能力和考察的工具的挑战点来设计适合该工具的关键矛盾。
 
@@ -321,4 +323,19 @@ class LGDWorkflow:
         ])
         
         response = await (final_prompt | self.llm).ainvoke({})
-        return response.content
+        
+        # 构建统一JSON格式
+        meta = QuestionnaireMeta(
+            tool_id="lgd",
+            tool_name="无领导小组讨论",
+            level=competency_model.get("level"),
+            duration=90,
+            generated_at=datetime.now().isoformat()
+        )
+        
+        content = QuestionnaireContent(
+            scenario=response.content[:500] if response.content else "LGD讨论场景"
+        )
+        
+        schema = QuestionnaireSchema(meta=meta, content=content)
+        return schema.to_json_string()
