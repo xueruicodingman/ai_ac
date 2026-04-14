@@ -4,7 +4,7 @@ import pickle
 import asyncio
 import numpy as np
 from datetime import datetime
-from typing import Dict, Any, Optional, List, AsyncGenerator
+from typing import Dict, Any, Optional, List
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from langchain_core.messages import HumanMessage, SystemMessage
@@ -12,10 +12,11 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 from src.models.roleplay_practice import RolePlaySession, RolePlayMessage
-from src.services.ai_service import AIService
+from src.services.roleplay_rag import RolePlayRAG
 from src.services.roleplay_rag import RolePlayRAG
 from src.services.roleplay_prompt import RolePlayPromptBuilder
 from src.config import settings
+from src.utils.questionnaire_parser import parse_questionnaire_content
 
 logger = logging.getLogger(__name__)
 
@@ -43,15 +44,22 @@ SYSTEM_PROMPT = """你是一个角色扮演中的AI角色。请根据以下设�
 
 
 class RolePlayPracticeService:
-    def __init__(self, model: str = None, api_url: str = None):
-        self.ai_service = AIService(settings.API_KEY, model, api_url)
+    def __init__(self, api_key: str = None, model: str = None, api_url: str = None):
+        from src.config import settings
+        self.llm = ChatOpenAI(
+            api_key=api_key or settings.API_KEY,
+            model=model or settings.DEFAULT_MODEL,
+            base_url=api_url or settings.DEFAULT_API_URL,
+            temperature=0.7,
+            streaming=True
+        )
         self.prompt_builder = RolePlayPromptBuilder()
         self._rag = RolePlayRAG()
-        self._api_key = settings.API_KEY
+        self._api_key = api_key or settings.API_KEY
 
     def set_api_key(self, api_key: str):
         self._api_key = api_key
-        self.ai_service.llm.openai_api_key = api_key
+        self.llm.openai_api_key = api_key
 
     def _build_rag_index(self, chunks: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
         """Build RAG index and return serialized data"""
@@ -78,12 +86,15 @@ class RolePlayPracticeService:
         self,
         db: AsyncSession,
         user_id: int,
-        questionnaire_content: Dict[str, Any]
+        questionnaire_content: str
     ) -> Dict[str, Any]:
         """开始练习会话，初始化RAG"""
-        role_play_content = questionnaire_content.get("role_play_content", {})
+        # 解析questionnaire_content（支持新格式JSON、旧格式JSON和文本）
+        questionnaire_dict = parse_questionnaire_content(questionnaire_content)
+        
+        role_play_content = questionnaire_dict.get("role_play_content", {})
         if not role_play_content:
-            role_play_content = questionnaire_content
+            role_play_content = questionnaire_dict
         role_info = role_play_content.get("role_info", {})
         scenario = role_play_content.get("scenario", "")
 
@@ -96,10 +107,16 @@ class RolePlayPracticeService:
         else:
             intro_message = "你好，我是角色扮演中的AI角色。请问有什么可以帮您的？"
 
+        # 保存到数据库（确保是字符串）
+        if isinstance(questionnaire_content, str):
+            content_to_save = questionnaire_content
+        else:
+            content_to_save = json.dumps(questionnaire_content)
+            
         session = RolePlaySession(
             user_id=user_id,
             tool_id="roleplay",
-            questionnaire_content=json.dumps(questionnaire_content),
+            questionnaire_content=content_to_save,
             rag_index_data=rag_index_data,
             status="in_progress",
             duration=1800,
@@ -148,10 +165,11 @@ class RolePlayPracticeService:
 
         self._load_rag_from_session(session.rag_index_data)
 
-        questionnaire_content = json.loads(session.questionnaire_content)
-        role_info = questionnaire_content.get("role_play_content", {}).get("role_info", {})
+        # 解析questionnaire_content（支持新格式JSON、旧格式JSON和文本）
+        questionnaire_dict = parse_questionnaire_content(session.questionnaire_content)
+        role_info = questionnaire_dict.get("role_play_content", {}).get("role_info", {})
         if not role_info:
-            role_info = questionnaire_content.get("role_info", {})
+            role_info = questionnaire_dict.get("role_info", {})
 
         user_message = RolePlayMessage(
             session_id=session_id,
@@ -197,7 +215,7 @@ class RolePlayPracticeService:
                 SystemMessage(content=full_prompt),
                 HumanMessage(content=user_answer)
             ])
-            chain = chat_prompt | self.ai_service.llm | StrOutputParser()
+            chain = chat_prompt | self.llm | StrOutputParser()
             ai_response = await chain.ainvoke({})
         except Exception as e:
             logger.error(f"AI response generation failed: {e}")
@@ -246,10 +264,11 @@ class RolePlayPracticeService:
 
         self._load_rag_from_session(session.rag_index_data)
 
-        questionnaire_content = json.loads(session.questionnaire_content)
-        role_info = questionnaire_content.get("role_play_content", {}).get("role_info", {})
+        # 解析questionnaire_content（支持新格式JSON、旧格式JSON和文本）
+        questionnaire_dict = parse_questionnaire_content(session.questionnaire_content)
+        role_info = questionnaire_dict.get("role_play_content", {}).get("role_info", {})
         if not role_info:
-            role_info = questionnaire_content.get("role_info", {})
+            role_info = questionnaire_dict.get("role_info", {})
 
         user_message = RolePlayMessage(
             session_id=session_id,
@@ -291,8 +310,8 @@ class RolePlayPracticeService:
         )
 
         api_key = self._api_key
-        base_url = str(self.ai_service.llm.base_url)
-        model = self.ai_service.llm.model
+        base_url = str(self.llm.base_url)
+        model = self.llm.model
 
         llm = ChatOpenAI(
             api_key=api_key,
@@ -343,10 +362,11 @@ class RolePlayPracticeService:
         if not session:
             raise ValueError("会话不存在")
 
-        questionnaire_content = json.loads(session.questionnaire_content)
-        role_info = questionnaire_content.get("role_play_content", {}).get("role_info", {})
+        # 解析questionnaire_content（支持新格式JSON、旧格式JSON和文本）
+        questionnaire_dict = parse_questionnaire_content(session.questionnaire_content)
+        role_info = questionnaire_dict.get("role_play_content", {}).get("role_info", {})
         if not role_info:
-            role_info = questionnaire_content.get("role_info", {})
+            role_info = questionnaire_dict.get("role_info", {})
 
         messages_result = await db.execute(
             select(RolePlayMessage)
