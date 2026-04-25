@@ -129,12 +129,78 @@ export const generateCompetencyModel = async (params: {
     body: JSON.stringify(params),
   });
   
+if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || "结束会话失败");
+  }
+
+  return response.json();
+};
+
+export const submitVisionFollowupStream = async (
+  sessionId: number,
+  content: string,
+  onChunk: (content: string, done: boolean) => void,
+  signal?: AbortSignal
+) => {
+  const token = sessionStorage.getItem('auth_token');
+  
+  const response = await fetch(
+    `${API_BASE_URL}/api/vision/${sessionId}/followup/stream`,
+    {
+      method: "POST",
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': token ? `Bearer ${token}` : '',
+      },
+      body: JSON.stringify({ content }),
+      signal,
+    }
+  );
+
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.detail || '生成模型失败');
+    throw new Error(error.detail || "提交追问回答失败");
   }
-  
-  return response.json();
+
+  const reader = response.body?.getReader();
+  if (!reader) {
+    throw new Error("无法读取响应");
+  }
+
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || "";
+
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          try {
+            const data = JSON.parse(line.slice(6));
+            if (data.error) {
+              throw new Error(data.error);
+            }
+            onChunk(data.content || "", data.done || false);
+            if (data.done) break;
+          } catch (e) {
+            console.error("Parse error:", e);
+          }
+        }
+      }
+    }
+  } catch (e) {
+    if (e instanceof Error && e.name === 'AbortError') {
+      return;
+    }
+    throw e;
+  }
 };
 
 export const getCompetencyModel = async () => {
@@ -737,6 +803,89 @@ export const getVisionSessionStatus = async (sessionId: number) => {
 
   if (!response.ok) {
     throw new Error("获取状态失败");
+  }
+
+  return response.json();
+};
+
+export const submitVisionAnswerStream = async (
+  sessionId: number,
+  content: string,
+  onChunk: (content: string, done: boolean) => void,
+  signal?: AbortSignal
+) => {
+  const token = sessionStorage.getItem('auth_token');
+  
+  const response = await fetch(
+    `${API_BASE_URL}/api/vision/${sessionId}/answer/stream`,
+    {
+      method: "POST",
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': token ? `Bearer ${token}` : '',
+      },
+      body: JSON.stringify({ content }),
+      signal,
+    }
+  );
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || "提交回答失败");
+  }
+
+  const reader = response.body?.getReader();
+  if (!reader) {
+    throw new Error("无法读取响应");
+  }
+
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || "";
+
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          try {
+            const data = JSON.parse(line.slice(6));
+            if (data.error) {
+              throw new Error(data.error);
+            }
+            onChunk(data.content || "", data.done || false);
+            if (data.done) break;
+          } catch (e) {
+            console.error("Parse error:", e);
+          }
+        }
+      }
+    }
+  } catch (e) {
+    if (e instanceof Error && e.name === 'AbortError') {
+      return;
+    }
+    throw e;
+  }
+};
+
+export const endVisionPracticeSession = async (sessionId: number) => {
+  const response = await fetch(
+    `${API_BASE_URL}/api/vision/${sessionId}/end`,
+    {
+      method: "POST",
+      headers: getHeaders(),
+    }
+  );
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || "结束会话失败");
   }
 
   return response.json();

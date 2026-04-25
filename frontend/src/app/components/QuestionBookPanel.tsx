@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { FileText, Tag, Users, Lightbulb, MessageSquare, Briefcase, Eye } from "lucide-react";
+import { FileText, Tag, Users, Lightbulb, MessageSquare, Briefcase, Eye, FileAnswer } from "lucide-react";
 
 // 统一JSON格式类型定义
 interface UnifiedQuestionnaire {
@@ -75,6 +75,7 @@ function getToolName(toolId: string, fallbackName?: string): string {
 
 interface QuestionBookPanelProps {
   content?: string;
+  userAnswer?: string;
 }
 
 interface Section {
@@ -83,8 +84,8 @@ interface Section {
   content: string;
 }
 
-export default function QuestionBookPanel({ content }: QuestionBookPanelProps) {
-  const [activeTab, setActiveTab] = useState("all");
+export default function QuestionBookPanel({ content, userAnswer }: QuestionBookPanelProps) {
+  const [activeTab, setActiveTab] = useState("questionnaire");
   const contentRef = useRef<HTMLDivElement>(null);
 
   const parseContent = (): { sections: Section[], toolId: string, toolName: string } => {
@@ -327,14 +328,21 @@ export default function QuestionBookPanel({ content }: QuestionBookPanelProps) {
   };
 
   const { sections, toolId, toolName } = parseContent();
-  const tabs = [
-    { id: "all", label: "全部" },
-    ...sections.map(s => ({ id: s.id, label: s.title }))
-  ];
+  
+  // Determine tabs based on userAnswer prop
+  const tabs = userAnswer
+    ? [
+        { id: "questionnaire", label: "题本内容" },
+        { id: "answer", label: "我的答案" }
+      ]
+    : [
+        { id: "questionnaire", label: "题本内容" },
+        ...sections.map(s => ({ id: s.id, label: s.title }))
+      ];
 
   const scrollToSection = (sectionId: string) => {
     setActiveTab(sectionId);
-    if (sectionId === "all") {
+    if (sectionId === "questionnaire") {
       contentRef.current?.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
@@ -380,7 +388,7 @@ export default function QuestionBookPanel({ content }: QuestionBookPanelProps) {
       </div>
 
       <div ref={contentRef} className="flex-1 overflow-y-auto p-4">
-        {activeTab === "all" ? (
+        {activeTab === "questionnaire" ? (
           <div className="space-y-4">
             {sections.map((section) => (
               <div key={section.id} id={`section-${section.id}`} className="scroll-mt-4">
@@ -393,6 +401,16 @@ export default function QuestionBookPanel({ content }: QuestionBookPanelProps) {
                 </pre>
               </div>
             ))}
+          </div>
+        ) : activeTab === "answer" && userAnswer ? (
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <FileAnswer size={14} className="text-green-600" />
+              <h4 className="font-medium text-gray-800">我的答案</h4>
+            </div>
+            <pre className="whitespace-pre-wrap text-sm text-gray-600 font-sans bg-green-50 p-3 rounded-md border border-green-200">
+              {userAnswer}
+            </pre>
           </div>
         ) : (
           sections
