@@ -1,10 +1,8 @@
 import json
 import logging
-import asyncio
 from datetime import datetime
 from typing import Dict, Any, Optional, List
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.output_parsers import StrOutputParser
 from langchain.prompts import ChatPromptTemplate
@@ -158,6 +156,7 @@ class VisionPracticeService:
 
         # 更新时间
         remaining_time = max(0, session.remaining_time - 60)
+        session.remaining_time = remaining_time
 
         await db.commit()
 
