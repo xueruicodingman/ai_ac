@@ -10,3 +10,4 @@ from src.models.file import File
 from src.models.assessment_record import AssessmentRecord
 from src.models.practice import PracticeSession, CompetencyRecord
 from src.models.roleplay_practice import RolePlaySession, RolePlayMessage
+from src.models.vision_practice import VisionPracticeSession
