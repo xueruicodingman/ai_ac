@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { ArrowLeft, User, Clock, Play, Pause, XCircle, Loader2, FileText } from "lucide-react";
+import { ArrowLeft, User, Clock, Play, Pause, XCircle, Loader2, FileAnswer } from "lucide-react";
 import {
   startVisionPractice,
   submitVisionAnswerStream,

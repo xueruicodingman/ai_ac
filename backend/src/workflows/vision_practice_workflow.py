@@ -1,6 +1,6 @@
+import json
 from typing import Dict, Any, List, Optional
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.output_parsers import StrOutputParser
 
 # 分析用户答案 - 提取挑战应对信息
@@ -181,7 +181,6 @@ class VisionPracticeWorkflow:
             if response.endswith("```"):
                 response = response[:-3]
             
-            import json
             analysis = json.loads(response.strip())
             
             # 添加元数据
@@ -257,8 +256,7 @@ class VisionPracticeWorkflow:
         
         # 根据challenge确定追问方向
         challenge_dimension = "战略对齐度"
-        gap_score = 5
-        
+
         if challenge.get("strategic_alignment", {}).get("level") == "低":
             challenge_dimension = "战略对齐度"
             gap_score = 1
@@ -304,7 +302,7 @@ class VisionPracticeWorkflow:
         default_questions = {
             "战略对齐度": "您认为您的愿景规划如何支撑公司当前的战略重点？请具体说明。",
             "落地颗粒度": "您提到的目标有什么具体的衡量标准？如何评估是否达成？",
-            "能力匹配度": "您计划如何弥补当���能力与目标之间的差距？",
+            "能力匹配度": "您计划如何弥补当前能力与目标之间的差距？",
             "资源边界认知": "实现您的愿景需要哪些关键资源支持？",
             "短期长期平衡": "您如何平衡近期成果和长期发展的关系？"
         }
@@ -342,7 +340,6 @@ class VisionPracticeWorkflow:
             if response.endswith("```"):
                 response = response[:-3]
             
-            import json
             evaluation = json.loads(response.strip())
             return evaluation
             
