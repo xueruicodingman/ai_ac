@@ -665,3 +665,79 @@ export const endRolePlaySession = async (sessionId: number) => {
 
   return response.json();
 };
+
+// 个人愿景练习 API
+export const startVisionPractice = async (data: {
+  questionnaire_content: string;
+  duration?: number;
+}) => {
+  const response = await fetch(`${API_BASE_URL}/api/vision/start`, {
+    method: "POST",
+    headers: getHeaders(),
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || "开始愿景练习失败");
+  }
+
+  return response.json();
+};
+
+export const submitVisionAnswer = async (
+  sessionId: number,
+  content: string
+) => {
+  const response = await fetch(
+    `${API_BASE_URL}/api/vision/${sessionId}/answer`,
+    {
+      method: "POST",
+      headers: getHeaders(),
+      body: JSON.stringify({ content }),
+    }
+  );
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || "提交回答失败");
+  }
+
+  return response.json();
+};
+
+export const submitVisionFollowup = async (
+  sessionId: number,
+  content: string
+) => {
+  const response = await fetch(
+    `${API_BASE_URL}/api/vision/${sessionId}/followup`,
+    {
+      method: "POST",
+      headers: getHeaders(),
+      body: JSON.stringify({ content }),
+    }
+  );
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || "提交追问回答失败");
+  }
+
+  return response.json();
+};
+
+export const getVisionSessionStatus = async (sessionId: number) => {
+  const response = await fetch(
+    `${API_BASE_URL}/api/vision/${sessionId}/status`,
+    {
+      headers: getHeaders(),
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("获取状态失败");
+  }
+
+  return response.json();
+};
