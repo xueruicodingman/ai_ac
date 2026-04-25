@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ArrowLeft, Clock, FileText, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
-import { getQuestionnaires, getEvaluationMatrix } from '../api';
+import { getQuestionnaires, getEvaluationMatrix, getQuestionnaire } from '../api';
 
 interface PracticeItem {
   id: string;
@@ -15,9 +15,10 @@ interface PracticeItem {
 interface PracticeListProps {
   onBack: () => void;
   onNavigate?: (page: string) => void;
+  onNavigateVisionPractice?: (questionnaire: string) => void;
 }
 
-export default function PracticeList({ onBack, onNavigate }: PracticeListProps) {
+export default function PracticeList({ onBack, onNavigate, onNavigateVisionPractice }: PracticeListProps) {
   const [practiceItems, setPracticeItems] = useState<PracticeItem[]>([
     {
       id: 'beh',
@@ -152,9 +153,18 @@ export default function PracticeList({ onBack, onNavigate }: PracticeListProps) 
     }
   };
 
-  const handleStartPractice = (id: string) => {
+  const handleStartPractice = async (id: string) => {
     if (id === "beh" && onNavigate) {
       onNavigate("practice-session");
+    } else if (id === "vision" && onNavigateVisionPractice) {
+      // Fetch questionnaire for vision practice
+      try {
+        const questionnaire = await getQuestionnaire(id);
+        onNavigateVisionPractice(questionnaire.content || '');
+      } catch (error) {
+        console.error('获取题本失败:', error);
+        alert('获取题本失败，请稍后重试');
+      }
     } else {
       alert(`开始练习: ${id}（暂未支持）`);
     }
