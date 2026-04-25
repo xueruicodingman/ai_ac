@@ -10,6 +10,7 @@ import Login from './components/Login';
 import UserSettings from './components/UserSettings';
 import PracticeList from './components/PracticeList';
 import PracticeSession from './components/PracticeSession';
+import VisionPracticeSession from './components/VisionPracticeSession';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState('dashboard');
@@ -18,10 +19,18 @@ export default function App() {
     return !!sessionStorage.getItem('auth_token');
   });
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [visionQuestionnaire, setVisionQuestionnaire] = useState('');
 
   const navigateTo = (page: string) => {
     setCurrentPage(page);
     setNavigationStack([...navigationStack, page]);
+    setShowUserMenu(false);
+  };
+
+  const navigateToVisionPractice = async (questionnaire: string) => {
+    setVisionQuestionnaire(questionnaire);
+    setCurrentPage('vision-practice-session');
+    setNavigationStack([...navigationStack, 'vision-practice-session']);
     setShowUserMenu(false);
   };
 
@@ -77,9 +86,11 @@ export default function App() {
       case 'report':
         return <ReportGeneration onBack={goBack} onNavigate={navigateTo} />;
       case 'practice':
-        return <PracticeList onBack={goBack} onNavigate={navigateTo} />;
+        return <PracticeList onBack={goBack} onNavigate={navigateTo} onNavigateVisionPractice={navigateToVisionPractice} />;
       case 'practice-session':
         return <PracticeSession onBack={goBack} />;
+      case 'vision-practice-session':
+        return <VisionPracticeSession onBack={goBack} questionnaireContent={visionQuestionnaire} />;
       default:
         return (
           <Dashboard
