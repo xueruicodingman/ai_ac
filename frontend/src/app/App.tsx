@@ -3,35 +3,44 @@ import Dashboard from './components/Dashboard';
 import CompetencyModel from './components/CompetencyModel';
 import AssessmentMatrix from './components/AssessmentMatrix';
 import QuestionBook from './components/QuestionBook';
-import UploadRecords from './components/UploadRecords';
 import ReportGeneration from './components/ReportGeneration';
-import JudgeManual from './components/JudgeManual';
 import Login from './components/Login';
 import UserSettings from './components/UserSettings';
-import PracticeList from './components/PracticeList';
-import PracticeSession from './components/PracticeSession';
-import VisionPracticeSession from './components/VisionPracticeSession';
+import { Toaster } from 'sonner';
+
+type Page = 'login' | 'dashboard' | 'competency' | 'matrix' | 'question' | 'report' | 'settings';
 
 export default function App() {
-  const [currentPage, setCurrentPage] = useState('dashboard');
-  const [navigationStack, setNavigationStack] = useState<string[]>(['dashboard']);
+  const [currentPage, setCurrentPage] = useState<Page>('dashboard');
+  const [navigationStack, setNavigationStack] = useState<Page[]>(['dashboard']);
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
     return !!sessionStorage.getItem('auth_token');
   });
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [visionQuestionnaire, setVisionQuestionnaire] = useState('');
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.slice(1);
+      if (hash && hash !== currentPage) {
+        const validPage = hash as Page;
+        if (['login', 'dashboard', 'competency', 'matrix', 'question', 'report', 'settings'].includes(validPage)) {
+          setCurrentPage(validPage);
+          setNavigationStack([...navigationStack, validPage]);
+        }
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, [currentPage, navigationStack]);
 
   const navigateTo = (page: string) => {
-    setCurrentPage(page);
-    setNavigationStack([...navigationStack, page]);
-    setShowUserMenu(false);
-  };
-
-  const navigateToVisionPractice = async (questionnaire: string) => {
-    setVisionQuestionnaire(questionnaire);
-    setCurrentPage('vision-practice-session');
-    setNavigationStack([...navigationStack, 'vision-practice-session']);
-    setShowUserMenu(false);
+    const validPage = page as Page;
+    if (validPage) {
+      setCurrentPage(validPage);
+      setNavigationStack([...navigationStack, validPage]);
+      setShowUserMenu(false);
+    }
   };
 
   const goBack = () => {
@@ -79,18 +88,8 @@ export default function App() {
         return <AssessmentMatrix onBack={goBack} />;
       case 'question':
         return <QuestionBook onBack={goBack} onNavigate={navigateTo} />;
-      case 'judge-manual':
-        return <JudgeManual onBack={goBack} />;
-      case 'upload':
-        return <UploadRecords onBack={goBack} />;
       case 'report':
         return <ReportGeneration onBack={goBack} onNavigate={navigateTo} />;
-      case 'practice':
-        return <PracticeList onBack={goBack} onNavigate={navigateTo} onNavigateVisionPractice={navigateToVisionPractice} />;
-      case 'practice-session':
-        return <PracticeSession onBack={goBack} />;
-      case 'vision-practice-session':
-        return <VisionPracticeSession onBack={goBack} questionnaireContent={visionQuestionnaire} />;
       default:
         return (
           <Dashboard
@@ -102,5 +101,10 @@ export default function App() {
     }
   };
 
-  return <div className="min-h-screen">{renderPage()}</div>;
+  return (
+    <div className="min-h-screen">
+      {renderPage()}
+      <Toaster position="top-center" richColors />
+    </div>
+  );
 }

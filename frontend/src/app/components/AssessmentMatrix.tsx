@@ -1,6 +1,7 @@
 import { ArrowLeft, Check, RotateCcw } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { getCompetencyModel, generateEvaluationMatrix, getEvaluationMatrix, saveEvaluationMatrix } from '../api';
+import { toast } from 'sonner';
 
 interface AssessmentMatrixProps {
   onBack: () => void;
@@ -183,9 +184,15 @@ export default function AssessmentMatrix({ onBack }: AssessmentMatrixProps) {
         matrix: matrixData
       });
       setHasSubmitted(true);
-      alert('矩阵已保存！');
+      toast.success('矩阵已保存！', {
+        action: {
+          label: '前往题本生成',
+          onClick: () => window.location.hash = 'question',
+        },
+        duration: 5000,
+      });
     } catch (err: any) {
-      alert(err.message || '保存失败');
+      toast.error(err.message || '保存失败');
     }
   };
 

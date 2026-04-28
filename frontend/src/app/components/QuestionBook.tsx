@@ -1,6 +1,7 @@
 import { ArrowLeft, Upload, Download, Edit2, Clock, CheckCircle, FileText, X, Copy, Check } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { getCompetencyModel, getEvaluationMatrix, generateQuestionnaire, getQuestionnaires, saveQuestionnaire, uploadFile, getFileContent } from '../api';
+import { toast } from 'sonner';
 
 interface QuestionBookProps {
   onBack: () => void;
@@ -248,7 +249,13 @@ export default function QuestionBook({ onBack, onNavigate }: QuestionBookProps) 
     ));
 
     setEditingBook(null);
-    alert('题本已提交！');
+    toast.success('题本已提交！', {
+      action: {
+        label: '前往测评报告',
+        onClick: () => window.location.hash = 'report',
+      },
+      duration: 5000,
+    });
   };
 
   const handleNextBook = () => {
@@ -575,6 +582,13 @@ export default function QuestionBook({ onBack, onNavigate }: QuestionBookProps) 
                     className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium whitespace-nowrap"
                   >
                     进入编辑
+                  </button>
+                  <button
+                    onClick={() => onNavigate('knowledge-base', { tool: books[0]?.id || 'roleplay' })}
+                    className="px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors text-sm font-medium whitespace-nowrap"
+                    title="知识库管理"
+                  >
+                    知识库管理
                   </button>
                 </div>
               </div>

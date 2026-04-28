@@ -1,6 +1,7 @@
 import { ArrowLeft, Upload, X, Plus, Trash2, Edit2, Check } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { generateCompetencyModel, saveCompetencyModel, getCompetencyModel } from '../api';
+import { toast } from 'sonner';
 
 interface CompetencyModelProps {
   onBack: () => void;
@@ -193,9 +194,15 @@ export default function CompetencyModel({ onBack }: CompetencyModelProps) {
 
       await saveCompetencyModel(modelData);
       setHasSubmitted(true);
-      alert('模型已保存！');
+      toast.success('模型已保存！', {
+        action: {
+          label: '前往评估矩阵',
+          onClick: () => window.location.hash = 'matrix',
+        },
+        duration: 5000,
+      });
     } catch (err: any) {
-      alert(err.message || '保存失败');
+      toast.error(err.message || '保存失败');
     } finally {
       setSubmitting(false);
     }
