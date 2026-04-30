@@ -1,4 +1,4 @@
-name: 部署FastAPI到阿里云
+name: 部署FastAPI后端到阿里云
 
 on:
   push:
@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 拉取代码
-        uses: actions/checkout@v4
+        uses: actions/checkout@4
 
       - name: 上传后端代码到服务器
         uses: appleboy/scp-action@master
@@ -30,35 +30,41 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            # 创建4G临时交换内存
-            sudo fallocate -l 4G /swapfile || true
-            sudo chmod 600 /swapfile || true
-            sudo mkswap /swapfile || true
-            sudo swapon /swapfile || true
-            
-            # 配置清华镜像
-            mkdir -p ~/.config/pip || true
-            echo -e "[global]\nindex-url = https://pypi.tuna.tsinghua.edu.cn/simple\ntimeout = 600\n[install]\ntrusted-host = pypi.tuna.tsinghua.edu.cn" > ~/.config/pip/pip.conf || true
-            
+            # ==============================
+            # 强化 SWAP（确保不被OOM杀死）
+            # ==============================
+            sudo rm -f /swapfile
+            sudo dd if=/dev/zero of=/swapfile bs=1M count=4096
+            sudo chmod 600 /swapfile
+            sudo mkswap /swapfile
+            sudo swapon /swapfile
+
+            # 配置镜像
+            mkdir -p ~/.config/pip
+            echo -e "[global]\nindex-url=https://pypi.tuna.tsinghua.edu.cn/simple\ntimeout=600" > ~/.config/pip/pip.conf
+
             cd /var/www/aitalent/backend
-            
-            # 安装依赖（保持你原来的正确路径）
-            /usr/local/python310/bin/pip3.10 install --user --no-cache-dir -r requirements.txt
-            
-            # 停止旧进程
-            pkill -f "gunicorn" || true
-            
-            echo "开始启动FastAPI服务..."
-            
-            # ==========================
-            # 【唯一关键修改】-w 4 → -w 1
-            # 解决内存不足被杀死的问题
-            # ==========================
-            nohup /usr/local/python310/bin/python3.10 -m gunicorn -w 1 -k uvicorn.workers.UvicornWorker src.main:app --bind 0.0.0.0:8000 > /var/www/aitalent/backend/run.log 2>&1 &
-            
+
+            # ==============================
+            # 超低内存安装模式（必加）
+            # ==============================
+            export PIP_NO_CACHE_DIR=1
+            export PIP_USER=1
+
+            # 安装依赖（你的正确路径）
+            /usr/local/python310/bin/pip3.10 install -r requirements.txt
+
+            # 杀掉旧进程
+            pkill -f gunicorn || true
+
+            # ==============================
+            # 超低内存启动（关键！）
+            # ==============================
+            nohup /usr/local/python310/bin/python3.10 -m gunicorn -w 1 -k uvicorn.workers.UvicornWorker --threads 1 --timeout 120 src.main:app --bind 0.0.0.0:8000 > run.log 2>&1 &
+
             sleep 3
             ps -ef | grep gunicorn | grep -v grep
-            
-            # 清理swap
-            sudo swapoff /swapfile || true
-            sudo rm -f /swapfile || true
+
+            # 关闭swap
+            sudo swapoff /swapfile
+            sudo rm -f /swapfile
