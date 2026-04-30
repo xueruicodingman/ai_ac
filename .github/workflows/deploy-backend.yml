@@ -23,18 +23,12 @@ jobs:
           target: "/var/www/aitalent/backend"
           strip_components: 1
 
-      - name: 服务器启动FastAPI
+      - name: SSH连接测试
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          timeout: 60s
+          timeout: 10s
           script: |
-            cd /var/www/aitalent/backend
-            pkill -f "gunicorn.*src.main:app" || true
-            sleep 2
-            nohup /usr/local/python310/bin/python3.10 -m gunicorn -w 1 -b 0.0.0.0:8000 src.main:app > /var/log/aitalent.log 2>&1 &
-            echo "Backend started"
-            sleep 3
-            curl -s http://localhost:8000/docs > /dev/null && echo "Backend is running" || echo "Backend failed"
+            echo "SSH connected"
