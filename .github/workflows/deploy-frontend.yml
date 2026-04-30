@@ -1,0 +1,38 @@
+name: 部署React+TS前端到阿里云
+
+on:
+  push:
+    branches: [ main ]
+    paths: [ "frontend/**" ]  # 只监听前端代码变更
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 拉取代码
+        uses: actions/checkout@v4
+
+      - name: 安装Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: 前端安装依赖 + 打包
+        run: |
+          set -e  # 遇到错误立即终止，便于排查
+          cd frontend
+          npm install --force
+          npm run build  # React+TS打包生成dist
+
+      - name: 上传前端打包文件到服务器
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          source: "frontend/dist/*"
+          target: "/var/www/aitalent/frontend" 
+          strip_components: 2  # 去掉dist外层目录，直接传文件到frontend
