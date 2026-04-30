@@ -38,3 +38,5 @@ async def startup():
 @app.get("/")
 async def root():
     return {"message": "AC测评工具API"}
+
+# 新增注释：触发Actions部署 
