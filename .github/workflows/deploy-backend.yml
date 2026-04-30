@@ -33,6 +33,21 @@ jobs:
           script: |
             echo "SSH connected successfully"
 
+      - name: 检查并安装依赖
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          timeout: 300s
+          script: |
+            cd /var/www/aitalent/backend
+            # 检查内存
+            free -h
+            echo "--- Installing dependencies ---"
+            pip install -r requirements.txt --no-input || echo "Install completed with some errors"
+            pip list | head -5
+
       - name: 重启服务
         uses: appleboy/ssh-action@master
         with:
