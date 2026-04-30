@@ -42,11 +42,10 @@ jobs:
           timeout: 300s
           script: |
             cd /var/www/aitalent/backend
-            # 检查内存
             free -h
-            echo "--- Installing dependencies ---"
-            pip install -r requirements.txt --no-input || echo "Install completed with some errors"
-            pip list | head -5
+            pip install -r requirements.txt --no-input
+            # 验证关键依赖
+            python -c "import fastapi, sqlalchemy, langchain" || exit 1
 
       - name: 重启服务
         uses: appleboy/ssh-action@master
