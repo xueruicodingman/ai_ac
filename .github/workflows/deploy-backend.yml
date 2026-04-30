@@ -30,41 +30,13 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            # ==============================
-            # 强化 SWAP（确保不被OOM杀死）
-            # ==============================
-            sudo rm -f /swapfile
-            sudo dd if=/dev/zero of=/swapfile bs=1M count=4096
-            sudo chmod 600 /swapfile
-            sudo mkswap /swapfile
-            sudo swapon /swapfile
-
-            # 配置镜像
-            mkdir -p ~/.config/pip
-            echo -e "[global]\nindex-url=https://pypi.tuna.tsinghua.edu.cn/simple\ntimeout=600" > ~/.config/pip/pip.conf
-
             cd /var/www/aitalent/backend
-
-            # ==============================
-            # 超低内存安装模式（必加）
-            # ==============================
-            export PIP_NO_CACHE_DIR=1
-            export PIP_USER=1
-
-            # 安装依赖（你的正确路径）
-            /usr/local/python310/bin/pip3.10 install -r requirements.txt
 
             # 杀掉旧进程
             pkill -f gunicorn || true
 
-            # ==============================
-            # 超低内存启动（关键！）
-            # ==============================
+            # 启动服务（使用服务器已经安装好的依赖）
             nohup /usr/local/python310/bin/python3.10 -m gunicorn -w 1 -k uvicorn.workers.UvicornWorker --threads 1 --timeout 120 src.main:app --bind 0.0.0.0:8000 > run.log 2>&1 &
 
             sleep 3
             ps -ef | grep gunicorn | grep -v grep
-
-            # 关闭swap
-            sudo swapoff /swapfile
-            sudo rm -f /swapfile
