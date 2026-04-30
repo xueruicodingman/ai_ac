@@ -23,20 +23,14 @@ jobs:
           target: "/var/www/aitalent/backend"
           strip_components: 1
 
-      - name: 服务器启动FastAPI（gunicorn守护）
+      - name: 服务器启动FastAPI
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
+            # 【极简版：只杀进程 + 重启，不做任何高内存操作】
             cd /var/www/aitalent/backend
-
-            # 杀掉旧进程
             pkill -f gunicorn || true
-
-            # 启动服务（使用服务器已经安装好的依赖）
-            nohup /usr/local/python310/bin/python3.10 -m gunicorn -w 1 -k uvicorn.workers.UvicornWorker --threads 1 --timeout 120 src.main:app --bind 0.0.0.0:8000 > run.log 2>&1 &
-
-            sleep 3
-            ps -ef | grep gunicorn | grep -v grep
+            nohup /usr/local/python310/bin/python3.10 -m gunicorn -w 1 src.main:app --bind 0.0.0.0:8000 > /dev/null 2>&1 &
