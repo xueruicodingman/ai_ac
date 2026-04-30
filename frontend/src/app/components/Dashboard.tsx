@@ -1,4 +1,4 @@
-import { FileText, Grid3x3, FileQuestion, FileBarChart, User, LogIn } from 'lucide-react';
+import { Lightbulb, Grid3x3, FileQuestion, FileBarChart, User, LogIn, FileText } from 'lucide-react';
 
 interface ModuleCardProps {
   icon: React.ReactNode;
@@ -40,7 +40,7 @@ interface DashboardProps {
 export default function Dashboard({ onNavigate, onUserClick, isLoggedIn }: DashboardProps) {
   const modules = [
     {
-      icon: <FileText size={24} />,
+      icon: <Lightbulb size={24} />,
       title: '胜任力模型',
       description: '上传背景材料，AI智能生成胜任力模型',
       page: 'competency',
@@ -72,11 +72,11 @@ export default function Dashboard({ onNavigate, onUserClick, isLoggedIn }: Dashb
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center">
-                <FileText className="text-white" size={20} />
+                <Lightbulb className="text-white" size={20} />
               </div>
               <div>
-                <h1 className="font-semibold text-gray-900">AI 评价中心</h1>
-                <p className="text-xs text-gray-500">AI Assessment Center Platform</p>
+                <h1 className="font-semibold text-gray-900">能力研究中心</h1>
+                <p className="text-xs text-gray-500">AI Talent Research Center</p>
               </div>
             </div>
             <div className="flex items-center gap-4">
@@ -103,7 +103,8 @@ export default function Dashboard({ onNavigate, onUserClick, isLoggedIn }: Dashb
 
       <main className="flex-1 max-w-7xl mx-auto px-6 py-12 w-full">
         <div className="mb-8">
-          <h2 className="text-xl font-bold text-gray-900 text-center">AI解放双手，科技超越偏见</h2>
+          <h2 className="text-xl font-bold text-gray-900 text-center">让每份天赋皆被看见</h2>
+          <p className="text-sm text-gray-500 text-center mt-1">Let every talent be seen.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -123,7 +124,7 @@ export default function Dashboard({ onNavigate, onUserClick, isLoggedIn }: Dashb
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="flex items-center justify-between text-sm text-gray-500">
             <div>
-              <span>AI 评价中心 v1.0.0</span>
+              <span>能力研究中心 v1.0.0</span>
               <span className="mx-2">·</span>
               <span>© 2026 All rights reserved</span>
             </div>

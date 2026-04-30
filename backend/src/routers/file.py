@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Response
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Response, Body
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -201,10 +201,11 @@ async def download_file(
 
 @router.post("/convert/markdown-to-docx")
 async def convert_markdown_to_docx(
-    content: str,
-    title: str = "",
+    request: dict,
     current_user: User = Depends(get_current_user)
 ):
+    content = request.get("content", "")
+    title = request.get("title", "")
     docx_content = markdown_to_docx(content, title)
     
     os.makedirs(settings.GENERATED_DIR, exist_ok=True)
@@ -213,10 +214,14 @@ async def convert_markdown_to_docx(
     with open(file_path, 'wb') as f:
         f.write(docx_content)
     
-    return Response(
-        content=docx_content,
+    filename = title or "document"
+    # Ensure ASCII-only filename
+    filename = filename.encode('ascii', 'ignore').decode('ascii') or "document"
+    
+    return StreamingResponse(
+        iter([docx_content]),
         media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        headers={"Content-Disposition": f"attachment; filename={title or 'document'}.docx"}
+        headers={"Content-Disposition": f"attachment; filename={filename}.docx"}
     )
 
 @router.post("/generate-radar-chart")

@@ -22,321 +22,58 @@ You may be able to resolve this warning by setting `model_config['protected_name
 
 You may be able to resolve this warning by setting `model_config['protected_namespaces'] = ()`.
   warnings.warn(
-INFO:     Started server process [27356]
+INFO:     Started server process [91495]
 INFO:     Waiting for application startup.
-2026-04-30 15:14:11,204 INFO sqlalchemy.engine.Engine BEGIN (implicit)
-2026-04-30 15:14:11,204 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("users")
-2026-04-30 15:14:11,204 INFO sqlalchemy.engine.Engine [raw sql] ()
-2026-04-30 15:14:11,206 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("user_settings")
-2026-04-30 15:14:11,206 INFO sqlalchemy.engine.Engine [raw sql] ()
-2026-04-30 15:14:11,206 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("competency_models")
-2026-04-30 15:14:11,206 INFO sqlalchemy.engine.Engine [raw sql] ()
-2026-04-30 15:14:11,206 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("evaluation_matrices")
-2026-04-30 15:14:11,206 INFO sqlalchemy.engine.Engine [raw sql] ()
-2026-04-30 15:14:11,207 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("questionnaires")
-2026-04-30 15:14:11,207 INFO sqlalchemy.engine.Engine [raw sql] ()
-2026-04-30 15:14:11,207 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("judge_handbooks")
-2026-04-30 15:14:11,207 INFO sqlalchemy.engine.Engine [raw sql] ()
-2026-04-30 15:14:11,207 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("reports")
-2026-04-30 15:14:11,207 INFO sqlalchemy.engine.Engine [raw sql] ()
-2026-04-30 15:14:11,207 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("files")
-2026-04-30 15:14:11,207 INFO sqlalchemy.engine.Engine [raw sql] ()
-2026-04-30 15:14:11,207 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("assessment_records")
-2026-04-30 15:14:11,207 INFO sqlalchemy.engine.Engine [raw sql] ()
-2026-04-30 15:14:11,208 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("practice_sessions")
-2026-04-30 15:14:11,208 INFO sqlalchemy.engine.Engine [raw sql] ()
-2026-04-30 15:14:11,208 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("competency_records")
-2026-04-30 15:14:11,208 INFO sqlalchemy.engine.Engine [raw sql] ()
-2026-04-30 15:14:11,208 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("roleplay_sessions")
-2026-04-30 15:14:11,208 INFO sqlalchemy.engine.Engine [raw sql] ()
-2026-04-30 15:14:11,208 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("roleplay_messages")
-2026-04-30 15:14:11,208 INFO sqlalchemy.engine.Engine [raw sql] ()
-2026-04-30 15:14:11,208 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("vision_practice_sessions")
-2026-04-30 15:14:11,208 INFO sqlalchemy.engine.Engine [raw sql] ()
-2026-04-30 15:14:11,209 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("judge_teams")
-2026-04-30 15:14:11,209 INFO sqlalchemy.engine.Engine [raw sql] ()
-2026-04-30 15:14:11,209 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("knowledge_bases")
-2026-04-30 15:14:11,209 INFO sqlalchemy.engine.Engine [raw sql] ()
-2026-04-30 15:14:11,209 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("evaluation_criteria")
-2026-04-30 15:14:11,209 INFO sqlalchemy.engine.Engine [raw sql] ()
-2026-04-30 15:14:11,209 INFO sqlalchemy.engine.Engine COMMIT
+2026-05-01 01:18:03,806 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-05-01 01:18:03,807 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("users")
+2026-05-01 01:18:03,807 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-01 01:18:03,808 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("user_settings")
+2026-05-01 01:18:03,808 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-01 01:18:03,808 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("competency_models")
+2026-05-01 01:18:03,808 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-01 01:18:03,808 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("evaluation_matrices")
+2026-05-01 01:18:03,808 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-01 01:18:03,809 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("questionnaires")
+2026-05-01 01:18:03,809 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-01 01:18:03,809 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("judge_handbooks")
+2026-05-01 01:18:03,809 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-01 01:18:03,809 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("reports")
+2026-05-01 01:18:03,809 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-01 01:18:03,809 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("files")
+2026-05-01 01:18:03,809 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-01 01:18:03,809 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("assessment_records")
+2026-05-01 01:18:03,809 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-01 01:18:03,810 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("practice_sessions")
+2026-05-01 01:18:03,810 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-01 01:18:03,810 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("competency_records")
+2026-05-01 01:18:03,810 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-01 01:18:03,810 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("roleplay_sessions")
+2026-05-01 01:18:03,810 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-01 01:18:03,810 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("roleplay_messages")
+2026-05-01 01:18:03,810 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-01 01:18:03,810 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("vision_practice_sessions")
+2026-05-01 01:18:03,810 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-01 01:18:03,810 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("judge_teams")
+2026-05-01 01:18:03,810 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-01 01:18:03,811 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("knowledge_bases")
+2026-05-01 01:18:03,811 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-01 01:18:03,811 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("evaluation_criteria")
+2026-05-01 01:18:03,811 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-01 01:18:03,811 INFO sqlalchemy.engine.Engine COMMIT
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
-INFO:     127.0.0.1:63124 - "GET /docs HTTP/1.1" 200 OK
-INFO:     127.0.0.1:64671 - "OPTIONS /api/auth/login HTTP/1.1" 200 OK
-2026-04-30 15:37:34,283 INFO sqlalchemy.engine.Engine BEGIN (implicit)
-2026-04-30 15:37:34,319 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.password_hash, users.created_at, users.updated_at 
-FROM users 
-WHERE users.email = ?
-2026-04-30 15:37:34,320 INFO sqlalchemy.engine.Engine [generated in 0.00079s] ('xuerui1221@126.com',)
-(trapped) error reading bcrypt version
-Traceback (most recent call last):
-  File "/opt/anaconda3/lib/python3.11/site-packages/passlib/handlers/bcrypt.py", line 620, in _load_backend_mixin
-    version = _bcrypt.__about__.__version__
-              ^^^^^^^^^^^^^^^^^
-AttributeError: module 'bcrypt' has no attribute '__about__'
-2026-04-30 15:37:34,661 INFO sqlalchemy.engine.Engine ROLLBACK
-INFO:     127.0.0.1:64671 - "POST /api/auth/login HTTP/1.1" 200 OK
-INFO:     127.0.0.1:64671 - "OPTIONS /api/competency-models HTTP/1.1" 200 OK
-2026-04-30 15:37:39,391 INFO sqlalchemy.engine.Engine BEGIN (implicit)
-2026-04-30 15:37:39,391 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.password_hash, users.created_at, users.updated_at 
+INFO:     127.0.0.1:57025 - "OPTIONS /api/files/convert/markdown-to-docx HTTP/1.1" 200 OK
+2026-05-01 01:27:02,443 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-05-01 01:27:02,456 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.password_hash, users.created_at, users.updated_at 
 FROM users 
 WHERE users.id = ?
-2026-04-30 15:37:39,392 INFO sqlalchemy.engine.Engine [generated in 0.00013s] (1,)
-2026-04-30 15:37:39,393 INFO sqlalchemy.engine.Engine SELECT competency_models.id, competency_models.user_id, competency_models.name, competency_models.dimensions, competency_models.source_files, competency_models.created_at, competency_models.updated_at 
-FROM competency_models 
-WHERE competency_models.user_id = ?
-2026-04-30 15:37:39,393 INFO sqlalchemy.engine.Engine [generated in 0.00013s] (1,)
-2026-04-30 15:37:39,395 INFO sqlalchemy.engine.Engine ROLLBACK
-INFO:     127.0.0.1:64671 - "GET /api/competency-models HTTP/1.1" 200 OK
-INFO:     127.0.0.1:64673 - "OPTIONS /api/reports HTTP/1.1" 200 OK
-2026-04-30 15:37:43,350 INFO sqlalchemy.engine.Engine BEGIN (implicit)
-2026-04-30 15:37:43,350 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.password_hash, users.created_at, users.updated_at 
+2026-05-01 01:27:02,456 INFO sqlalchemy.engine.Engine [generated in 0.00024s] (1,)
+2026-05-01 01:27:02,493 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:57025 - "POST /api/files/convert/markdown-to-docx HTTP/1.1" 200 OK
+2026-05-01 01:27:28,455 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-05-01 01:27:28,458 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.password_hash, users.created_at, users.updated_at 
 FROM users 
 WHERE users.id = ?
-2026-04-30 15:37:43,350 INFO sqlalchemy.engine.Engine [cached since 3.959s ago] (1,)
-2026-04-30 15:37:43,354 INFO sqlalchemy.engine.Engine SELECT competency_models.id, competency_models.user_id, competency_models.name, competency_models.dimensions, competency_models.source_files, competency_models.created_at, competency_models.updated_at 
-FROM competency_models 
-WHERE competency_models.user_id = ?
-2026-04-30 15:37:43,354 INFO sqlalchemy.engine.Engine [cached since 3.961s ago] (1,)
-2026-04-30 15:37:43,354 INFO sqlalchemy.engine.Engine BEGIN (implicit)
-2026-04-30 15:37:43,354 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.password_hash, users.created_at, users.updated_at 
-FROM users 
-WHERE users.id = ?
-2026-04-30 15:37:43,354 INFO sqlalchemy.engine.Engine [cached since 3.963s ago] (1,)
-2026-04-30 15:37:43,355 INFO sqlalchemy.engine.Engine ROLLBACK
-2026-04-30 15:37:43,358 INFO sqlalchemy.engine.Engine SELECT reports.id, reports.user_id, reports.record_id, reports.report_type, reports.candidate_id, reports.candidate_name, reports.scores_data, reports.radar_chart_url, reports.total_score, reports.content, reports.language, reports.word_url, reports.pdf_url, reports.status, reports.created_at, reports.updated_at 
-FROM reports 
-WHERE reports.user_id = ?
-2026-04-30 15:37:43,359 INFO sqlalchemy.engine.Engine [generated in 0.00018s] (1,)
-INFO:     127.0.0.1:64671 - "GET /api/competency-models HTTP/1.1" 200 OK
-2026-04-30 15:37:43,363 INFO sqlalchemy.engine.Engine ROLLBACK
-INFO:     127.0.0.1:64673 - "GET /api/reports HTTP/1.1" 200 OK
-2026-04-30 15:37:45,776 INFO sqlalchemy.engine.Engine BEGIN (implicit)
-2026-04-30 15:37:45,776 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.password_hash, users.created_at, users.updated_at 
-FROM users 
-WHERE users.id = ?
-2026-04-30 15:37:45,776 INFO sqlalchemy.engine.Engine [cached since 6.385s ago] (1,)
-2026-04-30 15:37:45,777 INFO sqlalchemy.engine.Engine SELECT competency_models.id, competency_models.user_id, competency_models.name, competency_models.dimensions, competency_models.source_files, competency_models.created_at, competency_models.updated_at 
-FROM competency_models 
-WHERE competency_models.user_id = ?
-2026-04-30 15:37:45,777 INFO sqlalchemy.engine.Engine [cached since 6.384s ago] (1,)
-2026-04-30 15:37:45,777 INFO sqlalchemy.engine.Engine ROLLBACK
-INFO:     127.0.0.1:64673 - "GET /api/competency-models HTTP/1.1" 200 OK
-INFO:     127.0.0.1:64673 - "OPTIONS /api/evaluation-matrices HTTP/1.1" 200 OK
-2026-04-30 15:37:45,781 INFO sqlalchemy.engine.Engine BEGIN (implicit)
-2026-04-30 15:37:45,781 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.password_hash, users.created_at, users.updated_at 
-FROM users 
-WHERE users.id = ?
-2026-04-30 15:37:45,781 INFO sqlalchemy.engine.Engine [cached since 6.39s ago] (1,)
-2026-04-30 15:37:45,782 INFO sqlalchemy.engine.Engine SELECT evaluation_matrices.id, evaluation_matrices.user_id, evaluation_matrices.model_id, evaluation_matrices.tools, evaluation_matrices.matrix, evaluation_matrices.created_at, evaluation_matrices.updated_at 
-FROM evaluation_matrices 
-WHERE evaluation_matrices.user_id = ?
-2026-04-30 15:37:45,782 INFO sqlalchemy.engine.Engine [generated in 0.00006s] (1,)
-2026-04-30 15:37:45,784 INFO sqlalchemy.engine.Engine ROLLBACK
-INFO:     127.0.0.1:64673 - "GET /api/evaluation-matrices HTTP/1.1" 200 OK
-INFO:     127.0.0.1:64673 - "OPTIONS /api/questionnaires HTTP/1.1" 200 OK
-2026-04-30 15:37:45,789 INFO sqlalchemy.engine.Engine BEGIN (implicit)
-2026-04-30 15:37:45,789 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.password_hash, users.created_at, users.updated_at 
-FROM users 
-WHERE users.id = ?
-2026-04-30 15:37:45,789 INFO sqlalchemy.engine.Engine [cached since 6.398s ago] (1,)
-2026-04-30 15:37:45,792 INFO sqlalchemy.engine.Engine SELECT questionnaires.id, questionnaires.user_id, questionnaires.tool_id, questionnaires.model_id, questionnaires.matrix_id, questionnaires.content, questionnaires.word_url, questionnaires.pdf_url, questionnaires.status, questionnaires.created_at, questionnaires.updated_at 
-FROM questionnaires 
-WHERE questionnaires.user_id = ?
-2026-04-30 15:37:45,792 INFO sqlalchemy.engine.Engine [generated in 0.00011s] (1,)
-2026-04-30 15:37:45,794 INFO sqlalchemy.engine.Engine ROLLBACK
-INFO:     127.0.0.1:64673 - "GET /api/questionnaires HTTP/1.1" 200 OK
-2026-04-30 15:37:55,319 INFO sqlalchemy.engine.Engine BEGIN (implicit)
-2026-04-30 15:37:55,319 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.password_hash, users.created_at, users.updated_at 
-FROM users 
-WHERE users.id = ?
-2026-04-30 15:37:55,319 INFO sqlalchemy.engine.Engine [cached since 15.93s ago] (1,)
-2026-04-30 15:37:55,320 INFO sqlalchemy.engine.Engine BEGIN (implicit)
-2026-04-30 15:37:55,320 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.password_hash, users.created_at, users.updated_at 
-FROM users 
-WHERE users.id = ?
-2026-04-30 15:37:55,320 INFO sqlalchemy.engine.Engine [cached since 15.93s ago] (1,)
-2026-04-30 15:37:55,321 INFO sqlalchemy.engine.Engine SELECT competency_models.id, competency_models.user_id, competency_models.name, competency_models.dimensions, competency_models.source_files, competency_models.created_at, competency_models.updated_at 
-FROM competency_models 
-WHERE competency_models.user_id = ?
-2026-04-30 15:37:55,321 INFO sqlalchemy.engine.Engine [cached since 15.93s ago] (1,)
-2026-04-30 15:37:55,322 INFO sqlalchemy.engine.Engine SELECT reports.id, reports.user_id, reports.record_id, reports.report_type, reports.candidate_id, reports.candidate_name, reports.scores_data, reports.radar_chart_url, reports.total_score, reports.content, reports.language, reports.word_url, reports.pdf_url, reports.status, reports.created_at, reports.updated_at 
-FROM reports 
-WHERE reports.user_id = ?
-2026-04-30 15:37:55,322 INFO sqlalchemy.engine.Engine [cached since 11.96s ago] (1,)
-2026-04-30 15:37:55,322 INFO sqlalchemy.engine.Engine ROLLBACK
-INFO:     127.0.0.1:64703 - "GET /api/competency-models HTTP/1.1" 200 OK
-2026-04-30 15:37:55,323 INFO sqlalchemy.engine.Engine ROLLBACK
-INFO:     127.0.0.1:64705 - "GET /api/reports HTTP/1.1" 200 OK
-2026-04-30 15:37:57,804 INFO sqlalchemy.engine.Engine BEGIN (implicit)
-2026-04-30 15:37:57,805 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.password_hash, users.created_at, users.updated_at 
-FROM users 
-WHERE users.id = ?
-2026-04-30 15:37:57,805 INFO sqlalchemy.engine.Engine [cached since 18.41s ago] (1,)
-2026-04-30 15:37:57,807 INFO sqlalchemy.engine.Engine SELECT competency_models.id, competency_models.user_id, competency_models.name, competency_models.dimensions, competency_models.source_files, competency_models.created_at, competency_models.updated_at 
-FROM competency_models 
-WHERE competency_models.user_id = ?
-2026-04-30 15:37:57,807 INFO sqlalchemy.engine.Engine [cached since 18.41s ago] (1,)
-2026-04-30 15:37:57,808 INFO sqlalchemy.engine.Engine ROLLBACK
-INFO:     127.0.0.1:64705 - "GET /api/competency-models HTTP/1.1" 200 OK
-2026-04-30 15:37:57,812 INFO sqlalchemy.engine.Engine BEGIN (implicit)
-2026-04-30 15:37:57,812 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.password_hash, users.created_at, users.updated_at 
-FROM users 
-WHERE users.id = ?
-2026-04-30 15:37:57,812 INFO sqlalchemy.engine.Engine [cached since 18.42s ago] (1,)
-2026-04-30 15:37:57,814 INFO sqlalchemy.engine.Engine SELECT evaluation_matrices.id, evaluation_matrices.user_id, evaluation_matrices.model_id, evaluation_matrices.tools, evaluation_matrices.matrix, evaluation_matrices.created_at, evaluation_matrices.updated_at 
-FROM evaluation_matrices 
-WHERE evaluation_matrices.user_id = ?
-2026-04-30 15:37:57,814 INFO sqlalchemy.engine.Engine [cached since 12.03s ago] (1,)
-2026-04-30 15:37:57,816 INFO sqlalchemy.engine.Engine ROLLBACK
-INFO:     127.0.0.1:64705 - "GET /api/evaluation-matrices HTTP/1.1" 200 OK
-2026-04-30 15:37:57,820 INFO sqlalchemy.engine.Engine BEGIN (implicit)
-2026-04-30 15:37:57,820 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.password_hash, users.created_at, users.updated_at 
-FROM users 
-WHERE users.id = ?
-2026-04-30 15:37:57,820 INFO sqlalchemy.engine.Engine [cached since 18.43s ago] (1,)
-2026-04-30 15:37:57,823 INFO sqlalchemy.engine.Engine SELECT questionnaires.id, questionnaires.user_id, questionnaires.tool_id, questionnaires.model_id, questionnaires.matrix_id, questionnaires.content, questionnaires.word_url, questionnaires.pdf_url, questionnaires.status, questionnaires.created_at, questionnaires.updated_at 
-FROM questionnaires 
-WHERE questionnaires.user_id = ?
-2026-04-30 15:37:57,823 INFO sqlalchemy.engine.Engine [cached since 12.03s ago] (1,)
-2026-04-30 15:37:57,826 INFO sqlalchemy.engine.Engine ROLLBACK
-INFO:     127.0.0.1:64705 - "GET /api/questionnaires HTTP/1.1" 200 OK
-2026-04-30 15:37:59,767 INFO sqlalchemy.engine.Engine BEGIN (implicit)
-2026-04-30 15:37:59,767 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.password_hash, users.created_at, users.updated_at 
-FROM users 
-WHERE users.id = ?
-2026-04-30 15:37:59,767 INFO sqlalchemy.engine.Engine [cached since 20.38s ago] (1,)
-2026-04-30 15:37:59,768 INFO sqlalchemy.engine.Engine SELECT competency_models.id, competency_models.user_id, competency_models.name, competency_models.dimensions, competency_models.source_files, competency_models.created_at, competency_models.updated_at 
-FROM competency_models 
-WHERE competency_models.user_id = ?
-2026-04-30 15:37:59,768 INFO sqlalchemy.engine.Engine [cached since 20.38s ago] (1,)
-2026-04-30 15:37:59,769 INFO sqlalchemy.engine.Engine ROLLBACK
-INFO:     127.0.0.1:64705 - "GET /api/competency-models HTTP/1.1" 200 OK
-2026-04-30 15:37:59,776 INFO sqlalchemy.engine.Engine BEGIN (implicit)
-2026-04-30 15:37:59,776 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.password_hash, users.created_at, users.updated_at 
-FROM users 
-WHERE users.id = ?
-2026-04-30 15:37:59,776 INFO sqlalchemy.engine.Engine [cached since 20.39s ago] (1,)
-2026-04-30 15:37:59,778 INFO sqlalchemy.engine.Engine SELECT evaluation_matrices.id, evaluation_matrices.user_id, evaluation_matrices.model_id, evaluation_matrices.tools, evaluation_matrices.matrix, evaluation_matrices.created_at, evaluation_matrices.updated_at 
-FROM evaluation_matrices 
-WHERE evaluation_matrices.user_id = ?
-2026-04-30 15:37:59,778 INFO sqlalchemy.engine.Engine [cached since 14s ago] (1,)
-2026-04-30 15:37:59,778 INFO sqlalchemy.engine.Engine ROLLBACK
-INFO:     127.0.0.1:64705 - "GET /api/evaluation-matrices HTTP/1.1" 200 OK
-2026-04-30 15:37:59,781 INFO sqlalchemy.engine.Engine BEGIN (implicit)
-2026-04-30 15:37:59,781 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.password_hash, users.created_at, users.updated_at 
-FROM users 
-WHERE users.id = ?
-2026-04-30 15:37:59,781 INFO sqlalchemy.engine.Engine [cached since 20.39s ago] (1,)
-2026-04-30 15:37:59,784 INFO sqlalchemy.engine.Engine SELECT questionnaires.id, questionnaires.user_id, questionnaires.tool_id, questionnaires.model_id, questionnaires.matrix_id, questionnaires.content, questionnaires.word_url, questionnaires.pdf_url, questionnaires.status, questionnaires.created_at, questionnaires.updated_at 
-FROM questionnaires 
-WHERE questionnaires.user_id = ?
-2026-04-30 15:37:59,784 INFO sqlalchemy.engine.Engine [cached since 13.99s ago] (1,)
-2026-04-30 15:37:59,784 INFO sqlalchemy.engine.Engine ROLLBACK
-INFO:     127.0.0.1:64705 - "GET /api/questionnaires HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49286 - "OPTIONS /api/competency-models HTTP/1.1" 200 OK
-2026-04-30 16:04:04,862 INFO sqlalchemy.engine.Engine BEGIN (implicit)
-2026-04-30 16:04:04,866 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.password_hash, users.created_at, users.updated_at 
-FROM users 
-WHERE users.id = ?
-2026-04-30 16:04:04,866 INFO sqlalchemy.engine.Engine [cached since 1585s ago] (1,)
-2026-04-30 16:04:04,870 INFO sqlalchemy.engine.Engine SELECT competency_models.id, competency_models.user_id, competency_models.name, competency_models.dimensions, competency_models.source_files, competency_models.created_at, competency_models.updated_at 
-FROM competency_models 
-WHERE competency_models.user_id = ?
-2026-04-30 16:04:04,870 INFO sqlalchemy.engine.Engine [cached since 1585s ago] (1,)
-2026-04-30 16:04:04,875 INFO sqlalchemy.engine.Engine ROLLBACK
-INFO:     127.0.0.1:49286 - "GET /api/competency-models HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49286 - "OPTIONS /api/evaluation-matrices HTTP/1.1" 200 OK
-2026-04-30 16:04:04,882 INFO sqlalchemy.engine.Engine BEGIN (implicit)
-2026-04-30 16:04:04,882 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.password_hash, users.created_at, users.updated_at 
-FROM users 
-WHERE users.id = ?
-2026-04-30 16:04:04,882 INFO sqlalchemy.engine.Engine [cached since 1585s ago] (1,)
-2026-04-30 16:04:04,883 INFO sqlalchemy.engine.Engine SELECT evaluation_matrices.id, evaluation_matrices.user_id, evaluation_matrices.model_id, evaluation_matrices.tools, evaluation_matrices.matrix, evaluation_matrices.created_at, evaluation_matrices.updated_at 
-FROM evaluation_matrices 
-WHERE evaluation_matrices.user_id = ?
-2026-04-30 16:04:04,883 INFO sqlalchemy.engine.Engine [cached since 1579s ago] (1,)
-2026-04-30 16:04:04,884 INFO sqlalchemy.engine.Engine ROLLBACK
-INFO:     127.0.0.1:49288 - "GET /api/evaluation-matrices HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49288 - "OPTIONS /api/questionnaires HTTP/1.1" 200 OK
-2026-04-30 16:04:04,888 INFO sqlalchemy.engine.Engine BEGIN (implicit)
-2026-04-30 16:04:04,888 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.password_hash, users.created_at, users.updated_at 
-FROM users 
-WHERE users.id = ?
-2026-04-30 16:04:04,888 INFO sqlalchemy.engine.Engine [cached since 1585s ago] (1,)
-2026-04-30 16:04:04,890 INFO sqlalchemy.engine.Engine SELECT questionnaires.id, questionnaires.user_id, questionnaires.tool_id, questionnaires.model_id, questionnaires.matrix_id, questionnaires.content, questionnaires.word_url, questionnaires.pdf_url, questionnaires.status, questionnaires.created_at, questionnaires.updated_at 
-FROM questionnaires 
-WHERE questionnaires.user_id = ?
-2026-04-30 16:04:04,890 INFO sqlalchemy.engine.Engine [cached since 1579s ago] (1,)
-2026-04-30 16:04:04,893 INFO sqlalchemy.engine.Engine ROLLBACK
-INFO:     127.0.0.1:49286 - "GET /api/questionnaires HTTP/1.1" 200 OK
-INFO:     127.0.0.1:49286 - "OPTIONS /api/judge-handbooks HTTP/1.1" 200 OK
-2026-04-30 16:04:05,626 INFO sqlalchemy.engine.Engine BEGIN (implicit)
-2026-04-30 16:04:05,626 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.password_hash, users.created_at, users.updated_at 
-FROM users 
-WHERE users.id = ?
-2026-04-30 16:04:05,626 INFO sqlalchemy.engine.Engine [cached since 1586s ago] (1,)
-2026-04-30 16:04:05,637 INFO sqlalchemy.engine.Engine SELECT judge_handbooks.id, judge_handbooks.user_id, judge_handbooks.model_id, judge_handbooks.matrix_id, judge_handbooks.questionnaires, judge_handbooks.content, judge_handbooks.word_url, judge_handbooks.pdf_url, judge_handbooks.status, judge_handbooks.created_at, judge_handbooks.updated_at 
-FROM judge_handbooks 
-WHERE judge_handbooks.user_id = ?
-2026-04-30 16:04:05,637 INFO sqlalchemy.engine.Engine [generated in 0.00022s] (1,)
-2026-04-30 16:04:05,645 INFO sqlalchemy.engine.Engine ROLLBACK
-INFO:     127.0.0.1:49286 - "GET /api/judge-handbooks HTTP/1.1" 200 OK
-2026-04-30 16:04:08,536 INFO sqlalchemy.engine.Engine BEGIN (implicit)
-2026-04-30 16:04:08,536 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.password_hash, users.created_at, users.updated_at 
-FROM users 
-WHERE users.id = ?
-2026-04-30 16:04:08,536 INFO sqlalchemy.engine.Engine [cached since 1589s ago] (1,)
-2026-04-30 16:04:08,537 INFO sqlalchemy.engine.Engine SELECT competency_models.id, competency_models.user_id, competency_models.name, competency_models.dimensions, competency_models.source_files, competency_models.created_at, competency_models.updated_at 
-FROM competency_models 
-WHERE competency_models.user_id = ?
-2026-04-30 16:04:08,538 INFO sqlalchemy.engine.Engine [cached since 1589s ago] (1,)
-2026-04-30 16:04:08,538 INFO sqlalchemy.engine.Engine ROLLBACK
-INFO:     127.0.0.1:49286 - "GET /api/competency-models HTTP/1.1" 200 OK
-2026-04-30 16:04:08,544 INFO sqlalchemy.engine.Engine BEGIN (implicit)
-2026-04-30 16:04:08,545 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.password_hash, users.created_at, users.updated_at 
-FROM users 
-WHERE users.id = ?
-2026-04-30 16:04:08,545 INFO sqlalchemy.engine.Engine [cached since 1589s ago] (1,)
-2026-04-30 16:04:08,546 INFO sqlalchemy.engine.Engine SELECT evaluation_matrices.id, evaluation_matrices.user_id, evaluation_matrices.model_id, evaluation_matrices.tools, evaluation_matrices.matrix, evaluation_matrices.created_at, evaluation_matrices.updated_at 
-FROM evaluation_matrices 
-WHERE evaluation_matrices.user_id = ?
-2026-04-30 16:04:08,546 INFO sqlalchemy.engine.Engine [cached since 1583s ago] (1,)
-2026-04-30 16:04:08,547 INFO sqlalchemy.engine.Engine ROLLBACK
-INFO:     127.0.0.1:49286 - "GET /api/evaluation-matrices HTTP/1.1" 200 OK
-2026-04-30 16:04:08,550 INFO sqlalchemy.engine.Engine BEGIN (implicit)
-2026-04-30 16:04:08,550 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.password_hash, users.created_at, users.updated_at 
-FROM users 
-WHERE users.id = ?
-2026-04-30 16:04:08,550 INFO sqlalchemy.engine.Engine [cached since 1589s ago] (1,)
-2026-04-30 16:04:08,552 INFO sqlalchemy.engine.Engine SELECT questionnaires.id, questionnaires.user_id, questionnaires.tool_id, questionnaires.model_id, questionnaires.matrix_id, questionnaires.content, questionnaires.word_url, questionnaires.pdf_url, questionnaires.status, questionnaires.created_at, questionnaires.updated_at 
-FROM questionnaires 
-WHERE questionnaires.user_id = ?
-2026-04-30 16:04:08,552 INFO sqlalchemy.engine.Engine [cached since 1583s ago] (1,)
-2026-04-30 16:04:08,556 INFO sqlalchemy.engine.Engine ROLLBACK
-INFO:     127.0.0.1:49286 - "GET /api/questionnaires HTTP/1.1" 200 OK
-INFO:     127.0.0.1:50602 - "OPTIONS /api/competency-models HTTP/1.1" 200 OK
-INFO:     127.0.0.1:50603 - "OPTIONS /api/reports HTTP/1.1" 200 OK
-2026-04-30 16:32:35,517 INFO sqlalchemy.engine.Engine BEGIN (implicit)
-2026-04-30 16:32:35,520 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.password_hash, users.created_at, users.updated_at 
-FROM users 
-WHERE users.id = ?
-2026-04-30 16:32:35,520 INFO sqlalchemy.engine.Engine [cached since 3296s ago] (1,)
-2026-04-30 16:32:35,522 INFO sqlalchemy.engine.Engine BEGIN (implicit)
-2026-04-30 16:32:35,522 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.password_hash, users.created_at, users.updated_at 
-FROM users 
-WHERE users.id = ?
-2026-04-30 16:32:35,522 INFO sqlalchemy.engine.Engine [cached since 3296s ago] (1,)
-2026-04-30 16:32:35,538 INFO sqlalchemy.engine.Engine SELECT competency_models.id, competency_models.user_id, competency_models.name, competency_models.dimensions, competency_models.source_files, competency_models.created_at, competency_models.updated_at 
-FROM competency_models 
-WHERE competency_models.user_id = ?
-2026-04-30 16:32:35,538 INFO sqlalchemy.engine.Engine [cached since 3296s ago] (1,)
-2026-04-30 16:32:35,539 INFO sqlalchemy.engine.Engine SELECT reports.id, reports.user_id, reports.record_id, reports.report_type, reports.candidate_id, reports.candidate_name, reports.scores_data, reports.radar_chart_url, reports.total_score, reports.content, reports.language, reports.word_url, reports.pdf_url, reports.status, reports.created_at, reports.updated_at 
-FROM reports 
-WHERE reports.user_id = ?
-2026-04-30 16:32:35,539 INFO sqlalchemy.engine.Engine [cached since 3292s ago] (1,)
-2026-04-30 16:32:35,547 INFO sqlalchemy.engine.Engine ROLLBACK
-2026-04-30 16:32:35,552 INFO sqlalchemy.engine.Engine ROLLBACK
-INFO:     127.0.0.1:50602 - "GET /api/competency-models HTTP/1.1" 200 OK
-INFO:     127.0.0.1:50603 - "GET /api/reports HTTP/1.1" 200 OK
+2026-05-01 01:27:28,458 INFO sqlalchemy.engine.Engine [cached since 26s ago] (1,)
+2026-05-01 01:27:28,511 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:57027 - "POST /api/files/convert/markdown-to-docx HTTP/1.1" 200 OK

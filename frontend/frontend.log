@@ -13,3 +13,19 @@
 3:39:57 PM [vite] (client) hmr update /src/app/App.tsx, /src/styles/index.css
 4:04:58 PM [vite] (client) hmr update /src/app/components/QuestionBook.tsx, /src/styles/index.css
 4:05:16 PM [vite] (client) hmr update /src/app/components/JudgeManual.tsx, /src/styles/index.css
+8:49:47 PM [vite] (client) page reload index.html
+9:15:06 PM [vite] (client) hmr update /src/app/components/Dashboard.tsx, /src/styles/index.css
+9:19:55 PM [vite] (client) hmr update /src/app/components/Dashboard.tsx, /src/styles/index.css
+9:19:58 PM [vite] (client) hmr update /src/app/components/Dashboard.tsx, /src/styles/index.css
+9:27:25 PM [vite] (client) hmr update /src/app/components/Dashboard.tsx, /src/styles/index.css
+9:27:28 PM [vite] (client) hmr update /src/app/components/Dashboard.tsx, /src/styles/index.css
+9:28:01 PM [vite] (client) hmr update /src/app/components/Dashboard.tsx, /src/styles/index.css
+9:28:04 PM [vite] (client) hmr update /src/app/components/Dashboard.tsx, /src/styles/index.css
+9:50:13 PM [vite] (client) hmr update /src/styles/index.css, /src/app/components/Login.tsx, /src/app/components/UserSettings.tsx, /src/app/components/CompetencyModel.tsx, /src/app/components/AssessmentMatrix.tsx, /src/app/components/QuestionBook.tsx, /src/app/components/ReportGeneration.tsx, /src/app/components/JudgeManual.tsx
+9:50:34 PM [vite] (client) hmr update /src/app/components/QuestionBook.tsx, /src/styles/index.css
+9:50:38 PM [vite] (client) hmr update /src/app/components/QuestionBook.tsx, /src/styles/index.css
+9:51:14 PM [vite] (client) hmr update /src/app/components/QuestionBook.tsx, /src/styles/index.css
+9:51:36 PM [vite] (client) hmr update /src/app/components/JudgeManual.tsx, /src/styles/index.css
+9:51:50 PM [vite] (client) hmr update /src/app/components/JudgeManual.tsx, /src/styles/index.css
+9:52:01 PM [vite] (client) hmr update /src/app/components/ReportGeneration.tsx, /src/styles/index.css
+9:52:12 PM [vite] (client) hmr update /src/app/components/ReportGeneration.tsx, /src/styles/index.css

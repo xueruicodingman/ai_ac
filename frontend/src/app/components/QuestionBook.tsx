@@ -1,6 +1,6 @@
 import { ArrowLeft, Upload, Download, Edit2, Clock, CheckCircle, FileText, X, Copy, Check } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { getCompetencyModel, getEvaluationMatrix, generateQuestionnaire, getQuestionnaires, saveQuestionnaire, uploadFile, getFileContent } from '../api';
+import { getCompetencyModel, getEvaluationMatrix, generateQuestionnaire, getQuestionnaires, saveQuestionnaire, uploadFile, getFileContent, downloadAsDocx, downloadFile } from '../api';
 import { toast } from 'sonner';
 
 interface QuestionBookProps {
@@ -274,8 +274,20 @@ export default function QuestionBook({ onBack, onNavigate }: QuestionBookProps) 
     });
   };
 
-  const handleDownload = (bookName: string) => {
-    alert(`正在下载：${bookName}`);
+  const handleDownload = async (bookName: string) => {
+    try {
+      const book = books.find(b => b.name === bookName);
+      if (!book?.content) {
+        toast.error('题本内容为空，无法下载');
+        return;
+      }
+      const filename = `${bookName}.docx`;
+      const blob = await downloadAsDocx(book.content, filename);
+      downloadFile(blob, filename);
+      toast.success('下载成功');
+    } catch (err: any) {
+      toast.error(err.message || '下载失败');
+    }
   };
 
   if (editingBook) {
@@ -568,7 +580,20 @@ export default function QuestionBook({ onBack, onNavigate }: QuestionBookProps) 
                           <Copy size={16} />
                         </button>
                         <button
-                          onClick={() => alert('正在下载评委手册...')}
+                          onClick={async () => {
+                            try {
+                              const handbookContent = localStorage.getItem('judge_handbook_content');
+                              if (!handbookContent) {
+                                toast.error('评委手册内容为空');
+                                return;
+                              }
+                              const blob = await downloadAsDocx(handbookContent, '评委手册.docx');
+                              downloadFile(blob, '评委手册.docx');
+                              toast.success('下载成功');
+                            } catch (err: any) {
+                              toast.error(err.message || '下载失败');
+                            }
+                          }}
                           className="px-3 py-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors text-sm font-medium"
                           title="下载"
                         >

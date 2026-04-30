@@ -1165,6 +1165,32 @@ export const getCurrentUser = async () => {
   if (!response.ok) {
     throw new Error('获取用户信息失败');
   }
-  
+
   return response.json();
+};
+
+export const downloadAsDocx = async (content: string, filename: string): Promise<Blob> => {
+  const response = await fetch(`${API_BASE_URL}/api/files/convert/markdown-to-docx`, {
+    method: 'POST',
+    headers: getHeaders(),
+    body: JSON.stringify({ content, title: filename }),
+  });
+  
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || '下载失败');
+  }
+  
+  return response.blob();
+};
+
+export const downloadFile = (blob: Blob, filename: string) => {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 };

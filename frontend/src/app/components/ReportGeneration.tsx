@@ -1,7 +1,8 @@
 import React from 'react';
 import { ArrowLeft, FileText, Users, User, Download, Upload, CheckCircle, Clock, Eye, X, Edit3, Check, Copy } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { generateFullReport, getCompetencyModel, getQuestionnaires, saveReport, getReports } from '../api';
+import { generateFullReport, getCompetencyModel, getQuestionnaires, saveReport, getReports, downloadAsDocx, downloadFile } from '../api';
+import { toast } from 'sonner';
 import { MDXEditor, MDXEditorMethods } from '@mdxeditor/editor';
 
 interface ReportGenerationProps {
@@ -264,8 +265,20 @@ export default function ReportGeneration({ onBack, onNavigate }: ReportGeneratio
     }
   };
 
-  const handleDownload = (reportType: ReportType) => {
-    alert(`正在下载${reportType}报告...`);
+  const handleDownload = async (reportType: ReportType) => {
+    const report = reports.find(r => r.type === reportType);
+    if (!report?.content) {
+      toast.error('报告内容为空，无法下载');
+      return;
+    }
+    try {
+      const filename = `${reportType}报告.docx`;
+      const blob = await downloadAsDocx(report.content, filename);
+      downloadFile(blob, filename);
+      toast.success('下载成功');
+    } catch (err: any) {
+      toast.error(err.message || '下载失败');
+    }
   };
 
   const getStatusBadge = (report: Report) => {

@@ -1,6 +1,7 @@
 import { ArrowLeft, FileText, Copy, Check, RefreshCw, Edit2, Save, ChevronDown, ChevronRight, Download, BookOpen } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { generateJudgeHandbook, generateJudgeHandbookByTool, getQuestionnaires, getCompetencyModel, getEvaluationMatrix, saveJudgeHandbook, getJudgeHandbook, getHeaders } from '../api';
+import { generateJudgeHandbook, generateJudgeHandbookByTool, getQuestionnaires, getCompetencyModel, getEvaluationMatrix, saveJudgeHandbook, getJudgeHandbook, getHeaders, downloadAsDocx, downloadFile } from '../api';
+import { toast } from 'sonner';
 
 interface JudgeManualProps {
   onBack: () => void;
@@ -408,6 +409,23 @@ export default function JudgeManual({ onBack, onNavigate }: JudgeManualProps) {
                   >
                     <Edit2 size={16} />
                     编辑
+                  </button>
+                  <button
+                    onClick={async () => {
+                      if (!currentContent) return;
+                      try {
+                        const blob = await downloadAsDocx(currentContent, `${activeTab}评委手册.docx`);
+                        downloadFile(blob, `${activeTab}评委手册.docx`);
+                        toast.success('下载成功');
+                      } catch (err: any) {
+                        toast.error(err.message || '下载失败');
+                      }
+                    }}
+                    disabled={!currentContent}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:opacity-50"
+                  >
+                    <Download size={16} />
+                    下载
                   </button>
                 </div>
               </div>
