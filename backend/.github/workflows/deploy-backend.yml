@@ -1,0 +1,40 @@
+name: 部署FastAPI后端到阿里云
+
+on:
+  push:
+    branches: [ main ]
+    paths: [ "backend/**" ]  # 只监听后端代码变更
+
+jobs:
+  deploy-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 拉取代码
+        uses: actions/checkout@v4
+
+      - name: 上传后端代码到服务器
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          source: "backend/*"
+          target: "/var/www/aitalent/backend"
+          strip_components: 1
+
+      - name: 服务器启动FastAPI（gunicorn守护）
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /var/www/aitalent/backend
+            # 安装后端依赖（如果有requirements.txt）
+            pip3 install -r requirements.txt || true
+            # 停止旧进程（如果有）
+            pkill -f "gunicorn" || true
+            # 启动FastAPI（假设入口文件是main.py，改成你的实际入口）
+            # 注意：app是main.py里的FastAPI实例名（比如 from main import app）
+             nohup gunicorn -w 4 -k uvicorn.workers.UvicornWorker src.main:app --bind 0.0.0.0:8000 > /var/www/aitalent/backend/run.log 2>&1 &

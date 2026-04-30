@@ -18,3 +18,17 @@ class HandbookService(AIService):
             evaluation_matrix=evaluation_matrix,
             questionnaires=questionnaires
         )
+    
+    async def generate_single_tool(
+        self,
+        tool: str,
+        content: str,
+        competency_model: Dict[str, Any],
+        evaluation_matrix: Dict[str, Any]
+    ) -> str:
+        return await self.workflow.generate_single_tool(
+            tool=tool,
+            content=content,
+            competency_model=competency_model,
+            evaluation_matrix=evaluation_matrix
+        )

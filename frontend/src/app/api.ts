@@ -8,7 +8,7 @@ export const clearAuthToken = () => {
   sessionStorage.removeItem('auth_token');
 };
 
-const getHeaders = () => {
+export const getHeaders = () => {
   // 每次都从sessionStorage读取，确保获取最新token
   const token = sessionStorage.getItem('auth_token');
   const headers: Record<string, string> = {
@@ -435,6 +435,32 @@ export const getJudgeHandbook = async () => {
   return response.json();
 };
 
+export const generateJudgeHandbookByTool = async (
+  tool: string,
+  content: string,
+  competencyModel: any,
+  evaluationMatrix: any
+) => {
+  const requestBody = {
+    competency_model: competencyModel,
+    evaluation_matrix: evaluationMatrix,
+    content: content
+  };
+
+  const response = await fetch(`${API_BASE_URL}/api/judge-handbooks/generate/${tool}`, {
+    method: 'POST',
+    headers: getHeaders(),
+    body: JSON.stringify(requestBody),
+  });
+  
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || `生成评委手册失败 (${response.status})`);
+  }
+  
+  return response.json();
+};
+
 export const saveJudgeHandbook = async (data: {
   model_id: number;
   matrix_id: number;
@@ -450,7 +476,8 @@ export const saveJudgeHandbook = async (data: {
   });
   
   if (!response.ok) {
-    throw new Error('保存评委手册失败');
+    const errData = await response.json().catch(() => ({}));
+    throw new Error(errData.detail || '保存评委手册失败');
   }
   
   return response.json();
@@ -468,9 +495,13 @@ export const generateFullReport = async (params: {
     body: JSON.stringify(params),
   });
   
-  if (!response.ok) {
+if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.detail || `生成报告失败 (${response.status})`);
+    let errorMessage = errorData.detail || `生成评委手册失败 (${response.status})`;
+    if (Array.isArray(errorMessage)) {
+      errorMessage = errorMessage.map((e: any) => e.msg || JSON.stringify(e)).join('; ');
+    }
+    throw new Error(errorMessage);
   }
   
   return response.json();
@@ -888,5 +919,252 @@ export const endVisionPracticeSession = async (sessionId: number) => {
     throw new Error(error.detail || "结束会话失败");
   }
 
+  return response.json();
+};
+
+// 评价标准 API
+export const getEvaluationCriteria = async () => {
+  const response = await fetch(`${API_BASE_URL}/api/evaluation-criteria`, {
+    headers: getHeaders(),
+  });
+  
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || '获取评价标准失败');
+  }
+  
+  return response.json();
+};
+
+export const saveEvaluationCriteria = async (data: any) => {
+  const response = await fetch(`${API_BASE_URL}/api/evaluation-criteria`, {
+    method: 'POST',
+    headers: getHeaders(),
+    body: JSON.stringify(data),
+  });
+  
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || '保存评价标准失败');
+  }
+  
+  return response.json();
+};
+
+// 评委组 API
+export const getJudges = async () => {
+  const response = await fetch(`${API_BASE_URL}/api/judge-teams`, {
+    headers: getHeaders(),
+  });
+  
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || '获取评委失败');
+  }
+  
+  return response.json();
+};
+
+export const saveJudges = async (judges: any[]) => {
+  const response = await fetch(`${API_BASE_URL}/api/judge-teams`, {
+    method: 'POST',
+    headers: getHeaders(),
+    body: JSON.stringify(judges),
+  });
+  
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || '保存评委失败');
+  }
+  
+  return response.json();
+};
+
+export const generateJudges = async (count: number) => {
+  const response = await fetch(`${API_BASE_URL}/api/judge-teams/generate?count=${count}`, {
+    method: 'POST',
+    headers: getHeaders(),
+  });
+  
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || '生成评委失败');
+  }
+  
+  return response.json();
+};
+
+// 知识库 API
+export const getKnowledgeBase = async (tool: string) => {
+  const response = await fetch(`${API_BASE_URL}/api/knowledge-base/${tool}`, {
+    headers: getHeaders(),
+  });
+  
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || '获取知识库失败');
+  }
+  
+  return response.json();
+};
+
+export const uploadDocument = async (tool: string, file: File, chunkConfig: { strategy?: string; separator?: string; max_length?: number }) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('chunk_config', JSON.stringify(chunkConfig));
+  
+  const response = await fetch(`${API_BASE_URL}/api/knowledge-base/${tool}`, {
+    method: 'POST',
+    headers: {
+      'Authorization': sessionStorage.getItem('auth_token') ? `Bearer ${sessionStorage.getItem('auth_token')}` : '',
+    },
+    body: formData,
+  });
+  
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || '上传文档失败');
+  }
+  
+  return response.json();
+};
+
+export const updateChunks = async (tool: string, chunkConfig: { strategy?: string; separator?: string; max_length?: number }) => {
+  const response = await fetch(`${API_BASE_URL}/api/knowledge-base/${tool}/chunks`, {
+    method: 'PUT',
+    headers: getHeaders(),
+    body: JSON.stringify(chunkConfig),
+  });
+  
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || '更新切片失败');
+  }
+  
+  return response.json();
+};
+
+export const updateChunkContent = async (tool: string, chunkId: string, chunkData: { title?: string; content?: string; keywords?: string[] }) => {
+  const response = await fetch(`${API_BASE_URL}/api/knowledge-base/${tool}/chunks/${chunkId}`, {
+    method: 'PUT',
+    headers: getHeaders(),
+    body: JSON.stringify(chunkData),
+  });
+  
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || '更新切片失败');
+  }
+  
+  return response.json();
+};
+
+export const deleteChunk = async (tool: string, chunkId: string) => {
+  const response = await fetch(`${API_BASE_URL}/api/knowledge-base/${tool}/chunks/${chunkId}`, {
+    method: 'DELETE',
+    headers: getHeaders(),
+  });
+  
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || '删除切片失败');
+  }
+  
+  return response.json();
+};
+
+export const addChunk = async (tool: string, chunkData: { title?: string; content?: string; keywords?: string[] }) => {
+  const response = await fetch(`${API_BASE_URL}/api/knowledge-base/${tool}/chunks`, {
+    method: 'POST',
+    headers: getHeaders(),
+    body: JSON.stringify(chunkData),
+  });
+  
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || '添加切片失败');
+  }
+  
+  return response.json();
+};
+
+export const deleteKnowledgeBase = async (tool: string) => {
+  const response = await fetch(`${API_BASE_URL}/api/knowledge-base/${tool}`, {
+    method: 'DELETE',
+    headers: getHeaders(),
+  });
+  
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || '删除知识库失败');
+  }
+  
+  return response.json();
+};
+
+export const useHandbookAsSource = async (tool: string, chunkConfig: { strategy?: string; separator?: string; max_length?: number }) => {
+  const response = await fetch(`${API_BASE_URL}/api/knowledge-base/${tool}/use-handbook`, {
+    method: 'POST',
+    headers: getHeaders(),
+    body: JSON.stringify(chunkConfig),
+  });
+  
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || '使用手册失败');
+  }
+  
+  return response.json();
+};
+
+// 行为评价 API
+export const getToolsWithCompetencies = async () => {
+  const response = await fetch(`${API_BASE_URL}/api/behavior-evaluation/tools`, {
+    headers: getHeaders(),
+  });
+  
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || '获取工具失败');
+  }
+  
+  return response.json();
+};
+
+export const getPracticeSessionsByTool = async (toolId: string) => {
+  const response = await fetch(`${API_BASE_URL}/api/behavior-evaluation/sessions/${toolId}`, {
+    headers: getHeaders(),
+  });
+  
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || '获取练习记录失败');
+  }
+  
+  return response.json();
+};
+
+export const getSessionEvaluationData = async (sessionId: number) => {
+  const response = await fetch(`${API_BASE_URL}/api/behavior-evaluation/session/${sessionId}`, {
+    headers: getHeaders(),
+  });
+  
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || '获取评价数据失败');
+  }
+  
+  return response.json();
+};
+
+export const getCurrentUser = async () => {
+  const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
+    headers: getHeaders(),
+  });
+  
+  if (!response.ok) {
+    throw new Error('获取用户信息失败');
+  }
+  
   return response.json();
 };

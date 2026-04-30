@@ -15,15 +15,52 @@ const TOOLS = [
   { id: 'vision', name: '个人愿景' }
 ];
 
+const CHUNK_STRATEGIES = [
+  {
+    id: 'heading',
+    name: '标题切片',
+    icon: '📑',
+    description: '按 ## 标题自动切分',
+    defaultMaxLength: 800
+  },
+  {
+    id: 'paragraph',
+    name: '段落切片',
+    icon: '📝',
+    description: '按段落和换行切分',
+    defaultMaxLength: 600
+  },
+  {
+    id: 'semantic',
+    name: '语义切片',
+    icon: '🧠',
+    description: 'AI 智能识别语义边界',
+    defaultMaxLength: 500
+  }
+];
+
 export default function KnowledgeBase({ onBack, initialTool = 'roleplay' }: KnowledgeBaseProps) {
   const [selectedTool, setSelectedTool] = useState(initialTool);
   const [knowledgeBase, setKnowledgeBase] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [maxChunkLength, setMaxChunkLength] = useState(500);
+  const [selectedStrategy, setSelectedStrategy] = useState('heading');
+  const [maxChunkLength, setMaxChunkLength] = useState(800);
   const [separator, setSeparator] = useState('##');
   const [editingChunk, setEditingChunk] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({ title: '', content: '', keywords: '' });
+
+  useEffect(() => {
+    const strategy = CHUNK_STRATEGIES.find(s => s.id === selectedStrategy);
+    if (strategy) {
+      setMaxChunkLength(strategy.defaultMaxLength);
+      if (selectedStrategy === 'heading') {
+        setSeparator('##');
+      } else if (selectedStrategy === 'paragraph') {
+        setSeparator('\n\n');
+      }
+    }
+  }, [selectedStrategy]);
 
   useEffect(() => {
     loadKnowledgeBase();
@@ -48,10 +85,10 @@ export default function KnowledgeBase({ onBack, initialTool = 'roleplay' }: Know
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
+
     setUploading(true);
     try {
-      await uploadDocument(selectedTool, file, { separator, max_length: maxChunkLength });
+      await uploadDocument(selectedTool, file, { strategy: selectedStrategy, separator, max_length: maxChunkLength });
       await loadKnowledgeBase();
       alert('上传成功');
     } catch (err: any) {
@@ -63,7 +100,7 @@ export default function KnowledgeBase({ onBack, initialTool = 'roleplay' }: Know
   const handleRechunk = async () => {
     setLoading(true);
     try {
-      await updateChunks(selectedTool, { separator, max_length: maxChunkLength });
+      await updateChunks(selectedTool, { strategy: selectedStrategy, separator, max_length: maxChunkLength });
       await loadKnowledgeBase();
       alert('重新切片成功');
     } catch (err: any) {
@@ -86,7 +123,7 @@ export default function KnowledgeBase({ onBack, initialTool = 'roleplay' }: Know
   const handleUseHandbook = async () => {
     setLoading(true);
     try {
-      await useHandbookAsSource(selectedTool, { separator, max_length: maxChunkLength });
+      await useHandbookAsSource(selectedTool, { strategy: selectedStrategy, separator, max_length: maxChunkLength });
       await loadKnowledgeBase();
       alert('已使用评委手册作为知识库');
     } catch (err: any) {
@@ -176,18 +213,51 @@ export default function KnowledgeBase({ onBack, initialTool = 'roleplay' }: Know
         </div>
 
         <div className="bg-white rounded-lg border p-4 mb-6">
-          <h3 className="font-medium text-gray-900 mb-4">切片配置</h3>
+          <h3 className="font-medium text-gray-900 mb-4">切片策略</h3>
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-4">
+            {CHUNK_STRATEGIES.map(strategy => (
+              <button
+                key={strategy.id}
+                onClick={() => setSelectedStrategy(strategy.id)}
+                className={`p-4 rounded-lg border-2 text-left transition-all ${
+                  selectedStrategy === strategy.id
+                    ? 'border-blue-500 bg-blue-50'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xl">{strategy.icon}</span>
+                  <span className="font-medium text-gray-900">{strategy.name}</span>
+                </div>
+                <p className="text-xs text-gray-500">{strategy.description}</p>
+              </button>
+            ))}
+          </div>
           <div className="flex gap-4 items-end">
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">分隔符</label>
-              <input
-                type="text"
-                value={separator}
-                onChange={e => setSeparator(e.target.value)}
-                className="px-3 py-2 border rounded-lg w-32"
-                placeholder="##"
-              />
-            </div>
+            {selectedStrategy !== 'semantic' && (
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">分隔符</label>
+                <select
+                  value={separator}
+                  onChange={e => setSeparator(e.target.value)}
+                  className="px-3 py-2 border rounded-lg w-40"
+                >
+                  {selectedStrategy === 'heading' && (
+                    <>
+                      <option value="##">## 二级标题</option>
+                      <option value="###">### 三级标题</option>
+                      <option value="#"># 一级标题</option>
+                    </>
+                  )}
+                  {selectedStrategy === 'paragraph' && (
+                    <>
+                      <option value="\n\n">双换行符</option>
+                      <option value="\n">单换行符</option>
+                    </>
+                  )}
+                </select>
+              </div>
+            )}
             <div>
               <label className="block text-sm text-gray-600 mb-1">最大长度(字)</label>
               <input

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { ArrowLeft, User, Clock, Play, Pause, XCircle, Loader2, FileAnswer } from "lucide-react";
+import { ArrowLeft, User, Clock, Play, Pause, XCircle, Loader2, FileText } from "lucide-react";
 import {
   startVisionPractice,
   submitVisionAnswerStream,
@@ -342,7 +342,7 @@ export default function VisionPracticeSession({
             {phase === "running" ? (
               <div className="h-full flex flex-col bg-white rounded-lg border border-gray-200">
                 <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-200">
-                  <FileAnswer size={18} className="text-blue-600" />
+                  <FileText size={18} className="text-blue-600" />
                   <h3 className="font-medium text-gray-900">作答区</h3>
                   <span className="text-sm text-gray-500 ml-auto">
                     请输入您的个人愿景规划

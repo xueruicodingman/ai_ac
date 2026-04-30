@@ -427,38 +427,4 @@ class RolePlayWorkflow:
         
         response = await (final_optimization_prompt | self.llm).ainvoke({})
         
-        # 构建元信息
-        meta = QuestionnaireMeta(
-            tool_id="roleplay",
-            tool_name="角色扮演",
-            level=level,
-            duration=30,
-            generated_at=datetime.now().isoformat()
-        )
-        
-        # 从文本输出中提取角色信息
-        text_output = response.content
-        
-        # 尝试从输出中提取关键信息
-        role_info = None
-        scenario = None
-        
-        # 简单的解析（实际可能需要更复杂的逻辑）
-        if "李明月" in text_output:
-            role_info = RoleInfo(
-                subordinate_name="李明月",
-                position="HRBP（研发）",
-                background="研发部门HRBP，负责招聘和员工关系工作",
-                personality="认真负责，但有时过于坚持原则，缺乏灵活性"
-            )
-        
-        if "谈话" in text_output or "沟通" in text_output:
-            scenario = "关于近期招聘和员工绩效管理的问题沟通"
-        
-        content = QuestionnaireContent(
-            role_info=role_info,
-            scenario=scenario or text_output[:500] if text_output else "角色扮演场景"
-        )
-        
-        schema = QuestionnaireSchema(meta=meta, content=content)
-        return schema.to_json_string()
+        return response.content

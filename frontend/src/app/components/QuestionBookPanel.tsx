@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { FileText, Tag, Users, Lightbulb, MessageSquare, Briefcase, Eye, FileAnswer } from "lucide-react";
+import { FileText, Tag, Users, Lightbulb, MessageSquare, Briefcase, Eye, FileInput } from "lucide-react";
 
 // 统一JSON格式类型定义
 interface UnifiedQuestionnaire {
@@ -72,6 +72,7 @@ function getToolName(toolId: string, fallbackName?: string): string {
     'vision': '愿景规划题本'
   };
   return toolNames[toolId] || fallbackName || '题本';
+}
 
 interface QuestionBookPanelProps {
   content?: string;
@@ -405,7 +406,7 @@ export default function QuestionBookPanel({ content, userAnswer }: QuestionBookP
         ) : activeTab === "answer" && userAnswer ? (
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <FileAnswer size={14} className="text-green-600" />
+              <FileText size={14} className="text-green-600" />
               <h4 className="font-medium text-gray-800">我的答案</h4>
             </div>
             <pre className="whitespace-pre-wrap text-sm text-gray-600 font-sans bg-green-50 p-3 rounded-md border border-green-200">

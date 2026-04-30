@@ -17,12 +17,20 @@ router = APIRouter(prefix="/api/judge-handbooks", tags=["评委手册"])
 
 @router.post("/generate")
 async def generate_handbook(
-    competency_model: dict = Body(...),
-    evaluation_matrix: dict = Body(...),
-    questionnaires: List[Dict[str, Any]] = Body(...),
+    request: dict = Body(...),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
+    competency_model = request.get("competency_model", {})
+    evaluation_matrix = request.get("evaluation_matrix", {})
+    questionnaires = request.get("questionnaires", [])
+    
+    print(f"[DEBUG] Request body type: {type(request)}")
+    print(f"[DEBUG] Request keys: {request.keys() if isinstance(request, dict) else 'not a dict'}")
+    print(f"[DEBUG] competency_model: {competency_model}")
+    print(f"[DEBUG] evaluation_matrix: {evaluation_matrix}")
+    print(f"[DEBUG] questionnaires: {questionnaires}")
+    
     llm_config = await get_user_llm_config(db, current_user.id)
     
     if not llm_config["api_key"] or not llm_config["api_key"].strip():
@@ -39,7 +47,43 @@ async def generate_handbook(
             evaluation_matrix=evaluation_matrix,
             questionnaires=questionnaires
         )
-        return {"success": True, "data": {"content": content}}
+        return {"success": True, "data": content}
+    except Exception as e:
+        import traceback
+        print(f"Error generating handbook: {traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"生成评委手册失败: {str(e)}")
+
+@router.post("/generate/{tool}")
+async def generate_handbook_by_tool(
+    tool: str,
+    request: dict = Body(...),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    competency_model = request.get("competency_model", {})
+    evaluation_matrix = request.get("evaluation_matrix", {})
+    content = request.get("content", "")
+    
+    print(f"[DEBUG] Generate {tool}: content length = {len(content)}")
+    
+    llm_config = await get_user_llm_config(db, current_user.id)
+    
+    if not llm_config["api_key"] or not llm_config["api_key"].strip():
+        raise HTTPException(status_code=400, detail="请先在设置中配置API Key")
+    
+    service = HandbookService(
+        api_key=llm_config["api_key"],
+        model=llm_config["model"],
+        api_url=llm_config["api_url"]
+    )
+    try:
+        result = await service.generate_single_tool(
+            tool=tool,
+            content=content,
+            competency_model=competency_model,
+            evaluation_matrix=evaluation_matrix
+        )
+        return {"success": True, "data": {tool: result}}
     except Exception as e:
         import traceback
         print(f"Error generating handbook: {traceback.format_exc()}")

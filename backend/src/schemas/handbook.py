@@ -1,11 +1,10 @@
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Any, Dict
 
 class HandbookGenerateRequest(BaseModel):
-    competency_model: dict
-    evaluation_matrix: dict
-    questionnaires: List[dict]
-    api_key: str
+    competency_model: Dict[str, Any]
+    evaluation_matrix: Dict[str, Any]
+    questionnaires: List[Dict[str, Any]]
 
 class HandbookSaveRequest(BaseModel):
     model_id: int

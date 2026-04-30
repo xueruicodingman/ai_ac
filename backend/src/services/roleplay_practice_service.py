@@ -4,12 +4,12 @@ import pickle
 import asyncio
 import numpy as np
 from datetime import datetime
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional, List, AsyncGenerator
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.output_parsers import StrOutputParser
-from langchain.prompts import ChatPromptTemplate
+from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 from src.models.roleplay_practice import RolePlaySession, RolePlayMessage
 from src.services.roleplay_rag import RolePlayRAG
