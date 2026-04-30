@@ -4,11 +4,12 @@ import CompetencyModel from './components/CompetencyModel';
 import AssessmentMatrix from './components/AssessmentMatrix';
 import QuestionBook from './components/QuestionBook';
 import ReportGeneration from './components/ReportGeneration';
+import JudgeManual from './components/JudgeManual';
 import Login from './components/Login';
 import UserSettings from './components/UserSettings';
 import { Toaster } from 'sonner';
 
-type Page = 'login' | 'dashboard' | 'competency' | 'matrix' | 'question' | 'report' | 'settings';
+type Page = 'login' | 'dashboard' | 'competency' | 'matrix' | 'question' | 'report' | 'judge-manual' | 'settings';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<Page>('dashboard');
@@ -23,7 +24,7 @@ export default function App() {
       const hash = window.location.hash.slice(1);
       if (hash && hash !== currentPage) {
         const validPage = hash as Page;
-        if (['login', 'dashboard', 'competency', 'matrix', 'question', 'report', 'settings'].includes(validPage)) {
+        if (['login', 'dashboard', 'competency', 'matrix', 'question', 'report', 'judge-manual', 'settings'].includes(validPage)) {
           setCurrentPage(validPage);
           setNavigationStack([...navigationStack, validPage]);
         }
@@ -90,6 +91,8 @@ export default function App() {
         return <QuestionBook onBack={goBack} onNavigate={navigateTo} />;
       case 'report':
         return <ReportGeneration onBack={goBack} onNavigate={navigateTo} />;
+      case 'judge-manual':
+        return <JudgeManual onBack={goBack} onNavigate={navigateTo} />;
       default:
         return (
           <Dashboard

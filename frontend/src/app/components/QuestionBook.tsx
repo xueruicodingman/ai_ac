@@ -583,13 +583,6 @@ export default function QuestionBook({ onBack, onNavigate }: QuestionBookProps) 
                   >
                     进入编辑
                   </button>
-                  <button
-                    onClick={() => onNavigate('knowledge-base', { tool: books[0]?.id || 'roleplay' })}
-                    className="px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors text-sm font-medium whitespace-nowrap"
-                    title="知识库管理"
-                  >
-                    知识库管理
-                  </button>
                 </div>
               </div>
             </div>

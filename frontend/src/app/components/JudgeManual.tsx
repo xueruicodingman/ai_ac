@@ -409,15 +409,6 @@ export default function JudgeManual({ onBack, onNavigate }: JudgeManualProps) {
                     <Edit2 size={16} />
                     编辑
                   </button>
-                  {onNavigate && (
-                    <button
-                      onClick={() => onNavigate('knowledge-base', { tool: activeTab })}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-purple-100 text-purple-700 hover:bg-purple-200"
-                    >
-                      <BookOpen size={16} />
-                      知识库管理
-                    </button>
-                  )}
                 </div>
               </div>
 

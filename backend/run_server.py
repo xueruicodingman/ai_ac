@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 import sys
 import os
-os.chdir('/Users/ximenruixue/Desktop/AC_AI/backend')
-os.environ['PYTHONPATH'] = '/Users/ximenruixue/Desktop/AC_AI/backend'
+os.chdir('/Users/ximenruixue/Desktop/aitalent/backend')
+os.environ['PYTHONPATH'] = '/Users/ximenruixue/Desktop/aitalent/backend'
 import uvicorn
 from src.main import app
 
