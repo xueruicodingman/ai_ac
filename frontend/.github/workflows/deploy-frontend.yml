@@ -21,8 +21,9 @@ jobs:
 
       - name: 前端安装依赖 + 打包
         run: |
+          set -e  # 遇到错误立即终止，便于排查
           cd frontend
-          npm install
+          npm install --force
           npm run build  # React+TS打包生成dist
 
       - name: 上传前端打包文件到服务器

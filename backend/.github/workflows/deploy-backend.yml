@@ -31,10 +31,14 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /var/www/aitalent/backend
-            # 安装后端依赖（如果有requirements.txt）
-            pip3 install -r requirements.txt || true
-            # 停止旧进程（如果有）
+            # 安装后端依赖（加--user避免权限问题，失败也不中断）
+            pip3 install --user -r requirements.txt || true
+            # 停止旧进程（失败也不中断）
             pkill -f "gunicorn" || true
-            # 启动FastAPI（假设入口文件是main.py，改成你的实际入口）
-            # 注意：app是main.py里的FastAPI实例名（比如 from main import app）
-             nohup gunicorn -w 4 -k uvicorn.workers.UvicornWorker src.main:app --bind 0.0.0.0:8000 > /var/www/aitalent/backend/run.log 2>&1 &
+            # 输出启动日志（方便排查）
+            echo "开始启动FastAPI服务..."
+            # 启动FastAPI（核心命令：无多余空格，路径正确）
+            nohup gunicorn -w 4 -k uvicorn.workers.UvicornWorker src.main:app --bind 0.0.0.0:8000 > /var/www/aitalent/backend/run.log 2>&1 &
+            # 验证进程是否启动
+            sleep 2
+            ps -ef | grep gunicorn | grep -v grep
