@@ -316,3 +316,27 @@ WHERE questionnaires.user_id = ?
 2026-04-30 16:04:08,552 INFO sqlalchemy.engine.Engine [cached since 1583s ago] (1,)
 2026-04-30 16:04:08,556 INFO sqlalchemy.engine.Engine ROLLBACK
 INFO:     127.0.0.1:49286 - "GET /api/questionnaires HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50602 - "OPTIONS /api/competency-models HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50603 - "OPTIONS /api/reports HTTP/1.1" 200 OK
+2026-04-30 16:32:35,517 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-04-30 16:32:35,520 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.password_hash, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = ?
+2026-04-30 16:32:35,520 INFO sqlalchemy.engine.Engine [cached since 3296s ago] (1,)
+2026-04-30 16:32:35,522 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-04-30 16:32:35,522 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.password_hash, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = ?
+2026-04-30 16:32:35,522 INFO sqlalchemy.engine.Engine [cached since 3296s ago] (1,)
+2026-04-30 16:32:35,538 INFO sqlalchemy.engine.Engine SELECT competency_models.id, competency_models.user_id, competency_models.name, competency_models.dimensions, competency_models.source_files, competency_models.created_at, competency_models.updated_at 
+FROM competency_models 
+WHERE competency_models.user_id = ?
+2026-04-30 16:32:35,538 INFO sqlalchemy.engine.Engine [cached since 3296s ago] (1,)
+2026-04-30 16:32:35,539 INFO sqlalchemy.engine.Engine SELECT reports.id, reports.user_id, reports.record_id, reports.report_type, reports.candidate_id, reports.candidate_name, reports.scores_data, reports.radar_chart_url, reports.total_score, reports.content, reports.language, reports.word_url, reports.pdf_url, reports.status, reports.created_at, reports.updated_at 
+FROM reports 
+WHERE reports.user_id = ?
+2026-04-30 16:32:35,539 INFO sqlalchemy.engine.Engine [cached since 3292s ago] (1,)
+2026-04-30 16:32:35,547 INFO sqlalchemy.engine.Engine ROLLBACK
+2026-04-30 16:32:35,552 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:50602 - "GET /api/competency-models HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50603 - "GET /api/reports HTTP/1.1" 200 OK
