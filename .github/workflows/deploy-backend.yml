@@ -29,8 +29,12 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          timeout: 60s
           script: |
-            # 【极简版：只杀进程 + 重启，不做任何高内存操作】
             cd /var/www/aitalent/backend
-            pkill -f gunicorn || true
-            nohup /usr/local/python310/bin/python3.10 -m gunicorn -w 1 src.main:app --bind 0.0.0.0:8000 > /dev/null 2>&1 &
+            pkill -f "gunicorn.*src.main:app" || true
+            sleep 2
+            nohup /usr/local/python310/bin/python3.10 -m gunicorn -w 1 -b 0.0.0.0:8000 src.main:app > /var/log/aitalent.log 2>&1 &
+            echo "Backend started"
+            sleep 3
+            curl -s http://localhost:8000/docs > /dev/null && echo "Backend is running" || echo "Backend failed"
