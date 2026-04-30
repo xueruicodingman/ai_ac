@@ -22,58 +22,77 @@ You may be able to resolve this warning by setting `model_config['protected_name
 
 You may be able to resolve this warning by setting `model_config['protected_namespaces'] = ()`.
   warnings.warn(
-INFO:     Started server process [91495]
+INFO:     Started server process [95530]
 INFO:     Waiting for application startup.
-2026-05-01 01:18:03,806 INFO sqlalchemy.engine.Engine BEGIN (implicit)
-2026-05-01 01:18:03,807 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("users")
-2026-05-01 01:18:03,807 INFO sqlalchemy.engine.Engine [raw sql] ()
-2026-05-01 01:18:03,808 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("user_settings")
-2026-05-01 01:18:03,808 INFO sqlalchemy.engine.Engine [raw sql] ()
-2026-05-01 01:18:03,808 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("competency_models")
-2026-05-01 01:18:03,808 INFO sqlalchemy.engine.Engine [raw sql] ()
-2026-05-01 01:18:03,808 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("evaluation_matrices")
-2026-05-01 01:18:03,808 INFO sqlalchemy.engine.Engine [raw sql] ()
-2026-05-01 01:18:03,809 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("questionnaires")
-2026-05-01 01:18:03,809 INFO sqlalchemy.engine.Engine [raw sql] ()
-2026-05-01 01:18:03,809 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("judge_handbooks")
-2026-05-01 01:18:03,809 INFO sqlalchemy.engine.Engine [raw sql] ()
-2026-05-01 01:18:03,809 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("reports")
-2026-05-01 01:18:03,809 INFO sqlalchemy.engine.Engine [raw sql] ()
-2026-05-01 01:18:03,809 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("files")
-2026-05-01 01:18:03,809 INFO sqlalchemy.engine.Engine [raw sql] ()
-2026-05-01 01:18:03,809 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("assessment_records")
-2026-05-01 01:18:03,809 INFO sqlalchemy.engine.Engine [raw sql] ()
-2026-05-01 01:18:03,810 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("practice_sessions")
-2026-05-01 01:18:03,810 INFO sqlalchemy.engine.Engine [raw sql] ()
-2026-05-01 01:18:03,810 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("competency_records")
-2026-05-01 01:18:03,810 INFO sqlalchemy.engine.Engine [raw sql] ()
-2026-05-01 01:18:03,810 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("roleplay_sessions")
-2026-05-01 01:18:03,810 INFO sqlalchemy.engine.Engine [raw sql] ()
-2026-05-01 01:18:03,810 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("roleplay_messages")
-2026-05-01 01:18:03,810 INFO sqlalchemy.engine.Engine [raw sql] ()
-2026-05-01 01:18:03,810 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("vision_practice_sessions")
-2026-05-01 01:18:03,810 INFO sqlalchemy.engine.Engine [raw sql] ()
-2026-05-01 01:18:03,810 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("judge_teams")
-2026-05-01 01:18:03,810 INFO sqlalchemy.engine.Engine [raw sql] ()
-2026-05-01 01:18:03,811 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("knowledge_bases")
-2026-05-01 01:18:03,811 INFO sqlalchemy.engine.Engine [raw sql] ()
-2026-05-01 01:18:03,811 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("evaluation_criteria")
-2026-05-01 01:18:03,811 INFO sqlalchemy.engine.Engine [raw sql] ()
-2026-05-01 01:18:03,811 INFO sqlalchemy.engine.Engine COMMIT
+2026-05-01 01:48:21,620 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-05-01 01:48:21,620 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("users")
+2026-05-01 01:48:21,620 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-01 01:48:21,621 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("user_settings")
+2026-05-01 01:48:21,621 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-01 01:48:21,621 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("competency_models")
+2026-05-01 01:48:21,621 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-01 01:48:21,622 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("evaluation_matrices")
+2026-05-01 01:48:21,622 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-01 01:48:21,622 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("questionnaires")
+2026-05-01 01:48:21,622 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-01 01:48:21,622 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("judge_handbooks")
+2026-05-01 01:48:21,622 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-01 01:48:21,622 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("reports")
+2026-05-01 01:48:21,622 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-01 01:48:21,622 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("files")
+2026-05-01 01:48:21,623 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-01 01:48:21,623 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("assessment_records")
+2026-05-01 01:48:21,623 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-01 01:48:21,623 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("practice_sessions")
+2026-05-01 01:48:21,623 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-01 01:48:21,623 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("competency_records")
+2026-05-01 01:48:21,623 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-01 01:48:21,623 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("roleplay_sessions")
+2026-05-01 01:48:21,623 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-01 01:48:21,623 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("roleplay_messages")
+2026-05-01 01:48:21,623 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-01 01:48:21,624 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("vision_practice_sessions")
+2026-05-01 01:48:21,624 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-01 01:48:21,624 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("judge_teams")
+2026-05-01 01:48:21,624 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-01 01:48:21,624 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("knowledge_bases")
+2026-05-01 01:48:21,624 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-01 01:48:21,624 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("evaluation_criteria")
+2026-05-01 01:48:21,624 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-01 01:48:21,624 INFO sqlalchemy.engine.Engine COMMIT
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
-INFO:     127.0.0.1:57025 - "OPTIONS /api/files/convert/markdown-to-docx HTTP/1.1" 200 OK
-2026-05-01 01:27:02,443 INFO sqlalchemy.engine.Engine BEGIN (implicit)
-2026-05-01 01:27:02,456 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.password_hash, users.created_at, users.updated_at 
+INFO:     127.0.0.1:63475 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+2026-05-01 01:48:36,647 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-05-01 01:48:36,656 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.username, users.password_hash, users.created_at, users.updated_at 
 FROM users 
 WHERE users.id = ?
-2026-05-01 01:27:02,456 INFO sqlalchemy.engine.Engine [generated in 0.00024s] (1,)
-2026-05-01 01:27:02,493 INFO sqlalchemy.engine.Engine ROLLBACK
-INFO:     127.0.0.1:57025 - "POST /api/files/convert/markdown-to-docx HTTP/1.1" 200 OK
-2026-05-01 01:27:28,455 INFO sqlalchemy.engine.Engine BEGIN (implicit)
-2026-05-01 01:27:28,458 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.password_hash, users.created_at, users.updated_at 
+2026-05-01 01:48:36,656 INFO sqlalchemy.engine.Engine [generated in 0.00024s] (1,)
+2026-05-01 01:48:36,658 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-05-01 01:48:36,658 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.username, users.password_hash, users.created_at, users.updated_at 
 FROM users 
 WHERE users.id = ?
-2026-05-01 01:27:28,458 INFO sqlalchemy.engine.Engine [cached since 26s ago] (1,)
-2026-05-01 01:27:28,511 INFO sqlalchemy.engine.Engine ROLLBACK
-INFO:     127.0.0.1:57027 - "POST /api/files/convert/markdown-to-docx HTTP/1.1" 200 OK
+2026-05-01 01:48:36,658 INFO sqlalchemy.engine.Engine [cached since 0.002013s ago] (1,)
+2026-05-01 01:48:36,662 INFO sqlalchemy.engine.Engine SELECT user_settings.id, user_settings.user_id, user_settings.api_key, user_settings.api_url, user_settings.default_model, user_settings.theme, user_settings.created_at, user_settings.updated_at 
+FROM user_settings 
+WHERE user_settings.user_id = ?
+2026-05-01 01:48:36,663 INFO sqlalchemy.engine.Engine [generated in 0.00013s] (1,)
+2026-05-01 01:48:36,667 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:63475 - "GET /api/auth/me HTTP/1.1" 200 OK
+2026-05-01 01:48:36,669 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:63474 - "GET /api/user/settings HTTP/1.1" 200 OK
+2026-05-01 01:48:51,543 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-05-01 01:48:51,543 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.username, users.password_hash, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = ?
+2026-05-01 01:48:51,543 INFO sqlalchemy.engine.Engine [cached since 14.89s ago] (1,)
+2026-05-01 01:48:51,550 INFO sqlalchemy.engine.Engine UPDATE users SET username=?, updated_at=CURRENT_TIMESTAMP WHERE users.id = ?
+2026-05-01 01:48:51,550 INFO sqlalchemy.engine.Engine [generated in 0.00025s] ('西门瑞雪', 1)
+2026-05-01 01:48:51,552 INFO sqlalchemy.engine.Engine COMMIT
+2026-05-01 01:48:51,555 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-05-01 01:48:51,556 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.username, users.password_hash, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = ?
+2026-05-01 01:48:51,556 INFO sqlalchemy.engine.Engine [generated in 0.00017s] (1,)
+2026-05-01 01:48:51,560 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:63547 - "PUT /api/auth/me HTTP/1.1" 200 OK

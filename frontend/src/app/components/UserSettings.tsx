@@ -1,6 +1,7 @@
-import { ArrowLeft, Lock, Key, User, LogOut, Eye, EyeOff, Globe } from 'lucide-react';
+import { ArrowLeft, Lock, Key, User, LogOut, Eye, EyeOff, Globe, UserCog } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { getUserSettings, updateUserSettings, logout } from '../api';
+import { getUserSettings, updateUserSettings, logout, getCurrentUser, updateCurrentUser } from '../api';
+import { toast } from 'sonner';
 
 interface UserSettingsProps {
   onBack: () => void;
@@ -63,11 +64,15 @@ function getModelsByApiUrl(apiUrl: string): { label: string; value: string }[] {
 }
 
 export default function UserSettings({ onBack, onLogout }: UserSettingsProps) {
-  const [activeTab, setActiveTab] = useState<'password' | 'profile'>('profile');
+  const [activeTab, setActiveTab] = useState<'password' | 'profile' | 'account'>('account');
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
+  
+  // Account Settings
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   
   // API Settings
   const [apiKey, setApiKey] = useState('');
@@ -79,6 +84,7 @@ export default function UserSettings({ onBack, onLogout }: UserSettingsProps) {
 
   useEffect(() => {
     loadSettings();
+    loadUser();
   }, []);
 
   const loadSettings = async () => {
@@ -89,6 +95,61 @@ export default function UserSettings({ onBack, onLogout }: UserSettingsProps) {
       setModel(data.default_model || data.default_model_name || 'gpt-4');
     } catch (err) {
       console.error('Failed to load settings:', err);
+    }
+  };
+
+  const loadUser = async () => {
+    try {
+      const user = await getCurrentUser();
+      setUsername(user.username || '');
+      setEmail(user.email || '');
+    } catch (err) {
+      console.error('Failed to load user:', err);
+    }
+  };
+
+  const handleSaveAccount = async () => {
+    if (!username.trim()) {
+      toast.error('用户名不能为空');
+      return;
+    }
+    setSaving(true);
+    try {
+      await updateCurrentUser({ username });
+      toast.success('用户名更新成功');
+    } catch (err: any) {
+      toast.error(err.message || '更新失败');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSavePassword = async () => {
+    if (!oldPassword || !newPassword || !confirmPassword) {
+      setMessage({ type: 'error', text: '请填写所有密码字段' });
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setMessage({ type: 'error', text: '新密码与确认密码不一致' });
+      return;
+    }
+    if (newPassword.length < 6) {
+      setMessage({ type: 'error', text: '密码至少6位' });
+      return;
+    }
+    setSaving(true);
+    try {
+      await updateCurrentUser({ password: newPassword });
+      setOldPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 3000);
+      toast.success('密码修改成功');
+    } catch (err: any) {
+      toast.error(err.message || '修改失败');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -138,15 +199,15 @@ export default function UserSettings({ onBack, onLogout }: UserSettingsProps) {
           <div className="w-48">
             <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
               <button
-                onClick={() => setActiveTab('profile')}
+                onClick={() => setActiveTab('account')}
                 className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${
-                  activeTab === 'profile'
+                  activeTab === 'account'
                     ? 'bg-blue-50 text-blue-600 border-l-2 border-blue-600'
                     : 'text-gray-700 hover:bg-gray-50'
                 }`}
               >
-                <Key size={18} />
-                <span className="text-sm font-medium">API设置</span>
+                <UserCog size={18} />
+                <span className="text-sm font-medium">账号信息</span>
               </button>
               <button
                 onClick={() => setActiveTab('password')}
@@ -158,6 +219,17 @@ export default function UserSettings({ onBack, onLogout }: UserSettingsProps) {
               >
                 <Lock size={18} />
                 <span className="text-sm font-medium">修改密码</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('profile')}
+                className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${
+                  activeTab === 'profile'
+                    ? 'bg-blue-50 text-blue-600 border-l-2 border-blue-600'
+                    : 'text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                <Key size={18} />
+                <span className="text-sm font-medium">API设置</span>
               </button>
             </div>
 
@@ -171,6 +243,48 @@ export default function UserSettings({ onBack, onLogout }: UserSettingsProps) {
           </div>
 
           <div className="flex-1">
+            {activeTab === 'account' && (
+              <div className="bg-white rounded-lg border border-gray-200 p-6">
+                <h3 className="text-lg font-medium text-gray-900 mb-6">账号信息</h3>
+
+                <div className="space-y-4 max-w-md">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      用户名
+                    </label>
+                    <input
+                      type="text"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="请输入用户名"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      邮箱
+                    </label>
+                    <input
+                      type="email"
+                      value={email}
+                      disabled
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-500"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">邮箱不可修改</p>
+                  </div>
+
+                  <button
+                    onClick={handleSaveAccount}
+                    disabled={saving}
+                    className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  >
+                    {saving ? '保存中...' : '保存用户名'}
+                  </button>
+                </div>
+              </div>
+            )}
+
             {activeTab === 'profile' && (
               <div className="bg-white rounded-lg border border-gray-200 p-6">
                 <h3 className="text-lg font-medium text-gray-900 mb-6">API 设置</h3>

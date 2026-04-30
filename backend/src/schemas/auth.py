@@ -11,7 +11,12 @@ class UserLogin(BaseModel):
 class UserResponse(BaseModel):
     id: int
     email: str
+    username: str | None = None
     created_at: str
+
+class UserUpdate(BaseModel):
+    username: str | None = None
+    password: str | None = None
 
 class Token(BaseModel):
     access_token: str

@@ -29,3 +29,11 @@
 9:51:50 PM [vite] (client) hmr update /src/app/components/JudgeManual.tsx, /src/styles/index.css
 9:52:01 PM [vite] (client) hmr update /src/app/components/ReportGeneration.tsx, /src/styles/index.css
 9:52:12 PM [vite] (client) hmr update /src/app/components/ReportGeneration.tsx, /src/styles/index.css
+1:35:18 AM [vite] (client) hmr update /src/app/components/Dashboard.tsx, /src/styles/index.css
+1:40:20 AM [vite] (client) hmr update /src/app/components/Dashboard.tsx, /src/styles/index.css
+1:46:51 AM [vite] (client) hmr update /src/styles/index.css, /src/app/components/Login.tsx, /src/app/components/UserSettings.tsx, /src/app/components/CompetencyModel.tsx, /src/app/components/AssessmentMatrix.tsx, /src/app/components/QuestionBook.tsx, /src/app/components/ReportGeneration.tsx, /src/app/components/JudgeManual.tsx
+1:47:03 AM [vite] (client) hmr update /src/app/components/UserSettings.tsx, /src/styles/index.css
+1:47:15 AM [vite] (client) hmr update /src/app/components/UserSettings.tsx, /src/styles/index.css
+1:47:25 AM [vite] (client) hmr update /src/app/components/UserSettings.tsx, /src/styles/index.css
+1:47:37 AM [vite] (client) hmr update /src/app/components/UserSettings.tsx, /src/styles/index.css
+1:47:52 AM [vite] (client) hmr update /src/app/components/UserSettings.tsx, /src/styles/index.css

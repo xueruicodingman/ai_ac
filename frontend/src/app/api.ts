@@ -1169,6 +1169,21 @@ export const getCurrentUser = async () => {
   return response.json();
 };
 
+export const updateCurrentUser = async (data: { username?: string; password?: string }) => {
+  const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
+    method: 'PUT',
+    headers: getHeaders(),
+    body: JSON.stringify(data),
+  });
+  
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || '更新失败');
+  }
+
+  return response.json();
+};
+
 export const downloadAsDocx = async (content: string, filename: string): Promise<Blob> => {
   const response = await fetch(`${API_BASE_URL}/api/files/convert/markdown-to-docx`, {
     method: 'POST',

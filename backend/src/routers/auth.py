@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from src.database import get_db
 from src.models.user import User
-from src.schemas.auth import UserCreate, UserLogin, UserResponse, Token
+from src.schemas.auth import UserCreate, UserLogin, UserResponse, Token, UserUpdate
 from src.utils.security import get_password_hash, verify_password, create_access_token, decode_token
 
 router = APIRouter(prefix="/api/auth", tags=["认证"])
@@ -47,4 +47,30 @@ async def login(user_data: UserLogin, db: AsyncSession = Depends(get_db)):
 
 @router.get("/me", response_model=UserResponse)
 async def get_me(current_user: User = Depends(get_current_user)):
-    return UserResponse(id=current_user.id, email=current_user.email, created_at=str(current_user.created_at))
+    return UserResponse(
+        id=current_user.id, 
+        email=current_user.email, 
+        username=current_user.username,
+        created_at=str(current_user.created_at)
+    )
+
+@router.put("/me", response_model=UserResponse)
+async def update_me(
+    user_data: UserUpdate, 
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    if user_data.username is not None:
+        current_user.username = user_data.username
+    if user_data.password is not None:
+        current_user.password_hash = get_password_hash(user_data.password)
+    
+    await db.commit()
+    await db.refresh(current_user)
+    
+    return UserResponse(
+        id=current_user.id, 
+        email=current_user.email, 
+        username=current_user.username,
+        created_at=str(current_user.created_at)
+    )
