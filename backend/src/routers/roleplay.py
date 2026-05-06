@@ -121,9 +121,12 @@ async def submit_answer_stream(
 
     from src.services.user_settings_service import get_or_create_settings
     user_settings = await get_or_create_settings(db, current_user.id)
-    api_key = user_settings.api_key or settings.API_KEY
+    api_key = user_settings.api_key
     api_url = user_settings.api_url or settings.DEFAULT_API_URL
     model = user_settings.default_model or settings.DEFAULT_MODEL
+    
+    if not api_key:
+        raise HTTPException(status_code=400, detail="请先在账号设置中配置API Key")
 
     service = RolePlayPracticeService(model=model, api_url=api_url)
     service.set_api_key(api_key)

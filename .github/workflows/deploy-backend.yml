@@ -22,6 +22,9 @@ jobs:
           source: "backend/*"
           target: "/var/www/aitalent/backend"
           strip_components: 1
+          exclude: |
+            *.db
+            *.log
 
       - name: SSH连接测试
         uses: appleboy/ssh-action@master
@@ -60,6 +63,7 @@ jobs:
             cd /var/www/aitalent/backend
             pkill -f "uvicorn\|gunicorn" || true
             sleep 2
+            # 方案1：排除数据库文件，不替换
             # 使用python3.10的uvicorn模块启动
             nohup python3.10 -m uvicorn src.main:app --host 0.0.0.0 --port 8000 > app.log 2>&1 &
             sleep 3

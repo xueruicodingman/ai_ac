@@ -40,13 +40,13 @@ class VisionPracticeService:
     def __init__(self, api_key: str = None, model: str = None, api_url: str = None):
         from src.config import settings
         self.llm = ChatOpenAI(
-            api_key=api_key or settings.API_KEY,
+            api_key=api_key,
             model=model or settings.DEFAULT_MODEL,
             base_url=api_url or settings.DEFAULT_API_URL,
             temperature=0.7,
             streaming=True
         )
-        self._api_key = api_key or settings.API_KEY
+        self._api_key = api_key
 
     def set_api_key(self, api_key: str):
         self._api_key = api_key

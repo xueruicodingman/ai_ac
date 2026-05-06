@@ -23,7 +23,7 @@ class KnowledgeBaseService:
     def _get_llm(self):
         from src.config import settings
         return ChatOpenAI(
-            api_key=self.api_key or settings.API_KEY,
+            api_key=self.api_key,
             base_url=self.api_url or settings.DEFAULT_API_URL,
             model=self.model or settings.DEFAULT_MODEL,
             temperature=0.1

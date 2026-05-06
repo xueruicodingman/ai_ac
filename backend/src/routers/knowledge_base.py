@@ -52,7 +52,7 @@ async def upload_document(
         config = {"strategy": "heading", "separator": "##", "max_length": 500}
 
     llm_config = await get_user_llm_config(db, current_user.id)
-    api_key = llm_config.get("api_key") or settings.API_KEY if hasattr(settings, 'API_KEY') else None
+    api_key = llm_config.get("api_key")
     model = llm_config.get("model") or None
     api_url = llm_config.get("api_url") or None
 
@@ -98,7 +98,7 @@ async def use_handbook_as_source(
         raise HTTPException(status_code=400, detail="该工具的评委手册内容为空")
 
     llm_config = await get_user_llm_config(db, current_user.id)
-    api_key = llm_config.get("api_key") or settings.API_KEY if hasattr(settings, 'API_KEY') else None
+    api_key = llm_config.get("api_key")
     model = llm_config.get("model") or None
     api_url = llm_config.get("api_url") or None
 
@@ -115,7 +115,7 @@ async def update_chunks(
 ):
     """更新切片配置并重新切片"""
     llm_config = await get_user_llm_config(db, current_user.id)
-    api_key = llm_config.get("api_key") or settings.API_KEY if hasattr(settings, 'API_KEY') else None
+    api_key = llm_config.get("api_key")
     model = llm_config.get("model") or None
     api_url = llm_config.get("api_url") or None
 

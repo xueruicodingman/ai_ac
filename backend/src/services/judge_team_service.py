@@ -27,7 +27,7 @@ class JudgeTeamService:
     def __init__(self, db: AsyncSession, user_id: int, api_key: str = None, api_url: str = None, model: str = None):
         self.db = db
         self.user_id = user_id
-        self.api_key = api_key or settings.API_KEY
+        self.api_key = api_key
         self.api_url = api_url or settings.DEFAULT_API_URL
         self.model = model or settings.DEFAULT_MODEL
     
