@@ -41,13 +41,11 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           timeout: 300s
           script: |
+            set -e
             cd /var/www/aitalent/backend
             free -h
-            # 创建虚拟环境
-            /usr/bin/python3 -m venv venv
-            source venv/bin/activate
-            pip install -r requirements.txt --no-input
-            python -c "import fastapi, sqlalchemy, langchain" || exit 1
+            pip install -r requirements.txt --no-input || pip3.10 install -r requirements.txt --no-input
+            python -c "import fastapi, sqlalchemy, langchain" || python3.10 -c "import fastapi, sqlalchemy, langchain" || exit 1
 
       - name: 重启服务
         uses: appleboy/ssh-action@master
@@ -57,10 +55,11 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           timeout: 60s
           script: |
+            set -e
             cd /var/www/aitalent/backend
             pkill -f "uvicorn\|gunicorn" || true
             sleep 2
-            source /var/www/aitalent/backend/venv/bin/activate
             nohup uvicorn src.main:app --host 0.0.0.0 --port 8000 > app.log 2>&1 &
             sleep 3
-            curl -s http://127.0.0.1:8000/docs | head -c 20
+            # 验证服务是否启动成功
+            curl -sf http://127.0.0.1:8000/docs || { echo "服务启动失败"; cat app.log; exit 1; }
