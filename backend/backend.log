@@ -337,3 +337,4 @@ WHERE questionnaires.user_id = ?
 2026-05-06 13:35:56,515 INFO sqlalchemy.engine.Engine [cached since 2.042e+04s ago] (1,)
 2026-05-06 13:35:56,520 INFO sqlalchemy.engine.Engine ROLLBACK
 INFO:     127.0.0.1:54956 - "GET /api/questionnaires HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63591 - "GET /docs HTTP/1.1" 200 OK

@@ -43,8 +43,8 @@ jobs:
           script: |
             cd /var/www/aitalent/backend
             free -h
-            /usr/local/python310/bin/pip3.10 install -r requirements.txt --no-input
-            /usr/local/python310/bin/python3.10 -c "import fastapi, sqlalchemy, langchain" || exit 1
+            /usr/bin/python3 -m pip install -r requirements.txt --no-input
+            /usr/bin/python3 -c "import fastapi, sqlalchemy, langchain" || exit 1
 
       - name: 重启服务
         uses: appleboy/ssh-action@master
@@ -57,6 +57,7 @@ jobs:
             cd /var/www/aitalent/backend
             pkill -f "uvicorn\|gunicorn" || true
             sleep 2
-            nohup /usr/local/python310/bin/python3.10 -m uvicorn src.main:app --host 0.0.0.0 --port 8000 > app.log 2>&1 &
+            # 使用系统Python
+            nohup /usr/bin/python3 -m uvicorn src.main:app --host 0.0.0.0 --port 8000 > app.log 2>&1 &
             sleep 3
             curl -s http://127.0.0.1:8000/docs | head -c 20
