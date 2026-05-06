@@ -14,10 +14,17 @@ async def get_settings(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
+    # 确保只查询当前用户的数据
     user_settings = await get_or_create_settings(db, current_user.id)
     
+    # 安全：API Key 永不返回完整内容给前端
+    # 前端需要验证时，应该通过其他方式
+    display_api_key = ""
+    if user_settings.api_key and len(user_settings.api_key) >= 8:
+        display_api_key = user_settings.api_key[:4] + "****"
+    
     return UserSettingsResponse(
-        api_key=user_settings.api_key,
+        api_key=display_api_key,
         api_url=user_settings.api_url or "",
         default_model=user_settings.default_model or "",
         theme=user_settings.theme,
