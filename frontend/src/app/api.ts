@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = 'http://www.aitalent.net.cn:8000';
 
 export const setAuthToken = (token: string) => {
   sessionStorage.setItem('auth_token', token);
