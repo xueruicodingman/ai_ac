@@ -53,7 +53,7 @@ export default function JudgeManual({ onBack, onNavigate }: JudgeManualProps) {
   const loadHandbooksFromDB = async () => {
     try {
       const [response, model] = await Promise.all([
-        fetch('http://localhost:8000/api/judge-handbooks', {
+        fetch(`${window.location.protocol}//${window.location.hostname}:8000/api/judge-handbooks`, {
           headers: getHeaders(),
         }),
         getCompetencyModel()
