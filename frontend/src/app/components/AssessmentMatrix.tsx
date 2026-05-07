@@ -66,11 +66,24 @@ export default function AssessmentMatrix({ onBack }: AssessmentMatrixProps) {
           }
           console.log('Parsed savedMatrix:', savedMatrix);
           console.log('Parsed savedAbilities:', savedAbilities);
-          setMatrix(savedMatrix);
-          setSelectedAbilities(savedAbilities);
-          if (Object.keys(savedMatrix).length > 0) {
-            setMatrixGenerated(true);
-            setHasSubmitted(true);
+
+          // 检查保存的矩阵是否与当前模型匹配
+          const currentAbilities = modelData.dimensions.map((d: Dimension) => d.name);
+          const isMatch = savedAbilities.every(a => currentAbilities.includes(a));
+
+          if (!isMatch) {
+            console.log('模型已更新，清除旧的评估矩阵');
+            setMatrix({});
+            setSelectedAbilities([]);
+            setMatrixGenerated(false);
+            setHasSubmitted(false);
+          } else {
+            setMatrix(savedMatrix);
+            setSelectedAbilities(savedAbilities);
+            if (Object.keys(savedMatrix).length > 0) {
+              setMatrixGenerated(true);
+              setHasSubmitted(true);
+            }
           }
         }
       } catch (err) {

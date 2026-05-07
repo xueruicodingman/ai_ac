@@ -52,9 +52,12 @@ export default function JudgeManual({ onBack, onNavigate }: JudgeManualProps) {
 
   const loadHandbooksFromDB = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/judge-handbooks', {
-        headers: getHeaders(),
-      });
+      const [response, model] = await Promise.all([
+        fetch('http://localhost:8000/api/judge-handbooks', {
+          headers: getHeaders(),
+        }),
+        getCompetencyModel()
+      ]);
 
       if (response.status === 404) {
         return;
@@ -79,6 +82,20 @@ export default function JudgeManual({ onBack, onNavigate }: JudgeManualProps) {
       }
 
       if (handbooksList && handbooksList.length > 0) {
+        // 检查手册是否与当前模型匹配
+        const savedTools = handbooksList.map((hb: any) => hb.tool);
+        const currentAbilities = model?.dimensions?.map((d: any) => d.name) || [];
+        const matrix = await getEvaluationMatrix();
+        const savedAbilities = Object.keys(matrix?.matrix || {});
+        const isMatch = savedAbilities.every((a: string) => currentAbilities.includes(a));
+
+        if (!isMatch) {
+          console.log('模型已更新，清除旧的手册');
+          setHandbooks({});
+          setIsGenerated(false);
+          return;
+        }
+
         const handbookMap: Record<string, HandbookItem> = {};
         handbooksList.forEach((hb: any) => {
           handbookMap[hb.tool] = {

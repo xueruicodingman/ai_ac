@@ -53,11 +53,11 @@ export default function QuestionBook({ onBack, onNavigate }: QuestionBookProps) 
     try {
       const modelData = await getCompetencyModel();
       setCompetencyModel(modelData);
-      
+
       const matrixData = await getEvaluationMatrix();
       console.log('Matrix data from API:', matrixData);
       setEvaluationMatrix(matrixData);
-      
+
       // 从评估矩阵中获取每个工具对应的考察能力
       const abilitiesMap: Record<string, string[]> = {};
       if (matrixData && matrixData.matrix) {
@@ -77,23 +77,39 @@ export default function QuestionBook({ onBack, onNavigate }: QuestionBookProps) 
       }
       console.log('Tool abilities map:', abilitiesMap);
       setToolAbilities(abilitiesMap);
-      
+
       // 加载已保存的问卷
       const questionnaires = await getQuestionnaires();
-      
+
       if (questionnaires && questionnaires.length > 0) {
-        setBooks(prev => prev.map(book => {
-          const saved = questionnaires.find((q: any) => q.tool_id === book.id);
-          if (saved) {
-            return {
-              ...book,
-              status: 'submitted' as const,
-              submitTime: saved.updated_at,
-              content: saved.content
-            };
-          }
-          return book;
-        }));
+        // 检查问卷是否与当前模型匹配
+        const currentAbilities = modelData.dimensions.map((d: any) => d.name);
+        const savedAbilities = Object.keys(matrixData?.matrix || {});
+        const isMatch = savedAbilities.every((a: string) => currentAbilities.includes(a));
+
+        if (!isMatch) {
+          console.log('模型已更新，清除旧的问卷');
+          // 清空问卷状态，强制重新生成
+          setBooks(prev => prev.map(book => ({
+            ...book,
+            status: 'pending' as const,
+            submitTime: undefined,
+            content: undefined
+          })));
+        } else {
+          setBooks(prev => prev.map(book => {
+            const saved = questionnaires.find((q: any) => q.tool_id === book.id);
+            if (saved) {
+              return {
+                ...book,
+                status: 'submitted' as const,
+                submitTime: saved.updated_at,
+                content: saved.content
+              };
+            }
+            return book;
+          }));
+        }
       }
     } catch (err) {
       console.log('No saved data found');
