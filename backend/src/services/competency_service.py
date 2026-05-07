@@ -22,7 +22,7 @@ class CompetencyService(AIService):
             {"dimensions": [...]}
         """
         from langchain_core.prompts import ChatPromptTemplate
-        from langchain_core.messages import HumanMessage
+        from langchain_core.messages import HumanMessage, SystemMessage
 
         system_prompt = """你是一个胜任力模型专家。请从以下文档中提取胜任力模型信息。
 
@@ -50,7 +50,8 @@ class CompetencyService(AIService):
 请直接返回JSON，不要有其他文字。"""
 
         prompt = ChatPromptTemplate.from_messages([
-            HumanMessage(content=f"请解析以下内容：\n\n{content}")
+            SystemMessage(content=system_prompt),
+            HumanMessage(content=f"请解析以下胜任力模型内容：\n\n{content[:8000]}")
         ])
 
         from langchain_core.output_parsers import JsonOutputParser
@@ -61,6 +62,7 @@ class CompetencyService(AIService):
         try:
             result = await chain.ainvoke({})
         except Exception as e:
+            print(f"[PARSE ERROR] {e}")
             # 解析失败，返回空数组
             result = {"dimensions": []}
 

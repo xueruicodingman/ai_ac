@@ -71,6 +71,7 @@ async def parse_competency_model(
         api_url=llm_config["api_url"]
     )
     result = await service.parse(content=file_content)
+    print(f"[PARSE RESULT] {result}")
     return {"success": True, "data": result}
 
 @router.get("", response_model=CompetencyModelResponse)
