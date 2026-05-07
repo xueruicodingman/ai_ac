@@ -1,6 +1,6 @@
-import { ArrowLeft, Upload, X, Plus, Trash2, Edit2, Check } from 'lucide-react';
+import { ArrowLeft, Upload, X, Plus, Trash2, Edit2, Check, FileText } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { generateCompetencyModel, saveCompetencyModel, getCompetencyModel } from '../api';
+import { generateCompetencyModel, saveCompetencyModel, getCompetencyModel, parseCompetencyModel, getFileContent } from '../api';
 import { toast } from 'sonner';
 
 interface CompetencyModelProps {
@@ -30,6 +30,8 @@ export default function CompetencyModel({ onBack }: CompetencyModelProps) {
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [isParsing, setIsParsing] = useState(false);
+  const [parseFileId, setParseFileId] = useState<number | null>(null);
 
   useEffect(() => {
     loadSavedModel();
@@ -66,6 +68,48 @@ export default function CompetencyModel({ onBack }: CompetencyModelProps) {
 
   const removeFile = (index: number) => {
     setFiles(files.filter((_, i) => i !== index));
+  };
+
+  const handleParseFile = async (fileId: number) => {
+    setIsParsing(true);
+    setError('');
+    setParseFileId(fileId);
+
+    try {
+      const fileContent = await getFileContent(fileId);
+      const content = fileContent.data?.content || fileContent.content || '';
+
+      if (!content || content.length < 20) {
+        throw new Error('文件内容为空，无法解析');
+      }
+
+      const response = await parseCompetencyModel(content);
+      const dimensions = response.data?.dimensions || [];
+
+      if (dimensions.length === 0) {
+        throw new Error('未能从文件中解析出胜任力模型，请检查文件格式');
+      }
+
+      const converted: Competency[] = dimensions.map((dim: any) => ({
+        id: dim.id || `competency-${Math.random()}`,
+        name: dim.name || '',
+        meaning: dim.meaning || '',
+        behaviors: (dim.behavior_criteria || []).map((bc: any) => ({
+          id: bc.id || `b-${Math.random()}`,
+          title: bc.title || '',
+          description: bc.description || '',
+        })),
+      }));
+
+      setGeneratedModel(converted);
+      toast.success(`成功解析 ${dimensions.length} 个能力模型`);
+    } catch (err: any) {
+      setError(err.message || '解析失败');
+      toast.error(err.message || '解析失败');
+    } finally {
+      setIsParsing(false);
+      setParseFileId(null);
+    }
   };
 
   const handleGenerate = async () => {
@@ -256,13 +300,39 @@ export default function CompetencyModel({ onBack }: CompetencyModelProps) {
                   key={index}
                   className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3"
                 >
-                  <span className="text-sm text-gray-700">{file.name}</span>
-                  <button
-                    onClick={() => removeFile(index)}
-                    className="text-gray-400 hover:text-red-500 transition-colors"
-                  >
-                    <X size={18} />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <FileText size={18} className="text-blue-500" />
+                    <span className="text-sm text-gray-700">{file.name}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={async () => {
+                        const fileData = new FormData();
+                        fileData.append('file', file);
+                        const response = await fetch('http://localhost:8000/api/files/upload', {
+                          method: 'POST',
+                          headers: {
+                            'Authorization': `Bearer ${sessionStorage.getItem('auth_token')}`
+                          },
+                          body: fileData
+                        });
+                        const result = await response.json();
+                        if (result.success && result.data?.id) {
+                          await handleParseFile(result.data.id);
+                        }
+                      }}
+                      disabled={isParsing}
+                      className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 disabled:opacity-50"
+                    >
+                      {isParsing && parseFileId ? '解析中...' : '解析模型'}
+                    </button>
+                    <button
+                      onClick={() => removeFile(index)}
+                      className="text-gray-400 hover:text-red-500 transition-colors"
+                    >
+                      <X size={18} />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>

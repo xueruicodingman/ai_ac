@@ -23,19 +23,19 @@ async def generate_competency_model(
     # 验证 num_competencies 必填
     if request.num_competencies is None or request.num_competencies < 1:
         raise HTTPException(status_code=400, detail="num_competencies 为必填参数")
-    
+
     # 验证 background 和 specified_abilities 至少填一个
     has_background = request.background and len(request.background.strip()) > 0
     has_specified = request.specified_abilities and len(request.specified_abilities) > 0
-    
+
     if not has_background and not has_specified:
         raise HTTPException(status_code=400, detail="background 和 specified_abilities 至少填写一个")
-    
+
     llm_config = await get_user_llm_config(db, current_user.id)
-    
+
     if not llm_config["api_key"]:
         raise HTTPException(status_code=400, detail="请先在设置中配置API Key")
-    
+
     service = CompetencyService(
         api_key=llm_config["api_key"],
         model=llm_config["model"],
@@ -46,6 +46,31 @@ async def generate_competency_model(
         specified_abilities=request.specified_abilities,
         num_competencies=request.num_competencies
     )
+    return {"success": True, "data": result}
+
+@router.post("/parse")
+async def parse_competency_model(
+    content: dict,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """解析文本内容，提取胜任力模型"""
+    file_content = content.get("content", "")
+
+    if not file_content or len(file_content.strip()) < 10:
+        raise HTTPException(status_code=400, detail="文件内容为空或太短")
+
+    llm_config = await get_user_llm_config(db, current_user.id)
+
+    if not llm_config["api_key"]:
+        raise HTTPException(status_code=400, detail="请先在设置中配置API Key")
+
+    service = CompetencyService(
+        api_key=llm_config["api_key"],
+        model=llm_config["model"],
+        api_url=llm_config["api_url"]
+    )
+    result = await service.parse(content=file_content)
     return {"success": True, "data": result}
 
 @router.get("", response_model=CompetencyModelResponse)

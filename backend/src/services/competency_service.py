@@ -1,12 +1,90 @@
 from typing import List, Optional, Dict, Any
 from src.services.ai_service import AIService
 from src.workflows.competency_gen_workflow import CompetencyGenWorkflow
+import uuid
 
 class CompetencyService(AIService):
     def __init__(self, api_key: str, model: str = None, api_url: str = None):
         super().__init__(api_key, model, api_url)
         self.workflow = CompetencyGenWorkflow(self.llm)
-    
+
+    async def parse(
+        self,
+        content: str
+    ) -> Dict[str, Any]:
+        """
+        解析文本内容，提取胜任力模型
+
+        Args:
+            content: 文件解析后的文本内容
+
+        Returns:
+            {"dimensions": [...]}
+        """
+        from langchain_core.prompts import ChatPromptTemplate
+        from langchain_core.messages import HumanMessage
+
+        system_prompt = """你是一个胜任力模型专家。请从以下文档中提取胜任力模型信息。
+
+# 输出要求
+返回JSON格式，包含dimensions数组。每个dimension包含：
+- name: 能力名称
+- meaning: 能力含义
+- behavior_criteria: 行为标准数组，每个包含title和description
+
+# 输出格式
+{
+    "dimensions": [
+        {
+            "name": "能力名称",
+            "meaning": "能力含义",
+            "behavior_criteria": [
+                {"title": "行为标准标题", "description": "行为标准描述"},
+                {"title": "行为标准标题", "description": "行为标准描述"},
+                {"title": "行为标准标题", "description": "行为标准描述"}
+            ]
+        }
+    ]
+}
+
+请直接返回JSON，不要有其他文字。"""
+
+        prompt = ChatPromptTemplate.from_messages([
+            HumanMessage(content=f"请解析以下内容：\n\n{content}")
+        ])
+
+        from langchain_core.output_parsers import JsonOutputParser
+        parser = JsonOutputParser()
+
+        chain = prompt | self.llm | parser
+
+        try:
+            result = await chain.ainvoke({})
+        except Exception as e:
+            # 解析失败，返回空数组
+            result = {"dimensions": []}
+
+        # 确保返回标准格式
+        dimensions = []
+        for dim in result.get("dimensions", []):
+            dim_data = {
+                "id": str(uuid.uuid4()),
+                "name": dim.get("name", ""),
+                "meaning": dim.get("meaning", ""),
+                "behavior_criteria": []
+            }
+
+            for bc in dim.get("behavior_criteria", [])[:3]:
+                dim_data["behavior_criteria"].append({
+                    "id": str(uuid.uuid4()),
+                    "title": bc.get("title", ""),
+                    "description": bc.get("description", "")
+                })
+
+            dimensions.append(dim_data)
+
+        return {"dimensions": dimensions}
+
     async def generate(
         self,
         background: str = "",

@@ -133,10 +133,25 @@ export const generateCompetencyModel = async (params: {
     headers: getHeaders(),
     body: JSON.stringify(params),
   });
-  
-if (!response.ok) {
+
+  if (!response.ok) {
     const error = await response.json();
     throw new Error(error.detail || "结束会话失败");
+  }
+
+  return response.json();
+};
+
+export const parseCompetencyModel = async (content: string) => {
+  const response = await fetch(`${API_BASE_URL}/api/competency-models/parse`, {
+    method: 'POST',
+    headers: getHeaders(),
+    body: JSON.stringify({ content }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || "解析失败");
   }
 
   return response.json();
