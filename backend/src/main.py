@@ -9,7 +9,17 @@ app = FastAPI(title="AC测评工具API", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:5173",
+        "http://localhost:5174",
+        "http://localhost:5175",
+        "http://localhost:5176",
+        "http://localhost:5177",
+        "http://www.aitalent.net.cn",
+        "http://aitalent.net.cn",
+        "https://www.aitalent.net.cn",
+        "https://aitalent.net.cn"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
