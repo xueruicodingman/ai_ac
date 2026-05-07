@@ -852,3 +852,67 @@ INFO:     Shutting down
 INFO:     Waiting for application shutdown.
 INFO:     Application shutdown complete.
 INFO:     Finished server process [95530]
+/opt/anaconda3/lib/python3.11/site-packages/pydantic/_internal/_fields.py:132: UserWarning: Field "model_id" in MatrixSaveRequest has conflict with protected namespace "model_".
+
+You may be able to resolve this warning by setting `model_config['protected_namespaces'] = ()`.
+  warnings.warn(
+/opt/anaconda3/lib/python3.11/site-packages/pydantic/_internal/_fields.py:132: UserWarning: Field "model_id" in MatrixResponse has conflict with protected namespace "model_".
+
+You may be able to resolve this warning by setting `model_config['protected_namespaces'] = ()`.
+  warnings.warn(
+/opt/anaconda3/lib/python3.11/site-packages/pydantic/_internal/_fields.py:132: UserWarning: Field "model_id" in QuestionnaireSaveRequest has conflict with protected namespace "model_".
+
+You may be able to resolve this warning by setting `model_config['protected_namespaces'] = ()`.
+  warnings.warn(
+/opt/anaconda3/lib/python3.11/site-packages/pydantic/_internal/_fields.py:132: UserWarning: Field "model_id" in QuestionnaireResponse has conflict with protected namespace "model_".
+
+You may be able to resolve this warning by setting `model_config['protected_namespaces'] = ()`.
+  warnings.warn(
+/opt/anaconda3/lib/python3.11/site-packages/pydantic/_internal/_fields.py:132: UserWarning: Field "model_id" in HandbookSaveRequest has conflict with protected namespace "model_".
+
+You may be able to resolve this warning by setting `model_config['protected_namespaces'] = ()`.
+  warnings.warn(
+/opt/anaconda3/lib/python3.11/site-packages/pydantic/_internal/_fields.py:132: UserWarning: Field "model_id" in HandbookResponse has conflict with protected namespace "model_".
+
+You may be able to resolve this warning by setting `model_config['protected_namespaces'] = ()`.
+  warnings.warn(
+INFO:     Started server process [98477]
+INFO:     Waiting for application startup.
+2026-05-07 21:51:53,187 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-05-07 21:51:53,187 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("users")
+2026-05-07 21:51:53,187 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-07 21:51:53,188 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("user_settings")
+2026-05-07 21:51:53,188 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-07 21:51:53,189 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("competency_models")
+2026-05-07 21:51:53,189 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-07 21:51:53,189 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("evaluation_matrices")
+2026-05-07 21:51:53,189 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-07 21:51:53,189 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("questionnaires")
+2026-05-07 21:51:53,189 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-07 21:51:53,189 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("judge_handbooks")
+2026-05-07 21:51:53,189 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-07 21:51:53,189 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("reports")
+2026-05-07 21:51:53,190 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-07 21:51:53,190 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("files")
+2026-05-07 21:51:53,190 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-07 21:51:53,190 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("assessment_records")
+2026-05-07 21:51:53,190 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-07 21:51:53,190 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("practice_sessions")
+2026-05-07 21:51:53,190 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-07 21:51:53,190 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("competency_records")
+2026-05-07 21:51:53,190 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-07 21:51:53,190 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("roleplay_sessions")
+2026-05-07 21:51:53,190 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-07 21:51:53,191 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("roleplay_messages")
+2026-05-07 21:51:53,191 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-07 21:51:53,191 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("vision_practice_sessions")
+2026-05-07 21:51:53,191 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-07 21:51:53,191 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("judge_teams")
+2026-05-07 21:51:53,191 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-07 21:51:53,191 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("knowledge_bases")
+2026-05-07 21:51:53,191 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-07 21:51:53,191 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("evaluation_criteria")
+2026-05-07 21:51:53,191 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-05-07 21:51:53,191 INFO sqlalchemy.engine.Engine COMMIT
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
