@@ -52,12 +52,9 @@ export default function JudgeManual({ onBack, onNavigate }: JudgeManualProps) {
 
   const loadHandbooksFromDB = async () => {
     try {
-      const [response, model] = await Promise.all([
-        fetch(`${window.location.protocol}//${window.location.hostname}:8000/api/judge-handbooks`, {
-          headers: getHeaders(),
-        }),
-        getCompetencyModel()
-      ]);
+      const response = await fetch(`${window.location.protocol}//${window.location.hostname}:8000/api/judge-handbooks`, {
+        headers: getHeaders(),
+      });
 
       if (response.status === 404) {
         return;
@@ -68,13 +65,17 @@ export default function JudgeManual({ onBack, onNavigate }: JudgeManualProps) {
         return;
       }
 
-      const data = await response.json();
+      const handbooksData = await response.json();
 
+      // 新格式：后端返回数组，每个元素包含 tool 和 content
       let handbooksList: any[] = [];
-
-      if (data.content) {
+      
+      if (Array.isArray(handbooksData)) {
+        handbooksList = handbooksData;
+      } else if (handbooksData.content) {
+        // 旧格式兼容
         try {
-          handbooksList = JSON.parse(data.content);
+          handbooksList = JSON.parse(handbooksData.content);
         } catch (e) {
           console.error('解析content失败:', e);
           return;
@@ -82,27 +83,12 @@ export default function JudgeManual({ onBack, onNavigate }: JudgeManualProps) {
       }
 
       if (handbooksList && handbooksList.length > 0) {
-        // 检查手册是否与当前模型匹配
-        const savedTools = handbooksList.map((hb: any) => hb.tool);
-        const currentAbilities = model?.dimensions?.map((d: any) => d.name) || [];
-        const matrix = await getEvaluationMatrix();
-        const savedAbilities = Object.keys(matrix?.matrix || {});
-        const isMatch = savedAbilities.every((a: string) => currentAbilities.includes(a));
-
-        if (!isMatch) {
-          console.log('模型已更新，清除旧的手册');
-          setHandbooks({});
-          setIsGenerated(false);
-          return;
-        }
-
         const handbookMap: Record<string, HandbookItem> = {};
         handbooksList.forEach((hb: any) => {
           handbookMap[hb.tool] = {
             tool: hb.tool,
             tool_name: TOOL_MAP[hb.tool] || hb.tool,
-            judge_content: hb.judge_content || '',
-            actor_content: hb.actor_content,
+            judge_content: hb.content || '',
           };
         });
         setHandbooks(handbookMap);
