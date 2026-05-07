@@ -28,8 +28,8 @@ async def get_settings(
         api_url=user_settings.api_url or "",
         default_model=user_settings.default_model or "",
         theme=user_settings.theme,
-        default_api_url=settings.DEFAULT_API_URL,
-        default_model_name=settings.DEFAULT_MODEL
+        default_api_url="",
+        default_model_name=""
     )
 
 @router.put("", response_model=UserSettingsResponse)
