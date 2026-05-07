@@ -2,6 +2,7 @@ import { ArrowLeft, Upload, Download, Edit2, Clock, CheckCircle, FileText, X, Co
 import { useState, useEffect } from 'react';
 import { getCompetencyModel, getEvaluationMatrix, generateQuestionnaire, getQuestionnaires, saveQuestionnaire, uploadFile, getFileContent, downloadAsDocx, downloadFile } from '../api';
 import { toast } from 'sonner';
+import QuestionBookPanel from './QuestionBookPanel';
 
 interface QuestionBookProps {
   onBack: () => void;
@@ -518,10 +519,8 @@ export default function QuestionBook({ onBack, onNavigate }: QuestionBookProps) 
                     rows={20}
                   />
                 ) : (
-                  <div className="bg-gray-50 p-6 max-h-[500px] overflow-y-auto">
-                    <pre className="whitespace-pre-wrap font-mono text-sm text-gray-700">
-                      {editingBook.content}
-                    </pre>
+                  <div className="bg-gray-50 p-4 max-h-[500px] overflow-y-auto">
+                    <QuestionBookPanel content={editingBook.content} />
                   </div>
                 )}
               </div>
