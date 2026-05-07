@@ -108,28 +108,34 @@ async def save_questionnaire(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    # 删除该tool_id的旧记录，确保只有最新版本
-    await db.execute(
-        delete(Questionnaire).where(
+    # 使用UPDATE覆盖旧数据，而不是删除+插入
+    result = await db.execute(
+        select(Questionnaire).where(
             and_(
                 Questionnaire.user_id == current_user.id,
                 Questionnaire.tool_id == data.tool_id
             )
         )
     )
-    
-    q = Questionnaire(user_id=current_user.id, tool_id=data.tool_id)
-    q.model_id = data.model_id
-    q.matrix_id = data.matrix_id
-    q.content = data.content
-    q.word_url = data.word_url
-    q.pdf_url = data.pdf_url
-    
-    db.add(q)
-    
+    existing = result.scalar_one_or_none()
+
+    if existing:
+        existing.model_id = data.model_id
+        existing.matrix_id = data.matrix_id
+        existing.content = data.content
+        existing.word_url = data.word_url
+        existing.pdf_url = data.pdf_url
+    else:
+        q = Questionnaire(user_id=current_user.id, tool_id=data.tool_id)
+        q.model_id = data.model_id
+        q.matrix_id = data.matrix_id
+        q.content = data.content
+        q.word_url = data.word_url
+        q.pdf_url = data.pdf_url
+        db.add(q)
+
     await db.commit()
-    await db.refresh(q)
-    
+
     return QuestionnaireResponse(
         id=q.id, tool_id=q.tool_id, model_id=q.model_id,
         matrix_id=q.matrix_id, content=q.content,
