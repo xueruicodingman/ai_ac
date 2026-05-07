@@ -254,15 +254,19 @@ class BEHWorkflow:
                 if comp.behavior_criteria:
                     markdown_lines.append("**关键行为**:")
                     for bc in comp.behavior_criteria:
-                        markdown_lines.append(f"- {bc.title}: {bc.description}")
+                        title = bc.get('title', '') if isinstance(bc, dict) else bc.title
+                        desc = bc.get('description', '') if isinstance(bc, dict) else bc.description
+                        markdown_lines.append(f"- {title}: {desc}")
                 if comp.challenges:
                     markdown_lines.append(f"\n**核心挑战**:")
                     for ch in comp.challenges:
-                        markdown_lines.append(f"- {ch}")
+                        ch_item = ch.get('title', '') if isinstance(ch, dict) else ch
+                        markdown_lines.append(f"- {ch_item}")
                 if comp.questions:
                     markdown_lines.append(f"\n**引导提问**:")
                     for q in comp.questions:
-                        markdown_lines.append(f"- {q}")
+                        q_item = q.get('title', '') if isinstance(q, dict) else q
+                        markdown_lines.append(f"- {q_item}")
                 if comp.followup_rules:
                     markdown_lines.append(f"\n**追问规则**: {comp.followup_rules}")
                 markdown_lines.append("")
