@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Body
 from fastapi.requests import Request
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_
+from sqlalchemy import select, and_, delete
 from src.database import get_db
 from src.models.user import User
 from src.routers.auth import get_current_user
@@ -108,25 +108,24 @@ async def save_questionnaire(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    result = await db.execute(
-        select(Questionnaire).where(
+    # 删除该tool_id的旧记录，确保只有最新版本
+    await db.execute(
+        delete(Questionnaire).where(
             and_(
                 Questionnaire.user_id == current_user.id,
                 Questionnaire.tool_id == data.tool_id
             )
         )
     )
-    existing = result.scalar_one_or_none()
     
-    q = existing or Questionnaire(user_id=current_user.id, tool_id=data.tool_id)
+    q = Questionnaire(user_id=current_user.id, tool_id=data.tool_id)
     q.model_id = data.model_id
     q.matrix_id = data.matrix_id
     q.content = data.content
     q.word_url = data.word_url
     q.pdf_url = data.pdf_url
     
-    if not existing:
-        db.add(q)
+    db.add(q)
     
     await db.commit()
     await db.refresh(q)
