@@ -140,15 +140,34 @@ export default function JudgeManual({ onBack, onNavigate }: JudgeManualProps) {
         name: model.name || ''
       };
       const evaluationMatrixData = matrix?.matrix || {};
-      const questionnaireList = questionnaires.map((q: any) => ({
-        tool_id: q.tool_id,
-        tool_name: q.tool_id,
-        content: q.content
-      }));
+
+      // 获取评估矩阵中启用的工具
+      const enabledTools = new Set<string>();
+      for (const ability in evaluationMatrixData) {
+        const tools = evaluationMatrixData[ability];
+        for (const tool in tools) {
+          if (tools[tool]) {
+            enabledTools.add(tool);
+          }
+        }
+      }
+
+      // 只传递评估矩阵中启用的工具的题本
+      const questionnaireList = questionnaires
+        .filter((q: any) => enabledTools.has(q.tool_id))
+        .map((q: any) => ({
+          tool_id: q.tool_id,
+          tool_name: q.tool_id,
+          content: q.content
+        }));
+
+      if (questionnaireList.length === 0) {
+        throw new Error('请先在评估矩阵中选择工具并生成题本');
+      }
 
       setCompetencyModel({ id: model.id, ...competencyModelData });
       setEvaluationMatrix({ id: matrix.id, ...evaluationMatrixData });
-      setQuestionnairesData(questionnaires);
+      setQuestionnairesData(questionnaireList);
 
       const response = await generateJudgeHandbook({
         competency_model: competencyModelData,
