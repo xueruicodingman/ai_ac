@@ -1,8 +1,9 @@
-let API_BASE_URL = 'http://localhost:8000';
+// 生产环境使用固定域名
+let API_BASE_URL = 'http://www.aitalent.net.cn:8000';
 
-// 生产环境使用域名
-if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
-  API_BASE_URL = window.location.protocol + '//' + window.location.hostname + ':8000';
+// 本地开发环境使用 localhost
+if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+  API_BASE_URL = 'http://localhost:8000';
 }
 
 export const setAuthToken = (token: string) => {
