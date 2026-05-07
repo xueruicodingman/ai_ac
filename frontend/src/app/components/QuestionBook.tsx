@@ -106,17 +106,6 @@ export default function QuestionBook({ onBack, onNavigate }: QuestionBookProps) 
             // 检查该工具在新的评估矩阵中是否启用
             const toolEnabled = abilitiesMap[book.id] && abilitiesMap[book.id].length > 0;
 
-            // 如果matrix_id不匹配，清除内容
-            if (saved && currentMatrixId && saved.matrix_id !== currentMatrixId) {
-              console.log(`工具${book.id}的matrix_id不匹配，清除内容`);
-              return {
-                ...book,
-                status: 'pending' as const,
-                submitTime: undefined,
-                content: undefined
-              };
-            }
-
             // 如果工具未启用，清除内容
             if (!toolEnabled && saved) {
               // 工具在矩阵中未勾选，清除题本内容
