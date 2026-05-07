@@ -125,6 +125,20 @@ async def save_questionnaire(
         existing.content = data.content
         existing.word_url = data.word_url
         existing.pdf_url = data.pdf_url
+        await db.commit()
+        await db.refresh(existing)
+        return QuestionnaireResponse(
+            id=existing.id,
+            tool_id=existing.tool_id,
+            model_id=existing.model_id,
+            matrix_id=existing.matrix_id,
+            content=existing.content,
+            word_url=existing.word_url,
+            pdf_url=existing.pdf_url,
+            status=existing.status,
+            created_at=str(existing.created_at),
+            updated_at=str(existing.updated_at)
+        )
     else:
         q = Questionnaire(user_id=current_user.id, tool_id=data.tool_id)
         q.model_id = data.model_id
@@ -133,12 +147,17 @@ async def save_questionnaire(
         q.word_url = data.word_url
         q.pdf_url = data.pdf_url
         db.add(q)
-
-    await db.commit()
-
-    return QuestionnaireResponse(
-        id=q.id, tool_id=q.tool_id, model_id=q.model_id,
-        matrix_id=q.matrix_id, content=q.content,
-        word_url=q.word_url, pdf_url=q.pdf_url,
-        status=q.status, created_at=str(q.created_at), updated_at=str(q.updated_at)
-    )
+        await db.commit()
+        await db.refresh(q)
+        return QuestionnaireResponse(
+            id=q.id,
+            tool_id=q.tool_id,
+            model_id=q.model_id,
+            matrix_id=q.matrix_id,
+            content=q.content,
+            word_url=q.word_url,
+            pdf_url=q.pdf_url,
+            status=q.status,
+            created_at=str(q.created_at),
+            updated_at=str(q.updated_at)
+        )
