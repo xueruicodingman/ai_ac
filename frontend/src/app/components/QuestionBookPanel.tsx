@@ -120,12 +120,35 @@ export default function QuestionBookPanel({ content, userAnswer }: QuestionBookP
             });
           }
           if (ctx.competencies && ctx.competencies.length > 0) {
+            const compContent = ctx.competencies.map((c: any) => {
+              const name = c.name || c.competency_name || '未知能力';
+              const meaning = c.meaning || c.level_description || '';
+              const behavior_criteria = c.behavior_criteria || [];
+              const challenges = c.challenges || [];
+              const questions = c.questions || [];
+              const followup_rules = c.followup_rules || '';
+
+              let text = meaning ? `【${name}】\n能力含义：${meaning}\n` : `【${name}】\n`;
+              if (behavior_criteria.length > 0) {
+                text += '关键行为：\n' + behavior_criteria.map((b: any) =>
+                  `· ${b.title || ''}: ${b.description || ''}`
+                ).join('\n');
+              }
+              if (challenges.length > 0) {
+                text += '\n核心挑战：\n' + challenges.map((ch: string) => `· ${ch}`).join('\n');
+              }
+              if (questions.length > 0) {
+                text += '\n引导提问：\n' + questions.map((q: string) => `· ${q}`).join('\n');
+              }
+              if (followup_rules) {
+                text += '\n追问规则：' + followup_rules;
+              }
+              return text;
+            }).join('\n\n');
             sections.push({
               id: "competencies",
               title: "能力模型",
-              content: ctx.competencies.map((c: any) => 
-                `${c.name || c.competency_name || '能力'}: ${c.description || c.level_description || ''}`
-              ).join('\n\n')
+              content: compContent
             });
           }
           break;
@@ -297,7 +320,75 @@ export default function QuestionBookPanel({ content, userAnswer }: QuestionBookP
           content: data.challenge_points.join('、')
         });
       }
-      
+
+      // 处理BEI格式（新版JSON结构）
+      if (data.competencies && Array.isArray(data.competencies)) {
+        const compContent = data.competencies.map((c: any) => {
+          const name = c.name || '未知能力';
+          const meaning = c.meaning || '';
+          const behavior_criteria = c.behavior_criteria || [];
+          const challenges = c.challenges || [];
+          const questions = c.questions || [];
+          const followup_rules = c.followup_rules || '';
+
+          let text = meaning ? `【${name}】\n能力含义：${meaning}\n` : `【${name}】\n`;
+          if (behavior_criteria.length > 0) {
+            text += '关键行为：\n' + behavior_criteria.map((b: any) =>
+              `· ${b.title || ''}: ${b.description || ''}`
+            ).join('\n');
+          }
+          if (challenges.length > 0) {
+            text += '\n核心挑战：\n' + challenges.map((ch: string) => `· ${ch}`).join('\n');
+          }
+          if (questions.length > 0) {
+            text += '\n引导提问：\n' + questions.map((q: string) => `· ${q}`).join('\n');
+          }
+          if (followup_rules) {
+            text += '\n追问规则：' + followup_rules;
+          }
+          return text;
+        }).join('\n\n');
+        sections.push({
+          id: "bei_competencies",
+          title: "能力模型",
+          content: compContent
+        });
+      }
+
+      // 处理BEI格式（旧版，直接数组结构）
+      if (Array.isArray(data) && data.length > 0 && data[0].name) {
+        const compContent = data.map((c: any) => {
+          const name = c.name || '未知能力';
+          const meaning = c.meaning || '';
+          const behavior_criteria = c.behavior_criteria || [];
+          const challenges = c.challenges || [];
+          const questions = c.questions || [];
+          const followup_rules = c.followup_rules || '';
+
+          let text = meaning ? `【${name}】\n能力含义：${meaning}\n` : `【${name}】\n`;
+          if (behavior_criteria.length > 0) {
+            text += '关键行为：\n' + behavior_criteria.map((b: any) =>
+              `· ${b.title || ''}: ${b.description || ''}`
+            ).join('\n');
+          }
+          if (challenges.length > 0) {
+            text += '\n核心挑战：\n' + challenges.map((ch: string) => `· ${ch}`).join('\n');
+          }
+          if (questions.length > 0) {
+            text += '\n引导提问：\n' + questions.map((q: string) => `· ${q}`).join('\n');
+          }
+          if (followup_rules) {
+            text += '\n追问规则：' + followup_rules;
+          }
+          return text;
+        }).join('\n\n');
+        sections.push({
+          id: "bei_competencies",
+          title: "能力模型",
+          content: compContent
+        });
+      }
+
       if (data.company_info) {
         sections.push({
           id: "company",
