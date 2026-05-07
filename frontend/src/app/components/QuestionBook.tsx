@@ -222,10 +222,11 @@ export default function QuestionBook({ onBack, onNavigate }: QuestionBookProps) 
     }
 
     setError('');
-    // 设置当前工具的生成状态
+    // 设置当前工具的生成状态，同时更新editingBook
     setBooks(prev => prev.map(book =>
       book.id === editingBook.id ? { ...book, isGenerating: true } : book
     ));
+    setEditingBook({ ...editingBook, isGenerating: true });
 
     try {
       // 获取背景材料内容
@@ -279,7 +280,8 @@ export default function QuestionBook({ onBack, onNavigate }: QuestionBookProps) 
       // 更新editingBook的内容，保留在当前页面
       setEditingBook({
         ...editingBook,
-        content: generatedContent
+        content: generatedContent,
+        isGenerating: false
       });
     } catch (err: any) {
       setError(err.message || '生成失败');
@@ -288,6 +290,10 @@ export default function QuestionBook({ onBack, onNavigate }: QuestionBookProps) 
       setBooks(prev => prev.map(book =>
         book.id === editingBook.id ? { ...book, isGenerating: false } : book
       ));
+      // 同时更新editingBook
+      if (editingBook) {
+        setEditingBook({ ...editingBook, isGenerating: false });
+      }
     }
   };
 
