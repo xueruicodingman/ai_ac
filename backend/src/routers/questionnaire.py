@@ -108,6 +108,10 @@ async def save_questionnaire(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
+    print(f"[SAVE] save_questionnaire called, tool_id={data.tool_id}, user_id={current_user.id}")
+    print(f"[SAVE] content length: {len(data.content) if data.content else 0}")
+    print(f"[SAVE] model_id={data.model_id}, matrix_id={data.matrix_id}")
+    
     # 使用UPDATE覆盖旧数据，而不是删除+插入
     result = await db.execute(
         select(Questionnaire).where(
@@ -118,8 +122,11 @@ async def save_questionnaire(
         )
     )
     existing = result.scalar_one_or_none()
+    
+    print(f"[SAVE] existing record: {existing}")
 
     if existing:
+        print(f"[SAVE] Updating existing record id={existing.id}")
         existing.model_id = data.model_id
         existing.matrix_id = data.matrix_id
         existing.content = data.content
@@ -127,6 +134,7 @@ async def save_questionnaire(
         existing.pdf_url = data.pdf_url
         await db.commit()
         await db.refresh(existing)
+        print(f"[SAVE] After commit, updated_at={existing.updated_at}")
         return QuestionnaireResponse(
             id=existing.id,
             tool_id=existing.tool_id,

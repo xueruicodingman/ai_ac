@@ -259,12 +259,14 @@ export default function QuestionBook({ onBack, onNavigate }: QuestionBookProps) 
       ));
 
       // 保存到后端
+      console.log('开始保存题本, tool_id:', editingBook.id);
       await saveQuestionnaire({
         tool_id: editingBook.id,
         model_id: competencyModel.id,
         matrix_id: evaluationMatrix.id,
         content: generatedContent
       });
+      console.log('题本保存成功');
 
       // 更新editingBook的内容，保留在当前页面
       setEditingBook({
