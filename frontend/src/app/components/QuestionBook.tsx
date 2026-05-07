@@ -18,6 +18,7 @@ interface Book {
   uploadedFileId?: string;
   uploadedFileName?: string;
   textRequirement?: string;
+  isGenerating?: boolean;  // 每个工具独立的生成状态
   jobLevel?: string;
   content?: string;
 }
@@ -33,9 +34,8 @@ export default function QuestionBook({ onBack, onNavigate }: QuestionBookProps) 
 
   // 工具对应的考察能力（从评估矩阵中获取）
   const [toolAbilities, setToolAbilities] = useState<Record<string, string[]>>({});
-  const [books, setBooks] = useState<Book[]>(allTools.map(t => ({ ...t, status: 'draft' as const })));
+  const [books, setBooks] = useState<Book[]>(allTools.map(t => ({ ...t, status: 'draft' as const, isGenerating: false })));
   const [editingBook, setEditingBook] = useState<Book | null>(null);
-  const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState('');
   const [isEditMode, setIsEditMode] = useState(false);
   const [competencyModel, setCompetencyModel] = useState<any>(null);
@@ -209,7 +209,10 @@ export default function QuestionBook({ onBack, onNavigate }: QuestionBookProps) 
     }
 
     setError('');
-    setIsGenerating(true);
+    // 设置当前工具的生成状态
+    setBooks(prev => prev.map(book =>
+      book.id === editingBook.id ? { ...book, isGenerating: true } : book
+    ));
 
     try {
       // 获取背景材料内容
@@ -229,7 +232,7 @@ export default function QuestionBook({ onBack, onNavigate }: QuestionBookProps) 
 
       console.log('开始生成题本 - tool_id:', editingBook.id);
       console.log('传递的背景材料:', backgroundFileContent?.substring(0, 200) + '...');
-      
+
       const response = await generateQuestionnaire(
         editingBook.id,
         competencyModel,
@@ -239,16 +242,16 @@ export default function QuestionBook({ onBack, onNavigate }: QuestionBookProps) 
       );
 
       console.log('题本生成结果:', response);
-      
+
       const generatedContent = response.data?.content || '';
       console.log('生成的题本内容:', generatedContent.substring(0, 200) + '...');
       console.log('generatedContent 类型:', typeof generatedContent);
       console.log('generatedContent 长度:', generatedContent.length);
-      
-      // 更新books状态
-      setBooks(prev => prev.map(book => 
-        book.id === editingBook.id 
-          ? { ...book, content: generatedContent, status: 'submitted' as const, submitTime: new Date().toISOString() }
+
+      // 更新books状态，清理当前工具的生成状态
+      setBooks(prev => prev.map(book =>
+        book.id === editingBook.id
+          ? { ...book, content: generatedContent, status: 'submitted' as const, submitTime: new Date().toISOString(), isGenerating: false }
           : book
       ));
 
@@ -268,7 +271,10 @@ export default function QuestionBook({ onBack, onNavigate }: QuestionBookProps) 
     } catch (err: any) {
       setError(err.message || '生成失败');
     } finally {
-      setIsGenerating(false);
+      // 清理当前工具的生成状态
+      setBooks(prev => prev.map(book =>
+        book.id === editingBook.id ? { ...book, isGenerating: false } : book
+      ));
     }
   };
 
@@ -456,13 +462,13 @@ export default function QuestionBook({ onBack, onNavigate }: QuestionBookProps) 
 
           <button
             onClick={handleGenerate}
-            disabled={isGenerating}
+            disabled={editingBook?.isGenerating}
             className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:bg-gray-400 disabled:cursor-not-allowed mb-2"
           >
-            {isGenerating ? '正在生成中...' : (editingBook?.content ? '重新生成' : '生成题本')}
+            {editingBook?.isGenerating ? '正在生成中...' : (editingBook?.content ? '重新生成' : '生成题本')}
           </button>
 
-          {isGenerating && (
+          {editingBook?.isGenerating && (
             <div className="text-sm text-gray-500 mb-4 text-center">
               预计需要5-15min左右，正是摸鱼好时机！
             </div>
