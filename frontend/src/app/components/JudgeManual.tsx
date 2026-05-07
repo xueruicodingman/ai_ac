@@ -187,6 +187,14 @@ export default function JudgeManual({ onBack, onNavigate }: JudgeManualProps) {
         setHandbooks(handbookMap);
         setIsGenerated(true);
         setActiveTab('roleplay');
+        
+        // 保存到后端
+        try {
+          await saveJudgeHandbook(Object.values(handbookMap));
+        } catch (err) {
+          console.error('保存评委手册失败:', err);
+        }
+        
         localStorage.setItem('judge_handbook_content', JSON.stringify(Object.values(handbookMap)));
       } else {
         throw new Error('生成失败，请重试');
