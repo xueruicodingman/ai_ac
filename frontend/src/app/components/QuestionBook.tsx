@@ -288,8 +288,22 @@ export default function QuestionBook({ onBack, onNavigate }: QuestionBookProps) 
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!editingBook) return;
+
+    // 保存编辑后的内容到后端
+    if (editingBook.content) {
+      try {
+        await saveQuestionnaire({
+          tool_id: editingBook.id,
+          model_id: competencyModel.id,
+          matrix_id: evaluationMatrix.id,
+          content: editingBook.content
+        });
+      } catch (err) {
+        console.error('保存题本失败:', err);
+      }
+    }
 
     setBooks(books.map(book =>
       book.id === editingBook.id
