@@ -482,9 +482,9 @@ export const generateJudgeHandbookByTool = async (
 };
 
 export const saveJudgeHandbook = async (data: {
+  tool: string;
   model_id: number;
   matrix_id: number;
-  questionnaire_ids: number[];
   content: string;
   word_url?: string;
   pdf_url?: string;

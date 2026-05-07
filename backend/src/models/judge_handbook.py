@@ -6,10 +6,10 @@ class JudgeHandbook(Base):
     __tablename__ = "judge_handbooks"
     
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), unique=True, nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    tool = Column(String(20), nullable=False)  # beh, vision, lgd, roleplay, case
     model_id = Column(Integer, ForeignKey("competency_models.id"), nullable=False)
     matrix_id = Column(Integer, ForeignKey("evaluation_matrices.id"), nullable=False)
-    questionnaires = Column(Text, nullable=False)
     content = Column(Text, nullable=False)
     word_url = Column(String(500))
     pdf_url = Column(String(500))

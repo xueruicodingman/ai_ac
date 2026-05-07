@@ -7,18 +7,18 @@ class HandbookGenerateRequest(BaseModel):
     questionnaires: List[Dict[str, Any]]
 
 class HandbookSaveRequest(BaseModel):
+    tool: str  # beh, vision, lgd, roleplay, case
     model_id: int
     matrix_id: int
-    questionnaire_ids: List[int]
     content: str
     word_url: Optional[str] = None
     pdf_url: Optional[str] = None
 
 class HandbookResponse(BaseModel):
     id: int
+    tool: str
     model_id: int
     matrix_id: int
-    questionnaire_ids: List[int]
     content: str
     word_url: Optional[str]
     pdf_url: Optional[str]

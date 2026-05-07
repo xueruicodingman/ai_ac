@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Body
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, and_
 from src.database import get_db
 from src.models.user import User
 from src.routers.auth import get_current_user
@@ -10,7 +10,7 @@ from src.schemas.handbook import (
 )
 from src.services.handbook_service import HandbookService
 from src.services.user_settings_service import get_user_llm_config
-from typing import List, Any, Dict
+from typing import List, Any, Dict, Optional
 import json
 
 router = APIRouter(prefix="/api/judge-handbooks", tags=["评委手册"])
@@ -89,30 +89,59 @@ async def generate_handbook_by_tool(
         print(f"Error generating handbook: {traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=f"生成评委手册失败: {str(e)}")
 
-@router.get("", response_model=HandbookResponse)
+@router.get("", response_model=List[HandbookResponse])
 async def get_handbook(
+    tool: Optional[str] = None,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    result = await db.execute(
-        select(JudgeHandbook).where(JudgeHandbook.user_id == current_user.id)
-    )
-    handbook = result.scalar_one_or_none()
-    if not handbook:
-        raise HTTPException(status_code=404, detail="未找到评委手册")
+    if tool:
+        result = await db.execute(
+            select(JudgeHandbook).where(
+                and_(JudgeHandbook.user_id == current_user.id, JudgeHandbook.tool == tool)
+            )
+        )
+    else:
+        result = await db.execute(
+            select(JudgeHandbook).where(JudgeHandbook.user_id == current_user.id)
+        )
+    handbooks = result.scalars().all()
     
-    return HandbookResponse(
-        id=handbook.id,
-        model_id=handbook.model_id,
-        matrix_id=handbook.matrix_id,
-        questionnaire_ids=json.loads(handbook.questionnaires),
-        content=handbook.content,
-        word_url=handbook.word_url,
-        pdf_url=handbook.pdf_url,
-        status=handbook.status,
-        created_at=str(handbook.created_at),
-        updated_at=str(handbook.updated_at)
-    )
+    if tool and not handbooks:
+        raise HTTPException(status_code=404, detail="未找到该评委手册")
+    
+    if tool:
+        handbook = handbooks[0] if handbooks else None
+        if not handbook:
+            raise HTTPException(status_code=404, detail="未找到评委手册")
+        return [HandbookResponse(
+            id=handbook.id,
+            tool=handbook.tool,
+            model_id=handbook.model_id,
+            matrix_id=handbook.matrix_id,
+            content=handbook.content,
+            word_url=handbook.word_url,
+            pdf_url=handbook.pdf_url,
+            status=handbook.status,
+            created_at=str(handbook.created_at),
+            updated_at=str(handbook.updated_at)
+        )]
+    
+    return [
+        HandbookResponse(
+            id=h.id,
+            tool=h.tool,
+            model_id=h.model_id,
+            matrix_id=h.matrix_id,
+            content=h.content,
+            word_url=h.word_url,
+            pdf_url=h.pdf_url,
+            status=h.status,
+            created_at=str(h.created_at),
+            updated_at=str(h.updated_at)
+        )
+        for h in handbooks
+    ]
 
 @router.post("", response_model=HandbookResponse)
 async def save_handbook(
@@ -120,30 +149,53 @@ async def save_handbook(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
+    print(f"[SAVE] save_handbook called, tool={data.tool}, user_id={current_user.id}")
+    
     result = await db.execute(
-        select(JudgeHandbook).where(JudgeHandbook.user_id == current_user.id)
+        select(JudgeHandbook).where(
+            and_(JudgeHandbook.user_id == current_user.id, JudgeHandbook.tool == data.tool)
+        )
     )
     existing = result.scalar_one_or_none()
     
-    handbook = existing or JudgeHandbook(user_id=current_user.id)
+    if existing:
+        existing.model_id = data.model_id
+        existing.matrix_id = data.matrix_id
+        existing.content = data.content
+        existing.word_url = data.word_url
+        existing.pdf_url = data.pdf_url
+        await db.commit()
+        await db.refresh(existing)
+        print(f"[SAVE] updated handbook id={existing.id}, updated_at={existing.updated_at}")
+        return HandbookResponse(
+            id=existing.id,
+            tool=existing.tool,
+            model_id=existing.model_id,
+            matrix_id=existing.matrix_id,
+            content=existing.content,
+            word_url=existing.word_url,
+            pdf_url=existing.pdf_url,
+            status=existing.status,
+            created_at=str(existing.created_at),
+            updated_at=str(existing.updated_at)
+        )
+    
+    handbook = JudgeHandbook(user_id=current_user.id, tool=data.tool)
     handbook.model_id = data.model_id
     handbook.matrix_id = data.matrix_id
-    handbook.questionnaires = json.dumps(data.questionnaire_ids)
     handbook.content = data.content
     handbook.word_url = data.word_url
     handbook.pdf_url = data.pdf_url
-    
-    if not existing:
-        db.add(handbook)
-    
+    db.add(handbook)
     await db.commit()
     await db.refresh(handbook)
+    print(f"[SAVE] created handbook id={handbook.id}")
     
     return HandbookResponse(
         id=handbook.id,
+        tool=handbook.tool,
         model_id=handbook.model_id,
         matrix_id=handbook.matrix_id,
-        questionnaire_ids=json.loads(handbook.questionnaires),
         content=handbook.content,
         word_url=handbook.word_url,
         pdf_url=handbook.pdf_url,

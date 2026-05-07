@@ -188,9 +188,18 @@ export default function JudgeManual({ onBack, onNavigate }: JudgeManualProps) {
         setIsGenerated(true);
         setActiveTab('roleplay');
         
-        // 保存到后端
+        // 分别保存每个工具的评委手册到后端
         try {
-          await saveJudgeHandbook(Object.values(handbookMap));
+          const modelId = competencyModel?.id || 1;
+          const matrixId = evaluationMatrix?.id || 1;
+          for (const hb of Object.values(handbookMap)) {
+            await saveJudgeHandbook({
+              tool: hb.tool,
+              model_id: modelId,
+              matrix_id: matrixId,
+              content: hb.judge_content,
+            });
+          }
         } catch (err) {
           console.error('保存评委手册失败:', err);
         }
@@ -291,21 +300,15 @@ export default function JudgeManual({ onBack, onNavigate }: JudgeManualProps) {
 
       if (competencyModel && evaluationMatrix) {
         try {
-          const handbookData = Object.values(allHandbooks).map(hb => ({
-            tool: hb.tool,
-            judge_content: hb.judge_content,
-            actor_content: hb.actor_content || undefined,
-          }));
-
           const modelId = competencyModel?.id || 1;
           const matrixId = evaluationMatrix?.id || 1;
-          const questionnaireIds = questionnairesData.map((q: any) => q.id).filter(Boolean);
 
+          // 保存当前编辑的工具手册
           await saveJudgeHandbook({
+            tool: editingTool,
             model_id: modelId,
             matrix_id: matrixId,
-            questionnaire_ids: questionnaireIds,
-            content: JSON.stringify(handbookData),
+            content: editContent,
           });
         } catch (err) {
           console.error('保存单个手册失败:', err);
@@ -325,23 +328,18 @@ export default function JudgeManual({ onBack, onNavigate }: JudgeManualProps) {
     
     setIsSaving(true);
     try {
-      const handbookData = Object.values(handbooks).map(hb => ({
-        tool: hb.tool,
-        judge_content: hb.judge_content,
-        actor_content: hb.actor_content || undefined,
-      }));
-
       const modelId = competencyModel?.id || 1;
       const matrixId = evaluationMatrix?.id || 1;
       
-      const questionnaireIds = questionnairesData.map((q: any) => q.id).filter(Boolean);
-      
-      await saveJudgeHandbook({
-        model_id: modelId,
-        matrix_id: matrixId,
-        questionnaire_ids: questionnaireIds,
-        content: JSON.stringify(handbookData),
-      });
+      // 分别保存每个工具的评委手册
+      for (const hb of Object.values(handbooks)) {
+        await saveJudgeHandbook({
+          tool: hb.tool,
+          model_id: modelId,
+          matrix_id: matrixId,
+          content: hb.judge_content,
+        });
+      }
       
       localStorage.setItem('judge_handbook_content', JSON.stringify(Object.values(handbooks)));
       alert('评委手册已提交定稿并保存到数据库！');
