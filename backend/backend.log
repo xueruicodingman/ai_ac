@@ -340,3 +340,239 @@ INFO:     127.0.0.1:54956 - "GET /api/questionnaires HTTP/1.1" 200 OK
 INFO:     127.0.0.1:63591 - "GET /docs HTTP/1.1" 200 OK
 INFO:     127.0.0.1:54239 - "GET /docs HTTP/1.1" 200 OK
 INFO:     127.0.0.1:54523 - "GET /docs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58483 - "OPTIONS /api/auth/login HTTP/1.1" 200 OK
+2026-05-07 15:07:38,743 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-05-07 15:07:38,750 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.username, users.password_hash, users.created_at, users.updated_at 
+FROM users 
+WHERE users.email = ?
+2026-05-07 15:07:38,751 INFO sqlalchemy.engine.Engine [cached since 5.128e+04s ago] ('xuerui1221@126.com',)
+2026-05-07 15:07:39,040 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:58483 - "POST /api/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58483 - "OPTIONS /api/competency-models HTTP/1.1" 200 OK
+2026-05-07 15:07:40,870 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-05-07 15:07:40,870 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.username, users.password_hash, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = ?
+2026-05-07 15:07:40,870 INFO sqlalchemy.engine.Engine [cached since 2.731e+05s ago] (1,)
+2026-05-07 15:07:40,871 INFO sqlalchemy.engine.Engine SELECT competency_models.id, competency_models.user_id, competency_models.name, competency_models.dimensions, competency_models.source_files, competency_models.created_at, competency_models.updated_at 
+FROM competency_models 
+WHERE competency_models.user_id = ?
+2026-05-07 15:07:40,871 INFO sqlalchemy.engine.Engine [cached since 6.181e+04s ago] (1,)
+2026-05-07 15:07:40,882 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:58485 - "GET /api/competency-models HTTP/1.1" 200 OK
+2026-05-07 15:07:44,877 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-05-07 15:07:44,878 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.username, users.password_hash, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = ?
+2026-05-07 15:07:44,878 INFO sqlalchemy.engine.Engine [cached since 2.731e+05s ago] (1,)
+2026-05-07 15:07:44,889 INFO sqlalchemy.engine.Engine SELECT competency_models.id, competency_models.user_id, competency_models.name, competency_models.dimensions, competency_models.source_files, competency_models.created_at, competency_models.updated_at 
+FROM competency_models 
+WHERE competency_models.user_id = ?
+2026-05-07 15:07:44,889 INFO sqlalchemy.engine.Engine [cached since 6.182e+04s ago] (1,)
+2026-05-07 15:07:44,893 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:58485 - "GET /api/competency-models HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58485 - "OPTIONS /api/user/settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58537 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+2026-05-07 15:07:48,731 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-05-07 15:07:48,732 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.username, users.password_hash, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = ?
+2026-05-07 15:07:48,732 INFO sqlalchemy.engine.Engine [cached since 2.731e+05s ago] (1,)
+2026-05-07 15:07:48,732 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-05-07 15:07:48,733 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.username, users.password_hash, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = ?
+2026-05-07 15:07:48,733 INFO sqlalchemy.engine.Engine [cached since 2.731e+05s ago] (1,)
+2026-05-07 15:07:48,740 INFO sqlalchemy.engine.Engine ROLLBACK
+2026-05-07 15:07:48,747 INFO sqlalchemy.engine.Engine SELECT user_settings.id, user_settings.user_id, user_settings.api_key, user_settings.api_url, user_settings.default_model, user_settings.theme, user_settings.created_at, user_settings.updated_at 
+FROM user_settings 
+WHERE user_settings.user_id = ?
+2026-05-07 15:07:48,747 INFO sqlalchemy.engine.Engine [cached since 2.731e+05s ago] (1,)
+INFO:     127.0.0.1:58537 - "GET /api/auth/me HTTP/1.1" 200 OK
+2026-05-07 15:07:48,753 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:58485 - "GET /api/user/settings HTTP/1.1" 200 OK
+2026-05-07 15:07:54,689 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-05-07 15:07:54,690 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.username, users.password_hash, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = ?
+2026-05-07 15:07:54,690 INFO sqlalchemy.engine.Engine [cached since 2.731e+05s ago] (1,)
+2026-05-07 15:07:54,694 INFO sqlalchemy.engine.Engine SELECT competency_models.id, competency_models.user_id, competency_models.name, competency_models.dimensions, competency_models.source_files, competency_models.created_at, competency_models.updated_at 
+FROM competency_models 
+WHERE competency_models.user_id = ?
+2026-05-07 15:07:54,694 INFO sqlalchemy.engine.Engine [cached since 6.183e+04s ago] (1,)
+2026-05-07 15:07:54,696 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:58540 - "GET /api/competency-models HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58540 - "OPTIONS /api/evaluation-matrices HTTP/1.1" 200 OK
+2026-05-07 15:07:54,706 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-05-07 15:07:54,706 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.username, users.password_hash, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = ?
+2026-05-07 15:07:54,706 INFO sqlalchemy.engine.Engine [cached since 2.731e+05s ago] (1,)
+2026-05-07 15:07:54,710 INFO sqlalchemy.engine.Engine SELECT evaluation_matrices.id, evaluation_matrices.user_id, evaluation_matrices.model_id, evaluation_matrices.tools, evaluation_matrices.matrix, evaluation_matrices.created_at, evaluation_matrices.updated_at 
+FROM evaluation_matrices 
+WHERE evaluation_matrices.user_id = ?
+2026-05-07 15:07:54,710 INFO sqlalchemy.engine.Engine [cached since 6.183e+04s ago] (1,)
+2026-05-07 15:07:54,712 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:58541 - "GET /api/evaluation-matrices HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58541 - "OPTIONS /api/questionnaires HTTP/1.1" 200 OK
+2026-05-07 15:07:54,719 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-05-07 15:07:54,720 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.username, users.password_hash, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = ?
+2026-05-07 15:07:54,720 INFO sqlalchemy.engine.Engine [cached since 2.731e+05s ago] (1,)
+2026-05-07 15:07:54,721 INFO sqlalchemy.engine.Engine SELECT questionnaires.id, questionnaires.user_id, questionnaires.tool_id, questionnaires.model_id, questionnaires.matrix_id, questionnaires.content, questionnaires.word_url, questionnaires.pdf_url, questionnaires.status, questionnaires.created_at, questionnaires.updated_at 
+FROM questionnaires 
+WHERE questionnaires.user_id = ?
+2026-05-07 15:07:54,721 INFO sqlalchemy.engine.Engine [cached since 6.183e+04s ago] (1,)
+2026-05-07 15:07:54,725 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:58540 - "GET /api/questionnaires HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58541 - "OPTIONS /api/reports HTTP/1.1" 200 OK
+2026-05-07 15:07:58,968 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-05-07 15:07:58,969 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.username, users.password_hash, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = ?
+2026-05-07 15:07:58,969 INFO sqlalchemy.engine.Engine [cached since 2.731e+05s ago] (1,)
+2026-05-07 15:07:58,970 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-05-07 15:07:58,970 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.username, users.password_hash, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = ?
+2026-05-07 15:07:58,970 INFO sqlalchemy.engine.Engine [cached since 2.731e+05s ago] (1,)
+2026-05-07 15:07:58,974 INFO sqlalchemy.engine.Engine SELECT competency_models.id, competency_models.user_id, competency_models.name, competency_models.dimensions, competency_models.source_files, competency_models.created_at, competency_models.updated_at 
+FROM competency_models 
+WHERE competency_models.user_id = ?
+2026-05-07 15:07:58,974 INFO sqlalchemy.engine.Engine [cached since 6.183e+04s ago] (1,)
+2026-05-07 15:07:58,975 INFO sqlalchemy.engine.Engine SELECT reports.id, reports.user_id, reports.record_id, reports.report_type, reports.candidate_id, reports.candidate_name, reports.scores_data, reports.radar_chart_url, reports.total_score, reports.content, reports.language, reports.word_url, reports.pdf_url, reports.status, reports.created_at, reports.updated_at 
+FROM reports 
+WHERE reports.user_id = ?
+2026-05-07 15:07:58,975 INFO sqlalchemy.engine.Engine [cached since 6.095e+04s ago] (1,)
+2026-05-07 15:07:58,977 INFO sqlalchemy.engine.Engine ROLLBACK
+2026-05-07 15:07:58,980 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:58540 - "GET /api/competency-models HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58541 - "GET /api/reports HTTP/1.1" 200 OK
+2026-05-07 15:08:16,637 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-05-07 15:08:16,638 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.username, users.password_hash, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = ?
+2026-05-07 15:08:16,639 INFO sqlalchemy.engine.Engine [cached since 2.731e+05s ago] (1,)
+2026-05-07 15:08:16,643 INFO sqlalchemy.engine.Engine SELECT competency_models.id, competency_models.user_id, competency_models.name, competency_models.dimensions, competency_models.source_files, competency_models.created_at, competency_models.updated_at 
+FROM competency_models 
+WHERE competency_models.user_id = ?
+2026-05-07 15:08:16,643 INFO sqlalchemy.engine.Engine [cached since 6.185e+04s ago] (1,)
+2026-05-07 15:08:16,646 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:58598 - "GET /api/competency-models HTTP/1.1" 200 OK
+2026-05-07 15:08:20,834 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-05-07 15:08:20,834 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.username, users.password_hash, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = ?
+2026-05-07 15:08:20,834 INFO sqlalchemy.engine.Engine [cached since 2.731e+05s ago] (1,)
+2026-05-07 15:08:20,838 INFO sqlalchemy.engine.Engine SELECT competency_models.id, competency_models.user_id, competency_models.name, competency_models.dimensions, competency_models.source_files, competency_models.created_at, competency_models.updated_at 
+FROM competency_models 
+WHERE competency_models.user_id = ?
+2026-05-07 15:08:20,838 INFO sqlalchemy.engine.Engine [cached since 6.185e+04s ago] (1,)
+2026-05-07 15:08:20,839 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:58598 - "GET /api/competency-models HTTP/1.1" 200 OK
+2026-05-07 15:08:20,846 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-05-07 15:08:20,847 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.username, users.password_hash, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = ?
+2026-05-07 15:08:20,847 INFO sqlalchemy.engine.Engine [cached since 2.731e+05s ago] (1,)
+2026-05-07 15:08:20,855 INFO sqlalchemy.engine.Engine SELECT evaluation_matrices.id, evaluation_matrices.user_id, evaluation_matrices.model_id, evaluation_matrices.tools, evaluation_matrices.matrix, evaluation_matrices.created_at, evaluation_matrices.updated_at 
+FROM evaluation_matrices 
+WHERE evaluation_matrices.user_id = ?
+2026-05-07 15:08:20,855 INFO sqlalchemy.engine.Engine [cached since 6.185e+04s ago] (1,)
+2026-05-07 15:08:20,858 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:58598 - "GET /api/evaluation-matrices HTTP/1.1" 200 OK
+2026-05-07 15:08:22,798 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-05-07 15:08:22,799 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.username, users.password_hash, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = ?
+2026-05-07 15:08:22,799 INFO sqlalchemy.engine.Engine [cached since 2.731e+05s ago] (1,)
+2026-05-07 15:08:22,803 INFO sqlalchemy.engine.Engine SELECT competency_models.id, competency_models.user_id, competency_models.name, competency_models.dimensions, competency_models.source_files, competency_models.created_at, competency_models.updated_at 
+FROM competency_models 
+WHERE competency_models.user_id = ?
+2026-05-07 15:08:22,803 INFO sqlalchemy.engine.Engine [cached since 6.185e+04s ago] (1,)
+2026-05-07 15:08:22,804 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:58598 - "GET /api/competency-models HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58752 - "OPTIONS /api/competency-models/generate HTTP/1.1" 200 OK
+2026-05-07 15:08:31,094 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-05-07 15:08:31,095 INFO sqlalchemy.engine.Engine SELECT users.id, users.email, users.username, users.password_hash, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = ?
+2026-05-07 15:08:31,095 INFO sqlalchemy.engine.Engine [cached since 2.731e+05s ago] (1,)
+2026-05-07 15:08:31,157 INFO sqlalchemy.engine.Engine SELECT user_settings.id, user_settings.user_id, user_settings.api_key, user_settings.api_url, user_settings.default_model, user_settings.theme, user_settings.created_at, user_settings.updated_at 
+FROM user_settings 
+WHERE user_settings.user_id = ?
+2026-05-07 15:08:31,157 INFO sqlalchemy.engine.Engine [cached since 2.731e+05s ago] (1,)
+2026-05-07 15:08:31,394 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:58752 - "POST /api/competency-models/generate HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/opt/anaconda3/lib/python3.11/site-packages/uvicorn/protocols/http/httptools_impl.py", line 401, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py", line 70, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/lib/python3.11/site-packages/fastapi/applications.py", line 1054, in __call__
+    await super().__call__(scope, receive, send)
+  File "/opt/anaconda3/lib/python3.11/site-packages/starlette/applications.py", line 113, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/opt/anaconda3/lib/python3.11/site-packages/starlette/middleware/errors.py", line 187, in __call__
+    raise exc
+  File "/opt/anaconda3/lib/python3.11/site-packages/starlette/middleware/errors.py", line 165, in __call__
+    await self.app(scope, receive, _send)
+  File "/opt/anaconda3/lib/python3.11/site-packages/starlette/middleware/cors.py", line 93, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "/opt/anaconda3/lib/python3.11/site-packages/starlette/middleware/cors.py", line 144, in simple_response
+    await self.app(scope, receive, send)
+  File "/opt/anaconda3/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 62, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/opt/anaconda3/lib/python3.11/site-packages/starlette/_exception_handler.py", line 62, in wrapped_app
+    raise exc
+  File "/opt/anaconda3/lib/python3.11/site-packages/starlette/_exception_handler.py", line 51, in wrapped_app
+    await app(scope, receive, sender)
+  File "/opt/anaconda3/lib/python3.11/site-packages/starlette/routing.py", line 715, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/opt/anaconda3/lib/python3.11/site-packages/starlette/routing.py", line 735, in app
+    await route.handle(scope, receive, send)
+  File "/opt/anaconda3/lib/python3.11/site-packages/starlette/routing.py", line 288, in handle
+    await self.app(scope, receive, send)
+  File "/opt/anaconda3/lib/python3.11/site-packages/starlette/routing.py", line 76, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/opt/anaconda3/lib/python3.11/site-packages/starlette/_exception_handler.py", line 62, in wrapped_app
+    raise exc
+  File "/opt/anaconda3/lib/python3.11/site-packages/starlette/_exception_handler.py", line 51, in wrapped_app
+    await app(scope, receive, sender)
+  File "/opt/anaconda3/lib/python3.11/site-packages/starlette/routing.py", line 73, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/lib/python3.11/site-packages/fastapi/routing.py", line 301, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/lib/python3.11/site-packages/fastapi/routing.py", line 212, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ximenruixue/Desktop/aitalent/backend/src/routers/competency.py", line 39, in generate_competency_model
+    service = CompetencyService(
+              ^^^^^^^^^^^^^^^^^^
+  File "/Users/ximenruixue/Desktop/aitalent/backend/src/services/competency_service.py", line 7, in __init__
+    super().__init__(api_key, model, api_url)
+  File "/Users/ximenruixue/Desktop/aitalent/backend/src/services/ai_service.py", line 15, in __init__
+    self.llm = ChatOpenAI(
+               ^^^^^^^^^^^
+  File "/opt/anaconda3/lib/python3.11/site-packages/langchain_core/load/serializable.py", line 125, in __init__
+    super().__init__(*args, **kwargs)
+  File "/opt/anaconda3/lib/python3.11/site-packages/pydantic/main.py", line 212, in __init__
+    validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/lib/python3.11/site-packages/langchain_openai/chat_models/base.py", line 551, in validate_environment
+    self.root_client = openai.OpenAI(**client_params, **sync_specific)  # type: ignore[arg-type]
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/lib/python3.11/site-packages/openai/_client.py", line 123, in __init__
+    super().__init__(
+  File "/opt/anaconda3/lib/python3.11/site-packages/openai/_base_client.py", line 857, in __init__
+    self._client = http_client or SyncHttpxClientWrapper(
+                                  ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/lib/python3.11/site-packages/openai/_base_client.py", line 755, in __init__
+    super().__init__(**kwargs)
+TypeError: Client.__init__() got an unexpected keyword argument 'proxies'
