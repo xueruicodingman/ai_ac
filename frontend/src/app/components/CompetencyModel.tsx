@@ -1,6 +1,6 @@
 import { ArrowLeft, Upload, X, Plus, Trash2, Edit2, Check, FileText } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { generateCompetencyModel, saveCompetencyModel, getCompetencyModel, parseCompetencyModel, getFileContent } from '../api';
+import { generateCompetencyModel, saveCompetencyModel, getCompetencyModel, parseCompetencyModel, getFileContent, uploadFile } from '../api';
 import { toast } from 'sonner';
 
 interface CompetencyModelProps {
@@ -307,18 +307,13 @@ export default function CompetencyModel({ onBack }: CompetencyModelProps) {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={async () => {
-                        const fileData = new FormData();
-                        fileData.append('file', file);
-                        const response = await fetch('http://localhost:8000/api/files/upload', {
-                          method: 'POST',
-                          headers: {
-                            'Authorization': `Bearer ${sessionStorage.getItem('auth_token')}`
-                          },
-                          body: fileData
-                        });
-                        const result = await response.json();
-                        if (result.success && result.data?.id) {
-                          await handleParseFile(result.data.id);
+                        try {
+                          const uploadResult = await uploadFile(file);
+                          if (uploadResult.success && uploadResult.data?.id) {
+                            await handleParseFile(uploadResult.data.id);
+                          }
+                        } catch (err: any) {
+                          toast.error(err.message || '上传失败');
                         }
                       }}
                       disabled={isParsing}
