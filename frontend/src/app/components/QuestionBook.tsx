@@ -97,8 +97,24 @@ export default function QuestionBook({ onBack, onNavigate }: QuestionBookProps) 
             content: undefined
           })));
         } else {
+          // 模型匹配，但检查每个工具是否在新的矩阵中启用
           setBooks(prev => prev.map(book => {
             const saved = questionnaires.find((q: any) => q.tool_id === book.id);
+
+            // 检查该工具在新的评估矩阵中是否启用
+            const toolEnabled = abilitiesMap[book.id] && abilitiesMap[book.id].length > 0;
+
+            // 如果工具未启用，清除内容
+            if (!toolEnabled && saved) {
+              // 工具在矩阵中未勾选，清除题本内容
+              return {
+                ...book,
+                status: 'pending' as const,
+                submitTime: undefined,
+                content: undefined
+              };
+            }
+
             if (saved) {
               return {
                 ...book,
@@ -110,6 +126,14 @@ export default function QuestionBook({ onBack, onNavigate }: QuestionBookProps) 
             return book;
           }));
         }
+      } else {
+        // 没有保存的问卷，全部重置为pending
+        setBooks(prev => prev.map(book => ({
+          ...book,
+          status: 'pending' as const,
+          submitTime: undefined,
+          content: undefined
+        })));
       }
     } catch (err) {
       console.log('No saved data found');
