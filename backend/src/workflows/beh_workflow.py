@@ -233,5 +233,38 @@ class BEHWorkflow:
             background=background_file_content
         )
 
-        schema = QuestionnaireSchema(meta=meta, content=content)
-        return schema.to_json_string()
+        # 直接返回markdown格式的文本
+        markdown_lines = []
+        markdown_lines.append(f"# {meta.tool_name}")
+        markdown_lines.append(f"\n**级别**: {meta.level or '未设置'}")
+        markdown_lines.append(f"**时长**: {meta.duration}分钟")
+        markdown_lines.append(f"**生成时间**: {meta.generated_at}\n")
+
+        if content.theory:
+            markdown_lines.append(f"## 理论要点\n{content.theory}\n")
+
+        if content.followup_strategy:
+            markdown_lines.append(f"## 追问策略\n{content.followup_strategy}\n")
+
+        if content.competencies:
+            markdown_lines.append("## 能力模型\n")
+            for comp in content.competencies:
+                markdown_lines.append(f"### {comp.name}")
+                markdown_lines.append(f"**能力含义**: {comp.meaning}\n")
+                if comp.behavior_criteria:
+                    markdown_lines.append("**关键行为**:")
+                    for bc in comp.behavior_criteria:
+                        markdown_lines.append(f"- {bc.title}: {bc.description}")
+                if comp.challenges:
+                    markdown_lines.append(f"\n**核心挑战**:")
+                    for ch in comp.challenges:
+                        markdown_lines.append(f"- {ch}")
+                if comp.questions:
+                    markdown_lines.append(f"\n**引导提问**:")
+                    for q in comp.questions:
+                        markdown_lines.append(f"- {q}")
+                if comp.followup_rules:
+                    markdown_lines.append(f"\n**追问规则**: {comp.followup_rules}")
+                markdown_lines.append("")
+
+        return "\n".join(markdown_lines)

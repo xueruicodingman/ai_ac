@@ -99,11 +99,23 @@ export default function QuestionBook({ onBack, onNavigate }: QuestionBookProps) 
           })));
         } else {
           // 模型匹配，但检查每个工具是否在新的矩阵中启用
+          const currentMatrixId = evaluationMatrix?.id;
           setBooks(prev => prev.map(book => {
             const saved = questionnaires.find((q: any) => q.tool_id === book.id);
 
             // 检查该工具在新的评估矩阵中是否启用
             const toolEnabled = abilitiesMap[book.id] && abilitiesMap[book.id].length > 0;
+
+            // 如果matrix_id不匹配，清除内容
+            if (saved && currentMatrixId && saved.matrix_id !== currentMatrixId) {
+              console.log(`工具${book.id}的matrix_id不匹配，清除内容`);
+              return {
+                ...book,
+                status: 'pending' as const,
+                submitTime: undefined,
+                content: undefined
+              };
+            }
 
             // 如果工具未启用，清除内容
             if (!toolEnabled && saved) {
